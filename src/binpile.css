@@ -63,10 +63,25 @@
   box-shadow: 3px 3px 0 #141414;
   color: var(--green-900);
   font: 700 14px / 1.2 var(--font-sans);
-  white-space: nowrap;
+  width: max-content;
+  max-width: min(250px, 66vw);
+  text-wrap: balance;
   transform-origin: 100% 100%;
-  animation: bubble 2.4s var(--ease-out) both;
+  animation: bubble 2.6s var(--ease-out) both;
 }
+/* An item's own comeback reads like a shelf sticker; the fed-up lines go red and shake. */
+.pile-bubble[data-tone="item"] { background: var(--sun); color: #17140c; }
+.pile-bubble[data-tone="mad"] {
+  background: var(--tomato);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  animation: bubble 2.6s var(--ease-out) both, bubble-shake 0.09s linear 0.1s 6 alternate;
+}
+@keyframes bubble-shake { to { translate: 2px -1px; } }
 @keyframes bubble {
   0% { opacity: 0; scale: 0.3; rotate: 8deg; }
   10% { opacity: 1; scale: 1.06; rotate: -2deg; }

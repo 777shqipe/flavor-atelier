@@ -61,6 +61,7 @@ function buildDefs(): Def[] {
 
 const DEFS = buildDefs();
 
+/** What the bin says when it spits something back. Shuffled, no repeats until the deck runs out. */
 const LINES = [
   "Oi! That’s still good.",
   "Not in my bin.",
@@ -68,7 +69,55 @@ const LINES = [
   "Someone will eat that.",
   "Rescued. Again.",
   "Nice try.",
+  "I’m a bin, not a fridge.",
+  "Ugly isn’t off.",
+  "That’s dinner, mate.",
+  "Return to sender.",
+  "Back on the shelf with you.",
+  "Dented? Still delicious.",
+  "Have you tried eating it?",
+  "Denied.",
+  "Not today, landfill.",
+  "Plenty of life left in that.",
+  "I only take actual rubbish.",
+  "Pop it in a lunchbox.",
+  "Bin rejected. Fridge accepted.",
+  "Smell it. Taste it. Eat it.",
+  "That’s someone’s lunch.",
+  "Wrong bin. There is no right bin.",
 ];
+
+/** First time a particular grocery lands in the bin, it gets its own comeback. */
+const ABOUT: Record<string, string> = {
+  banana: "Brown spots? That’s banana bread.",
+  bread: "Stale? That’s French toast.",
+  apple: "A bruise isn’t a bin ticket.",
+  carrot: "Bendy carrots taste the same.",
+  lemon: "Squeeze it, don’t bin it.",
+  popcorn: "New bag. Same corn.",
+  muesli: "Overstock isn’t off.",
+  cornflakes: "Best before. Not bad after.",
+  yoghurt: "Check the date, then grab a spoon.",
+  icecream: "Ice cream?! In the bin?!",
+  dumplings: "Dented box. Dumplings fine.",
+  chickpeas: "Tins keep for years, mate.",
+  beans: "Tins keep for years, mate.",
+  gummies: "Gummies barely know what ‘off’ is.",
+  sparkling: "Still fizzy. Still fine.",
+  sanpellegrino: "Still fizzy. Still fine.",
+  shin: "Noodles keep for ages.",
+  milka: "Chocolate?! Are you mad?",
+  dishwash: "Not even food. Still no.",
+  oatmilk: "Unopened? It’s got months.",
+  pb: "Peanut butter never gives up.",
+  coldbrew: "Still caffeinated. Still good.",
+  applejuice: "Sealed juice keeps for months.",
+};
+
+/** Keep chucking things in quickly and the bin loses patience. */
+const FED_UP = ["Seriously?", "Again?!", "Mate. Stop.", "I can do this all day.", "Lid’s staying shut.", "Persistent, aren’t you?"];
+
+type Say = { text: string; tone?: "item" | "mad" };
 
 function BinArt() {
   return (
@@ -100,7 +149,7 @@ function BinArt() {
 export function BinPile() {
   const stage = useRef<HTMLDivElement>(null);
   const bin = useRef<HTMLDivElement>(null);
-  const [bubble, setBubble] = useState<{ text: string; n: number } | null>(null);
+  const [bubble, setBubble] = useState<(Say & { n: number }) | null>(null);
 
   useEffect(() => {
     const el = stage.current;
@@ -116,7 +165,7 @@ export function BinPile() {
         near.disconnect();
         import("matter-js").then((mod) => {
           if (disposed) return;
-          teardown = start(mod.default ?? mod, el, binEl, (text) => setBubble((b) => ({ text, n: (b?.n ?? 0) + 1 })));
+          teardown = start(mod.default ?? mod, el, binEl, (say) => setBubble((b) => ({ ...say, n: (b?.n ?? 0) + 1 })));
         });
       },
       { rootMargin: "600px 0px" },
@@ -142,7 +191,7 @@ export function BinPile() {
       <div className="pile-bin" ref={bin} aria-hidden="true">
         <BinArt />
         {bubble && (
-          <span className="pile-bubble" key={bubble.n}>
+          <span className="pile-bubble" key={bubble.n} data-tone={bubble.tone}>
             {bubble.text}
           </span>
         )}
@@ -163,7 +212,40 @@ export function BinPile() {
   );
 }
 
-function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say: (text: string) => void) {
+function shuffled<T>(list: readonly T[]): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/** Picks the bin's next line: the item's own comeback first, the generic deck after, and a sulk when spammed. */
+function lineMaker() {
+  let deck: string[] = [];
+  let fedUp: string[] = [];
+  const heard = new Set<string>();
+  let streak = 0;
+  let last = 0;
+  return (key: string): Say => {
+    const now = performance.now();
+    streak = now - last < 4500 ? streak + 1 : 0;
+    last = now;
+    if (streak >= 3) {
+      if (!fedUp.length) fedUp = shuffled(FED_UP);
+      return { text: fedUp.pop()!, tone: "mad" };
+    }
+    if (ABOUT[key] && !heard.has(key)) {
+      heard.add(key);
+      return { text: ABOUT[key], tone: "item" };
+    }
+    if (!deck.length) deck = shuffled(LINES);
+    return { text: deck.pop()! };
+  };
+}
+
+function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say: (line: Say) => void) {
   const { Engine, Bodies, Body, Composite, Constraint, Sleeping } = Matter;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const engine = Engine.create({ enableSleeping: true });
@@ -217,7 +299,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
       def.shape === "circle"
         ? Bodies.circle(0, 0, w / 2, { restitution: 0.35, friction: 0.4, frictionAir: 0.012, density: 0.0016 })
         : Bodies.rectangle(0, 0, w, h, opts);
-    return { node, body, w, h, added: false, binnedAt: 0 };
+    return { key: def.key, node, body, w, h, added: false, binnedAt: 0 };
   });
 
   const paint = () => {
@@ -229,7 +311,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
   };
 
   // ---- the bin refuses ----------------------------------------------------------
-  let line = 0;
+  const nextLine = lineMaker();
   const spit = (it: (typeof items)[number]) => {
     Sleeping.set(it.body, false);
     Body.setPosition(it.body, { x: it.body.position.x, y: Math.min(it.body.position.y, inside.y0 + 10) });
@@ -238,8 +320,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     binEl.removeAttribute("data-spit");
     void binEl.offsetWidth;
     binEl.setAttribute("data-spit", "");
-    say(LINES[line % LINES.length]);
-    line += 1;
+    say(nextLine(it.key));
   };
 
   // ---- loop ---------------------------------------------------------------------

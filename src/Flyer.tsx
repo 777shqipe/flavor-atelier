@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
-import { Pack } from "./Pack";
+import { Deal } from "./FlyerDeal";
+import { pickLook } from "./flyerLooks";
+import { RingBadge } from "./RingBadge";
 import { CATEGORIES, ITEMS, type CatId, type Item } from "./products";
 import "./flyer.css";
 
 type Sort = "featured" | "price" | "saving";
 type CatFilter = CatId | "all";
 
-const COLOR = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.color])) as Record<CatId, string>;
 const saving = (item: Item) => (item.was ? 1 - item.price / item.was : 0);
-const money = (value: number) => `$${value % 1 ? value.toFixed(2) : value}`;
+
+/** Masthead: issue number is the week of the year, dated from this week's Monday. */
+const TODAY = new Date();
+const MONDAY = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - ((TODAY.getDay() + 6) % 7));
+const ISSUE = Math.ceil(((+MONDAY - +new Date(MONDAY.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
+const WEEK = MONDAY.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
 
 /** Animates the grid between two states with the View Transitions API where it exists. */
 function morph(update: () => void) {
@@ -109,61 +115,6 @@ function CutLine() {
   );
 }
 
-function Price({ value }: { value: number }) {
-  const whole = Math.floor(value);
-  const cents = Math.round((value - whole) * 100);
-  return (
-    <span className="now">
-      <sup>$</sup>
-      {whole}
-      {cents > 0 && <sup>{String(cents).padStart(2, "0")}</sup>}
-    </span>
-  );
-}
-
-function Deal({ item }: { item: Item }) {
-  const off = item.was ? Math.round(saving(item) * 100) : 0;
-  return (
-    <article className="deal" style={{ "--c": COLOR[item.cat] } as CSSProperties}>
-      <div className="deal-art">
-        <span className="deal-scan" aria-hidden="true" />
-        {item.tag && (
-          <span className="deal-tag" data-tag={item.tag}>
-            {item.tag}
-          </span>
-        )}
-        {off > 0 && (
-          <span className="deal-save" aria-label={`${off}% off`}>
-            <b>-{off}%</b>
-          </span>
-        )}
-        {item.img ? (
-          <img
-            src={item.img.src}
-            width={item.img.w}
-            height={item.img.h}
-            alt={item.name}
-            data-wide={item.img.w / item.img.h > 1.5 || undefined}
-            loading="lazy"
-            draggable={false}
-          />
-        ) : (
-          item.shape && item.color && item.label && <Pack shape={item.shape} color={item.color} label={item.label} />
-        )}
-      </div>
-      <div className="deal-info">
-        <h4>{item.name}</h4>
-        <p className="deal-line">{item.line}</p>
-        <div className="deal-price">
-          <Price value={item.price} />
-          {item.was && <s>was {money(item.was)}</s>}
-          <span className="unit">{item.unit}</span>
-        </div>
-      </div>
-    </article>
-  );
-}
-
 const SORTS: Array<[Sort, string]> = [
   ["featured", "Featured"],
   ["price", "Price ↑"],
@@ -209,20 +160,23 @@ export function Flyer() {
   return (
     <section className="flyer" id="flyer" data-surface="cream" aria-labelledby="flyer-title">
       <CutLine />
-      <div className="flyer-head rv">
-        <div>
-          <p className="eyebrow">Every aisle, every week</p>
+      <header className="flyer-head rv">
+        <p className="flyer-mast" aria-hidden="true">
+          <span>No. {ISSUE}</span>
+          <span>Week of {WEEK}</span>
+          <span>Four stores · Melbourne</span>
+        </p>
+        <div className="flyer-headline">
           <h2 id="flyer-title" className="flyer-title">
-            <span>The weekly</span>
-            <span className="fun">flyer</span>
+            The weekly <em>flyer.</em>
           </h2>
+          <RingBadge className="flyer-ring" text="WHILE STOCK LASTS • NEW FINDS WEEKLY •" center="$" label="While stock lasts" />
         </div>
-        <div className="flyer-stamp" aria-hidden="true">
-          <b>While</b>
-          <b>stock</b>
-          <b>lasts</b>
-        </div>
-      </div>
+        <p className="flyer-dek">
+          Overstock, pack changes and short dates from brands you know. It lands, we price it low, and once it’s gone,
+          it’s gone.
+        </p>
+      </header>
 
       <div className="flyer-tools" role="search">
         <label className="search">
@@ -287,13 +241,9 @@ export function Flyer() {
 
       {visible.length > 0 ? (
         <ul className="flyer-grid">
-          {visible.map((item) => (
-            <li
-              key={item.id}
-              className={item.big ? "big" : undefined}
-              style={{ viewTransitionName: `deal-${item.id}` }}
-            >
-              <Deal item={item} />
+          {visible.map((item, index) => (
+            <li key={item.id} data-size={pickLook(item)[1]} style={{ viewTransitionName: `deal-${item.id}` }}>
+              <Deal item={item} index={index} />
             </li>
           ))}
         </ul>

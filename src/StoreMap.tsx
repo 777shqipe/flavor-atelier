@@ -1,33 +1,33 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import L from "leaflet";
-import { Glass } from "./Glass";
-import {
-  ROUTE,
-  STORES,
-  directionsLink,
-  distanceKm,
-  formatKm,
-  type Store,
-} from "./stores";
 import { glyphSvg } from "./glyphs";
+import { CART_SVG, LANDMARKS, bow, landmarkHtml, shopPinSvg } from "./mapArt";
+import { ROUTE, STORES, directionsLink, distanceKm, formatKm, type Store } from "./stores";
 import { useOpenStatus } from "./useOpenStatus";
 import "./storemap.css";
 
+/**
+ * The store map, drawn as a night-time city: dark green streets, little CBM
+ * shopfronts for pins, sticker landmarks, and a trolley that does the rounds
+ * on a bowed loop between the shops. On the home page it drives the loop by
+ * itself; in the finder it drives to whichever store you pick.
+ */
+
+/** Loop order of the stores (ROUTE ends where it started). */
+const LOOP = ROUTE.slice(0, -1);
+/** Zoom level the route maths is done at, in projected pixels. */
+const Z = 15;
+const CBD = L.latLng(-37.8136, 144.9631);
+
+/** Name tags hang to the right of the shop, except where a landmark already sits there. */
+const TAG_LEFT = new Set(["flemington"]);
+
 const pinHtml = (store: Store, index: number) => `
   <div class="pin" style="--c:${store.color};--i:${index}">
+    <span class="pin-shadow"></span>
     <span class="pin-pulse"></span>
-    <span class="pin-body"><span class="pin-glyph">${glyphSvg(store.glyph)}</span></span>
-    <span class="pin-tag">${store.name}</span>
-  </div>`;
-
-const CART_HTML = `
-  <div class="cart-dot">
-    <svg viewBox="0 0 48 48" aria-hidden="true">
-      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 14h4.5l3.2 15a1.7 1.7 0 0 0 1.7 1.3h12.3a1.7 1.7 0 0 0 1.7-1.3L37 19H17"/>
-      </g>
-      <circle cx="21.5" cy="36" r="2.3" fill="currentColor"/><circle cx="32.5" cy="36" r="2.3" fill="currentColor"/>
-    </svg>
+    <span class="pin-art">${shopPinSvg(store)}</span>
+    <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><b>0${index + 1}</b>${store.name}</span>
   </div>`;
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -38,6 +38,92 @@ type Near =
   | { status: "loading" }
   | { status: "ok"; index: number; km: number }
   | { status: "error"; message: string };
+
+/** Moves the trolley marker along polylines in projected space, frame by frame. */
+function makeDriver(map: L.Map, cart: L.Marker) {
+  type Leg = { pts: L.Point[]; cum: number[]; ms: number; done?: () => void };
+  let leg: Leg | null = null;
+  let elapsed = 0;
+  let wait = 0;
+  let after: (() => void) | null = null;
+  let raf = 0;
+  let last = 0;
+  let running = false;
+  const art = () => cart.getElement()?.querySelector<HTMLElement>(".cart");
+  const place = (p: L.Point) => cart.setLatLng(map.unproject(p, Z));
+
+  const frame = (now: number) => {
+    raf = 0;
+    const dt = Math.min(48, now - last);
+    last = now;
+    if (leg) {
+      elapsed += dt;
+      const t = Math.min(1, elapsed / leg.ms);
+      const d = ease(t) * leg.cum[leg.cum.length - 1];
+      let i = 1;
+      while (i < leg.cum.length - 1 && leg.cum[i] < d) i += 1;
+      const a = leg.pts[i - 1];
+      const b = leg.pts[i];
+      const k = (d - leg.cum[i - 1]) / (leg.cum[i] - leg.cum[i - 1] || 1);
+      place(L.point(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k));
+      if (Math.abs(b.x - a.x) > 0.5) art()?.setAttribute("data-dir", b.x < a.x ? "l" : "r");
+      if (t >= 1) {
+        const done = leg.done;
+        leg = null;
+        art()?.removeAttribute("data-moving");
+        done?.();
+      }
+    } else if (wait > 0) {
+      wait -= dt;
+      if (wait <= 0 && after) {
+        const fn = after;
+        after = null;
+        fn();
+      }
+    }
+    if (running && (leg || wait > 0)) raf = requestAnimationFrame(frame);
+  };
+  const kick = () => {
+    if (raf || !running || !(leg || wait > 0)) return;
+    last = performance.now();
+    raf = requestAnimationFrame(frame);
+  };
+
+  return {
+    place,
+    drive(pts: L.Point[], ms: number, done?: () => void) {
+      const cum = [0];
+      for (let i = 1; i < pts.length; i += 1) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
+      leg = { pts, cum, ms, done };
+      elapsed = 0;
+      wait = 0;
+      after = null;
+      art()?.removeAttribute("data-in");
+      art()?.setAttribute("data-moving", "");
+      kick();
+    },
+    pause(ms: number, fn: () => void) {
+      wait = ms;
+      after = fn;
+      kick();
+    },
+    setRunning(on: boolean) {
+      running = on;
+      if (on) kick();
+      else {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    },
+    stop() {
+      leg = null;
+      wait = 0;
+      after = null;
+      cancelAnimationFrame(raf);
+      raf = 0;
+    },
+  };
+}
 
 export function StoreMap({
   active,
@@ -50,16 +136,24 @@ export function StoreMap({
   variant?: "full" | "compact";
   onOpenFinder?: () => void;
 }) {
+  const wrap = useRef<HTMLDivElement>(null);
   const node = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markers = useRef<L.Marker[]>([]);
-  const cart = useRef<L.Marker | null>(null);
-  const me = useRef<L.CircleMarker | null>(null);
+  const api = useRef<{
+    driver: ReturnType<typeof makeDriver>;
+    between: (from: number, to: number) => L.Point[];
+    at: (index: number) => L.Point;
+    overview: () => void;
+  } | null>(null);
+  const me = useRef<L.Marker | null>(null);
+  const meLine = useRef<L.Polyline | null>(null);
+  const fromMe = useRef<L.LatLng | null>(null);
   const previous = useRef<number | null>(null);
-  const frame = useRef(0);
   const onSelectRef = useRef(onSelect);
   const [near, setNear] = useState<Near>({ status: "idle" });
   const status = useOpenStatus();
+  const compact = variant === "compact";
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -68,7 +162,9 @@ export function StoreMap({
   // Build the map once.
   useEffect(() => {
     const el = node.current;
-    if (!el || mapRef.current) return;
+    const box = wrap.current;
+    if (!el || !box || mapRef.current) return;
+    const reduce = reduced();
     const touch = L.Browser.mobile;
     const map = L.map(el, {
       zoomControl: false,
@@ -76,22 +172,62 @@ export function StoreMap({
       scrollWheelZoom: false,
       dragging: !touch,
       zoomSnap: 0.25,
-      minZoom: 9,
+      minZoom: 10,
       maxZoom: 17,
     });
     L.control.attribution({ prefix: false, position: "bottomright" }).addTo(map);
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
-      attribution: "Tiles &copy; Esri",
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+      attribution: "Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+      maxNativeZoom: 16,
       maxZoom: 19,
     }).addTo(map);
 
     const points = STORES.map((store) => L.latLng(store.lat, store.lon));
-    map.fitBounds(L.latLngBounds(points), { padding: [70, 70] });
+    const wide = () => box.clientWidth > 760;
+    const overview = (animate = false) => {
+      const bounds = L.latLngBounds([...points, CBD]);
+      const opts: L.FitBoundsOptions = compact
+        ? { paddingTopLeft: wide() ? [330, 90] : [26, 64], paddingBottomRight: wide() ? [150, 70] : [30, 30] }
+        : { paddingTopLeft: [60, 110], paddingBottomRight: [wide() ? 150 : 80, wide() ? 230 : 250] };
+      if (animate) map.flyToBounds(bounds, { ...opts, duration: 1.1 });
+      else map.fitBounds(bounds, opts);
+    };
+    overview();
 
-    L.polyline(
-      ROUTE.map((index) => points[index]),
-      { className: "route", color: "#004734", weight: 3.5, opacity: 0.9, dashArray: "1 10", lineCap: "round", interactive: false },
-    ).addTo(map);
+    // ---- the loop, bowed outwards so it reads as a drawn route ---------------
+    const P = points.map((point) => map.project(point, Z));
+    const centre = { x: P.reduce((s, p) => s + p.x, 0) / P.length, y: P.reduce((s, p) => s + p.y, 0) / P.length };
+    const segs = LOOP.map((from, k) =>
+      bow(P[from], P[LOOP[(k + 1) % LOOP.length]], centre, 0.17).map((p) => L.point(p.x, p.y)),
+    );
+    const loop = segs.flatMap((seg, k) => (k ? seg.slice(1) : seg)).map((p) => map.unproject(p, Z));
+    L.polyline(loop, { className: "route-glow", color: "#f6b531", weight: 12, opacity: 0.12, interactive: false }).addTo(map);
+    const drawn = L.polyline(loop, { className: "route-line", color: "#f6b531", weight: 2.5, opacity: 0.85, interactive: false }).addTo(map);
+    L.polyline(loop, { className: "route-dots", color: "#fffaf0", weight: 4, opacity: 0.95, dashArray: "0.1 14", lineCap: "round", interactive: false }).addTo(map);
+    drawn.getElement()?.setAttribute("pathLength", "1");
+
+    const between = (from: number, to: number) => {
+      const n = LOOP.length;
+      const ia = LOOP.indexOf(from);
+      const forward = (LOOP.indexOf(to) - ia + n) % n;
+      const out: L.Point[] = [];
+      if (forward <= n - forward) {
+        for (let s = 0; s < forward; s += 1) out.push(...segs[(ia + s) % n].slice(s ? 1 : 0));
+      } else {
+        for (let s = 0; s < n - forward; s += 1) out.push(...[...segs[(ia - 1 - s + n) % n]].reverse().slice(s ? 1 : 0));
+      }
+      return out;
+    };
+
+    // ---- landmarks, pins, trolley ---------------------------------------------
+    LANDMARKS.forEach((lm, index) =>
+      L.marker([lm.lat, lm.lon], {
+        icon: L.divIcon({ className: "sm-lm", html: landmarkHtml(lm, index), iconSize: [0, 0] }),
+        interactive: false,
+        keyboard: false,
+        zIndexOffset: -1000,
+      }).addTo(map),
+    );
 
     markers.current = STORES.map((store, index) => {
       const marker = L.marker(points[index], {
@@ -104,67 +240,151 @@ export function StoreMap({
       return marker;
     });
 
-    cart.current = L.marker(points[0], {
-      icon: L.divIcon({ className: "sm-cart", html: CART_HTML, iconSize: [40, 40], iconAnchor: [20, 20] }),
+    const start = compact ? LOOP[0] : (previous.current ?? 0);
+    const cart = L.marker(points[start], {
+      icon: L.divIcon({ className: "sm-cart", html: `<div class="cart" data-dir="r" data-in>${CART_SVG}</div>`, iconSize: [0, 0] }),
       interactive: false,
       keyboard: false,
-      zIndexOffset: 2000,
+      zIndexOffset: 3000,
     }).addTo(map);
+    const driver = makeDriver(map, cart);
+    const hop = (index: number) => {
+      const pin = markers.current[index]?.getElement();
+      if (!pin) return;
+      pin.classList.remove("hop");
+      void pin.offsetWidth;
+      pin.classList.add("hop");
+    };
 
+    // Home: the trolley does the rounds, ducking into each shop for a moment.
+    let k = 0;
+    const lap = () => {
+      const seg = segs[k];
+      const len = seg[0].distanceTo(seg[seg.length - 1]);
+      driver.drive(seg, Math.max(1600, len / 0.36), () => {
+        k = (k + 1) % LOOP.length;
+        hop(LOOP[k]);
+        cart.getElement()?.querySelector(".cart")?.setAttribute("data-in", "");
+        driver.pause(1100, lap);
+      });
+    };
+
+    // Everything drops in the first time the map is on screen; the trolley only runs while it is.
+    let seen = false;
+    let visible = false;
+    const sync = () => driver.setRunning(visible && !document.hidden);
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible && !seen) {
+          seen = true;
+          box.dataset.live = "";
+          if (compact && !reduce) window.setTimeout(lap, 1900);
+        }
+        sync();
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(box);
+    document.addEventListener("visibilitychange", sync);
+
+    // Zoomed far out, the small landmarks and their captions would pile up.
+    const crowd = () => box.toggleAttribute("data-far", map.getZoom() < 13.4);
+    map.on("zoomend", crowd);
+
+    // The home map always shows the whole loop, so refit it when its box changes size.
+    let refit = 0;
+    let lastWidth = box.clientWidth;
+    const ro = new ResizeObserver(() => {
+      if (box.clientWidth === lastWidth) return;
+      lastWidth = box.clientWidth;
+      window.clearTimeout(refit);
+      refit = window.setTimeout(() => {
+        map.invalidateSize();
+        if (compact) overview();
+      }, 120);
+    });
+    ro.observe(box);
+
+    api.current = { driver, between, at: (index) => P[index], overview: () => overview(true) };
     mapRef.current = map;
-    const settle = window.setTimeout(() => map.invalidateSize(), 80);
+    const settle = window.setTimeout(() => {
+      map.invalidateSize();
+      overview();
+      crowd();
+    }, 80);
     return () => {
       window.clearTimeout(settle);
-      cancelAnimationFrame(frame.current);
+      window.clearTimeout(refit);
+      ro.disconnect();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+      driver.stop();
       map.remove();
       mapRef.current = null;
       markers.current = [];
+      api.current = null;
     };
-  }, []);
+  }, [compact]);
 
-  // Follow the selection: highlight the pin, send the cart over, fly the camera.
+  // Follow the selection: light the pin, drive the trolley round the loop, then close in.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    const tools = api.current;
+    if (!map || !tools) return;
     markers.current.forEach((marker, index) => {
       marker.getElement()?.classList.toggle("active", index === active);
       marker.setZIndexOffset(index === active ? 1000 : 0);
     });
     const from = previous.current;
     previous.current = active;
-    if (active === null) return;
+    if (active === null || compact) return;
 
     const target = L.latLng(STORES[active].lat, STORES[active].lon);
-    const animate = !reduced();
-    map.flyTo(target, 14.5, { animate, duration: 1.3, easeLinearity: 0.2 });
+    const cartEl = () => map.getContainer().querySelector(".sm-cart .cart");
+    // Park the store a little up and right of centre, clear of the detail card.
+    const closeIn = () => {
+      const wideMap = map.getSize().x > 760;
+      const centre = map.unproject(map.project(target, 14.75).add([wideMap ? -150 : 0, wideMap ? 70 : 110]), 14.75);
+      map.flyTo(centre, 14.75, { animate: !reduced(), duration: 1.1 });
+    };
 
-    const cartMarker = cart.current;
-    if (animate && cartMarker && from !== null && from !== active) {
-      const a = L.latLng(STORES[from].lat, STORES[from].lon);
-      const start = performance.now();
-      const ms = 1300;
-      cartMarker.setLatLng(a);
-      cartMarker.getElement()?.classList.add("go");
-      cancelAnimationFrame(frame.current);
-      const step = (now: number) => {
-        const t = Math.min(1, (now - start) / ms);
-        const k = ease(t);
-        cartMarker.setLatLng([a.lat + (target.lat - a.lat) * k, a.lng + (target.lng - a.lng) * k]);
-        if (t < 1) frame.current = requestAnimationFrame(step);
-        else cartMarker.getElement()?.classList.remove("go");
-      };
-      frame.current = requestAnimationFrame(step);
+    if (reduced() || from === null) {
+      tools.driver.place(tools.at(active));
+      if (from !== null) closeIn();
+      return;
     }
-  }, [active]);
 
-  const overview = () => {
-    const map = mapRef.current;
-    if (!map) return;
-    map.flyToBounds(L.latLngBounds(STORES.map((store) => L.latLng(store.lat, store.lon))), {
-      padding: [70, 70],
-      duration: 1.1,
+    const me = fromMe.current;
+    fromMe.current = null;
+    const path = me ? [map.project(me, Z), tools.at(active)] : from === active ? [] : tools.between(from, active);
+    if (path.length < 2) {
+      closeIn();
+      return;
+    }
+    let length = 0;
+    for (let i = 1; i < path.length; i += 1) length += path[i].distanceTo(path[i - 1]);
+    const bounds = L.latLngBounds(path.map((p) => map.unproject(p, Z)));
+    const wideMap = map.getSize().x > 760;
+    map.flyToBounds(bounds, {
+      paddingTopLeft: [70, 110],
+      paddingBottomRight: [wideMap ? 140 : 70, wideMap ? 220 : 240],
+      maxZoom: 15,
+      duration: 0.9,
     });
-  };
+    tools.driver.setRunning(true);
+    tools.driver.drive(path, Math.min(2600, Math.max(1500, length / 0.55)), () => {
+      cartEl()?.setAttribute("data-in", "");
+      const pin = markers.current[active]?.getElement();
+      pin?.classList.remove("hop");
+      void pin?.offsetWidth;
+      pin?.classList.add("hop");
+      closeIn();
+    });
+  }, [active, compact]);
+
+  const hot = (index: number | null) =>
+    markers.current.forEach((marker, i) => marker.getElement()?.classList.toggle("hot", i === index));
 
   const locate = () => {
     if (!navigator.geolocation) {
@@ -184,16 +404,25 @@ export function StoreMap({
           }
         });
         const map = mapRef.current;
-        if (map) {
-          me.current?.remove();
-          me.current = L.circleMarker([coords.latitude, coords.longitude], {
-            className: "me",
-            radius: 8,
-            color: "#fff",
-            weight: 3,
-            fillColor: "#2f80ed",
-            fillOpacity: 1,
+        const here = L.latLng(coords.latitude, coords.longitude);
+        me.current?.remove();
+        meLine.current?.remove();
+        if (map && bestKm < 40) {
+          me.current = L.marker(here, {
+            icon: L.divIcon({ className: "sm-me", html: '<div class="me-pin"><i></i><span>You</span></div>', iconSize: [0, 0] }),
+            interactive: false,
+            keyboard: false,
+            zIndexOffset: 2500,
           }).addTo(map);
+          meLine.current = L.polyline([here, L.latLng(STORES[best].lat, STORES[best].lon)], {
+            className: "me-line",
+            color: "#6bb8ff",
+            weight: 3,
+            dashArray: "2 9",
+            lineCap: "round",
+            interactive: false,
+          }).addTo(map);
+          fromMe.current = here;
         }
         setNear({ status: "ok", index: best, km: bestKm });
         onSelect(best);
@@ -216,7 +445,7 @@ export function StoreMap({
   const step = (direction: number) => onSelect(((active ?? 0) + direction + STORES.length) % STORES.length);
 
   return (
-    <div className={`finder ${variant}`}>
+    <div className={`finder ${variant}`} ref={wrap}>
       <div className="finder-stage">
         <div
           ref={node}
@@ -224,19 +453,25 @@ export function StoreMap({
           role="region"
           aria-label="Map of the four Cheaper Buy Miles stores in inner Melbourne"
         />
+        <svg className="finder-compass" viewBox="0 0 44 44" aria-hidden="true">
+          <circle cx="22" cy="22" r="20" />
+          <g className="needle">
+            <path d="M22 9l4.5 13h-9z" />
+            <path d="M22 35l-4.5-13h9z" />
+          </g>
+          <text x="22" y="7.6">N</text>
+        </svg>
 
-        {variant === "full" ? (
+        {variant === "full" && (
           <>
             <div className="finder-top left">
-              <Glass className="fglass" radius={26}>
-                <button className="locate" type="button" onClick={locate} disabled={near.status === "loading"}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="3.5" />
-                    <path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" />
-                  </svg>
-                  {near.status === "loading" ? "Locating…" : "Find my nearest"}
-                </button>
-              </Glass>
+              <button className="locate" type="button" onClick={locate} disabled={near.status === "loading"}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="3.5" />
+                  <path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" />
+                </svg>
+                {near.status === "loading" ? "Locating…" : "Find my nearest"}
+              </button>
               {near.status === "error" && <p className="finder-note">{near.message}</p>}
               {near.status === "ok" && (
                 <p className="finder-note ok">
@@ -245,21 +480,22 @@ export function StoreMap({
               )}
             </div>
             <div className="finder-top right">
-              <Glass className="fglass zoom" radius={26}>
+              <div className="zoom">
                 <button type="button" aria-label="Zoom in" onClick={() => mapRef.current?.zoomIn()}>
                   +
                 </button>
                 <button type="button" aria-label="Zoom out" onClick={() => mapRef.current?.zoomOut()}>
                   −
                 </button>
-                <button type="button" className="all" aria-label="Show all stores" onClick={overview}>
+                <button type="button" className="all" aria-label="Show all stores" onClick={() => api.current?.overview()}>
                   All
                 </button>
-              </Glass>
+              </div>
             </div>
 
             {store && (
-              <Glass className="finder-card" radius={30} style={{ "--c": store.color } as CSSProperties}>
+              <article className="finder-card" style={{ "--c": store.color } as CSSProperties} aria-live="polite">
+                <span className="fc-awning" key={`aw-${store.id}`} aria-hidden="true" />
                 <div className="fc" key={store.id}>
                   <div className="fc-photo">
                     <img src={store.src} alt={`${store.name} storefront`} style={{ objectPosition: store.pos }} />
@@ -275,6 +511,9 @@ export function StoreMap({
                     <div className="fc-actions">
                       <a className="fc-primary" href={directionsLink(store)} target="_blank" rel="noreferrer">
                         Directions
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M7 17L17 7M8 7h9v9" />
+                        </svg>
                       </a>
                       <a href={`tel:${store.phone.replaceAll(" ", "")}`}>{store.phone}</a>
                     </div>
@@ -293,22 +532,51 @@ export function StoreMap({
                   </div>
                 </div>
                 <p className="fc-near">
-                  Next closest: <b>{others[0].other.name}</b> · {formatKm(others[0].km)}
+                  Next closest: <b>{others[0].other.name}</b> · {formatKm(others[0].km)} away
                 </p>
-              </Glass>
+              </article>
             )}
           </>
-        ) : (
-          onOpenFinder && (
-            <button className="finder-open" type="button" onClick={onOpenFinder}>
+        )}
+      </div>
+
+      {compact && (
+        <div className="flegend">
+          <p className={`flegend-head${status.open ? " open" : ""}`}>
+            <i /> All four {status.open ? "open now" : "closed right now"}
+          </p>
+          <ol>
+            {STORES.map((item, index) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  style={{ "--c": item.color } as CSSProperties}
+                  onPointerEnter={() => hot(index)}
+                  onPointerLeave={() => hot(null)}
+                  onFocus={() => hot(index)}
+                  onBlur={() => hot(null)}
+                  onClick={() => onSelect(index)}
+                >
+                  <span className="fl-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(item.glyph) }} />
+                  <span className="fl-text">
+                    <b>{item.name}</b>
+                    <small>{item.address.split(",")[0]}</small>
+                  </span>
+                  <span className="fl-num">0{index + 1}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          {onOpenFinder && (
+            <button className="flegend-cta" type="button" onClick={onOpenFinder}>
               Open the store finder
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 12h15M13 6l6 6-6 6" />
               </svg>
             </button>
-          )
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {variant === "full" && (
         <ul className="finder-chips">

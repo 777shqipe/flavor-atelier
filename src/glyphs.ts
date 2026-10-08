@@ -8,6 +8,7 @@ const GLYPH: Record<Glyph, string> = {
   tram: '<rect x="5" y="5" width="14" height="12.5" rx="3"/><path d="M5 11h14M9 2.5l3 2.5 3-2.5M8 21l1.5-3.5M16 21l-1.5-3.5"/><circle cx="9" cy="14.2" r=".6"/><circle cx="15" cy="14.2" r=".6"/>',
 };
 
-export const glyphSvg = (glyph: Glyph) =>
-  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPH[glyph]}</svg>`;
+/** `attrs` lets the glyph be nested inside another SVG (x, y, width, height, color). */
+export const glyphSvg = (glyph: Glyph, attrs = "") =>
+  `<svg ${attrs} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPH[glyph]}</svg>`;
 

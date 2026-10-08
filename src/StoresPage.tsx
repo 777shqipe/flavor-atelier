@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
-import { Glass } from "./Glass";
 import { glyphSvg } from "./glyphs";
+import { bow, bowControl, type XY } from "./mapArt";
 import { RingBadge } from "./RingBadge";
 import { StoreMap } from "./StoreMap";
 import { ROUTE, STORES, directionsLink } from "./stores";
@@ -13,30 +13,120 @@ const arrow = (direction: "left" | "right") => (
   </svg>
 );
 
-/** The four shops as dots on a tiny schematic of the loop; the selected one pulses. */
-function MiniMap({ active }: { active: number }) {
-  const W = 168;
-  const H = 118;
-  const pad = 22;
-  const lats = STORES.map((store) => store.lat);
-  const lons = STORES.map((store) => store.lon);
+/* ---------- mini map: the loop as a schematic, with a trolley that rides it ---------- */
+const MW = 184;
+const MH = 126;
+const MINI = (() => {
+  const pad = 24;
+  const cbd = { lat: -37.8136, lon: 144.9631 };
+  const lats = [...STORES.map((store) => store.lat), cbd.lat];
+  const lons = [...STORES.map((store) => store.lon), cbd.lon];
   const [minLat, maxLat] = [Math.min(...lats), Math.max(...lats)];
   const [minLon, maxLon] = [Math.min(...lons), Math.max(...lons)];
-  const points = STORES.map((store) => ({
-    x: pad + ((store.lon - minLon) / (maxLon - minLon)) * (W - pad * 2),
-    y: pad + ((maxLat - store.lat) / (maxLat - minLat)) * (H - pad * 2),
-  }));
-  const route = ROUTE.map((index) => `${points[index].x},${points[index].y}`).join(" ");
+  const at = (lat: number, lon: number) => ({
+    x: pad + ((lon - minLon) / (maxLon - minLon)) * (MW - pad * 2),
+    y: pad + 4 + ((maxLat - lat) / (maxLat - minLat)) * (MH - pad * 2 - 8),
+  });
+  const points = STORES.map((store) => at(store.lat, store.lon));
+  const centre = { x: points.reduce((s, p) => s + p.x, 0) / 4, y: points.reduce((s, p) => s + p.y, 0) / 4 };
+  const loop = ROUTE.slice(0, -1);
+  let d = `M${points[loop[0]].x.toFixed(1)} ${points[loop[0]].y.toFixed(1)}`;
+  const samples: XY[] = [];
+  const startAt: number[] = [];
+  loop.forEach((from, k) => {
+    const to = loop[(k + 1) % loop.length];
+    const c = bowControl(points[from], points[to], centre, 0.17);
+    d += `Q${c.x.toFixed(1)} ${c.y.toFixed(1)} ${points[to].x.toFixed(1)} ${points[to].y.toFixed(1)}`;
+    startAt[from] = k ? samples.length - 1 : 0;
+    samples.push(...bow(points[from], points[to], centre, 0.17, 24).slice(k ? 1 : 0));
+  });
+  // samples[0] is repeated as the last point, so the loop closes.
+  const cum = [0];
+  for (let i = 1; i < samples.length; i += 1) {
+    cum.push(cum[i - 1] + Math.hypot(samples[i].x - samples[i - 1].x, samples[i].y - samples[i - 1].y));
+  }
+  const total = cum[cum.length - 1];
+  const point = (dist: number) => {
+    const s = ((dist % total) + total) % total;
+    let i = 1;
+    while (i < cum.length - 1 && cum[i] < s) i += 1;
+    const k = (s - cum[i - 1]) / (cum[i] - cum[i - 1] || 1);
+    return { x: samples[i - 1].x + (samples[i].x - samples[i - 1].x) * k, y: samples[i - 1].y + (samples[i].y - samples[i - 1].y) * k };
+  };
+  return { d: `${d}Z`, points, cbd: at(cbd.lat, cbd.lon), stop: STORES.map((_, i) => cum[startAt[i]]), total, point };
+})();
+
+function MiniMap({ active }: { active: number }) {
+  const cart = useRef<SVGGElement>(null);
+  const pos = useRef(MINI.stop[active]);
+
+  // The trolley takes the shorter way round the loop to the new store.
+  useEffect(() => {
+    const el = cart.current;
+    if (!el) return;
+    const from = pos.current;
+    let delta = (MINI.stop[active] - (from % MINI.total) + MINI.total) % MINI.total;
+    if (delta > MINI.total / 2) delta -= MINI.total;
+    const put = (dist: number) => {
+      const p = MINI.point(dist);
+      el.setAttribute("transform", `translate(${p.x.toFixed(2)} ${p.y.toFixed(2)})`);
+    };
+    if (!delta || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      pos.current = from + delta;
+      put(pos.current);
+      return;
+    }
+    const t0 = performance.now();
+    const ms = 500 + Math.abs(delta) * 6;
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - t0) / ms);
+      const k = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      pos.current = from + delta * k;
+      put(pos.current);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active]);
 
   return (
-    <svg className="mini-map" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${STORES[active].name} on the map of our four stores`}>
-      <polyline points={route} className="mini-route" />
-      {points.map((point, index) => (
-        <g key={STORES[index].id} className={index === active ? "on" : undefined} style={{ "--c": STORES[index].color } as CSSProperties}>
-          {index === active && <circle className="mini-ping" cx={point.x} cy={point.y} r="7" />}
-          <circle className="mini-dot" cx={point.x} cy={point.y} r={index === active ? 7 : 4.5} />
+    <svg className="mini-map" viewBox={`0 0 ${MW} ${MH}`} role="img" aria-label={`${STORES[active].name} on the map of our four stores`}>
+      <defs>
+        <pattern id="mini-grid" width="9" height="9" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r="0.8" fill="rgb(246 240 219 / 0.12)" />
+        </pattern>
+      </defs>
+      <rect width={MW} height={MH} fill="url(#mini-grid)" />
+      <path className="mini-route-glow" d={MINI.d} />
+      <path className="mini-route" d={MINI.d} />
+      <g className="mini-cbd" transform={`translate(${MINI.cbd.x} ${MINI.cbd.y})`}>
+        <path d="M-7 4V-3h4v-6h4v3h3V4z" />
+        <text y="13">CBD</text>
+      </g>
+      {MINI.points.map((point, index) => (
+        <g
+          key={STORES[index].id}
+          className={`mini-stop${index === active ? " on" : ""}`}
+          transform={`translate(${point.x.toFixed(1)} ${point.y.toFixed(1)})`}
+          style={{ "--c": STORES[index].color } as CSSProperties}
+        >
+          {index === active && <circle className="mini-ping" r="9" />}
+          <circle className="mini-dot" r={index === active ? 9.5 : 7} />
+          <g
+            className="mini-glyph"
+            dangerouslySetInnerHTML={{
+              __html: glyphSvg(STORES[index].glyph, `x="${index === active ? -6.5 : -4.8}" y="${index === active ? -6.5 : -4.8}" width="${index === active ? 13 : 9.6}" height="${index === active ? 13 : 9.6}"`),
+            }}
+          />
         </g>
       ))}
+      <g ref={cart} className="mini-cart">
+        <g transform="translate(-7 -17)">
+          <rect x="-1" y="-1" width="16" height="12" rx="6" />
+          <path d="M2.5 3h1.4l1.3 4.6h5.4l1-3.6H4.6" />
+        </g>
+      </g>
     </svg>
   );
 }
@@ -169,23 +259,19 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                   draggable={false}
                 />
               ))}
-              <Glass className="sh-chip" style={{ "--glass-tint": "rgb(0 40 30 / 0.42)" } as CSSProperties}>
-                <span className="chip-inner">
-                  <span className="sc-glyph" style={{ "--c": store.color } as CSSProperties} dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
-                  Store 0{active + 1} · {store.name}
-                </span>
-              </Glass>
+              <span className="sh-chip" key={`chip-${store.id}`}>
+                <span className="sc-glyph" style={{ "--c": store.color } as CSSProperties} dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
+                Store 0{active + 1} · {store.name}
+              </span>
               <button className="round-btn sh-arrow prev" type="button" onClick={() => go(-1)} aria-label="Previous store">
                 {arrow("left")}
               </button>
               <button className="round-btn sh-arrow next" type="button" onClick={() => go(1)} aria-label="Next store">
                 {arrow("right")}
               </button>
-              <Glass className="sh-mini" radius={22} style={{ "--glass-tint": "rgb(0 40 30 / 0.42)" } as CSSProperties}>
-                <div className="mini-inner">
-                  <MiniMap active={active} />
-                </div>
-              </Glass>
+              <div className="sh-mini">
+                <MiniMap active={active} />
+              </div>
             </div>
             <RingBadge className="sh-badge" text="OPEN 7 DAYS • FIGHT FOOD WASTE •" center="7" label="Open seven days a week" />
           </div>

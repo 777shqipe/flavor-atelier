@@ -115,6 +115,8 @@ export function Header({
 }) {
   const [stuck, setStuck] = useState(false);
   const [open, setOpen] = useState(false);
+  // Touch screens wide enough for the full nav cannot hover the compact bar open, so they tap to peek.
+  const [peek, setPeek] = useState(false);
   const [hot, setHot] = useState<Page | null>(null);
   const nav = useRef<HTMLElement>(null);
   const { tag, to } = useTag();
@@ -144,7 +146,9 @@ export function Header({
     let frame = 0;
     const sample = () => {
       frame = 0;
-      setStuck(window.scrollY > 40);
+      const down = window.scrollY > 80;
+      setStuck(down);
+      if (!down) setPeek(false);
     };
     const request = () => {
       if (!frame) frame = requestAnimationFrame(sample);
@@ -167,6 +171,7 @@ export function Header({
 
   const go = (next: Page) => {
     setOpen(false);
+    setPeek(false);
     onNavigate(next);
   };
   const point = (id: Page, el: HTMLElement) => {
@@ -175,43 +180,59 @@ export function Header({
   };
 
   return (
-    <header className="hd" data-stuck={stuck || undefined} data-open={open || undefined}>
+    <header className="hd" data-stuck={stuck || undefined} data-open={open || undefined} data-peek={peek || undefined}>
       <div className="bar">
         <div className="bar-row">
           <Logo onClick={() => go("home")} />
 
-          <nav className="nav" ref={nav} aria-label="Main navigation" onPointerLeave={restTag}>
-            <span className="price-tag" ref={tag} aria-hidden="true">
-              <i className="price-tag-hole" />
-              <svg className="price-tag-string" viewBox="0 0 30 30">
-                <path d="M27 24C20 22 14 14 12 8S5 1 1 3" />
-              </svg>
-            </span>
-            {LINKS.map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                aria-label={label}
-                aria-current={page === id ? "page" : undefined}
-                data-lit={(hot ?? page) === id || undefined}
-                onClick={() => go(id)}
-                onPointerEnter={(event) => point(id, event.currentTarget)}
-                onFocus={(event) => point(id, event.currentTarget)}
-                onBlur={restTag}
-              >
-                <Roll text={label} />
-              </button>
-            ))}
-          </nav>
+          {/* Scrolled down, this folds away and the bar is just the logo and the name. */}
+          <div className="bar-more">
+            <div className="bar-more-in">
+              <nav className="nav" ref={nav} aria-label="Main navigation" onPointerLeave={restTag}>
+                <span className="price-tag" ref={tag} aria-hidden="true">
+                  <i className="price-tag-hole" />
+                  <svg className="price-tag-string" viewBox="0 0 30 30">
+                    <path d="M27 24C20 22 14 14 12 8S5 1 1 3" />
+                  </svg>
+                </span>
+                {LINKS.map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-label={label}
+                    aria-current={page === id ? "page" : undefined}
+                    data-lit={(hot ?? page) === id || undefined}
+                    onClick={() => go(id)}
+                    onPointerEnter={(event) => point(id, event.currentTarget)}
+                    onFocus={(event) => point(id, event.currentTarget)}
+                    onBlur={restTag}
+                  >
+                    <Roll text={label} />
+                  </button>
+                ))}
+              </nav>
 
-          <button className="cta" type="button" onClick={onContact}>
-            <Roll text="Contact us" />
-            <span className="sr-only">Contact us</span>
-            <span className="cta-arrow" aria-hidden="true">
-              <svg viewBox="0 0 16 16">
-                <path d="M3 8h10M9 4l4 4-4 4" />
-              </svg>
-            </span>
+              <button className="cta" type="button" onClick={onContact}>
+                <Roll text="Contact us" />
+                <span className="sr-only">Contact us</span>
+                <span className="cta-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 16 16">
+                    <path d="M3 8h10M9 4l4 4-4 4" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <button
+            className="peek-btn"
+            type="button"
+            aria-label={peek ? "Hide navigation" : "Show navigation"}
+            aria-expanded={peek}
+            onClick={() => setPeek((value) => !value)}
+          >
+            <i />
+            <i />
           </button>
 
           <button

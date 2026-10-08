@@ -45,14 +45,18 @@ export function Receipt() {
   const root = useRef<HTMLElement>(null);
   const paper = useRef<HTMLDivElement>(null);
   const fit = useRef<HTMLDivElement>(null);
+  const roll = useRef<HTMLSpanElement>(null);
   const [printed, setPrinted] = useState(0);
   const [phase, setPhase] = useState<"idle" | "printing" | "done">("idle");
+  // Each new line pops a "saved" tag out of the printer; n keys the animation.
+  const [pop, setPop] = useState<{ n: number; text: string } | null>(null);
 
   useEffect(() => {
     const el = root.current;
     const pp = paper.current;
     const box = fit.current;
-    if (!el || !pp || !box) return;
+    const spool = roll.current;
+    if (!el || !pp || !box || !spool) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const wide = window.matchMedia("(min-width: 900px)");
     let height = 0;
@@ -79,9 +83,16 @@ export function Receipt() {
       // Feed in small steps, like a thermal printer's stepper motor.
       const fed = Math.round((t * height) / 6) * 6;
       pp.style.translate = `0 ${Math.max(0, height - fed)}px`;
+      // The roll in the window turns as paper leaves it, and gets a little thinner.
+      spool.style.setProperty("--turn", `${(fed * 1.4).toFixed(0)}deg`);
+      spool.style.setProperty("--left", (1 - t * 0.22).toFixed(3));
       let n = 0;
       for (const end of rowEnds) if (end <= fed) n += 1;
       if (n !== count) {
+        if (n > count && count >= 0 && n > 0) {
+          const line = LINES[n - 1];
+          setPop({ n, text: `$${money(line.was - line.price)}` });
+        }
         count = n;
         setPrinted(n);
       }
@@ -148,7 +159,17 @@ export function Receipt() {
   const shown = LINES.slice(0, printed);
   const saved = shown.reduce((sum, line) => sum + line.was - line.price, 0);
   const kept = shown.reduce((sum, line) => sum + line.kg, 0);
-  const lcd = phase === "done" ? `SAVED $${money(RRP - PAID)}` : phase === "printing" ? "PRINTING…" : "READY";
+  // Two-line customer display: what was just rung up, then the running saving.
+  const latest = shown[shown.length - 1];
+  const lcd: [string, string] =
+    phase === "done"
+      ? ["THANK YOU", `SAVED $${money(RRP - PAID)}`]
+      : phase === "printing"
+        ? latest
+          ? [latest.name, `${money(latest.price)}  WAS ${money(latest.was)}`]
+          : ["PRINTING", "PLEASE WAIT"]
+        : ["READY", "SCAN A BASKET"];
+  const pressed = printed % 9;
 
   return (
     <section className="rcpt" ref={root} data-surface="green" data-phase={phase} aria-labelledby="rcpt-title">
@@ -258,17 +279,40 @@ export function Receipt() {
               </div>
             </div>
             <div className="register" aria-hidden="true">
-              <span className="reg-slot" />
+              {/* top deck: the slot, a warm glow while the head prints, the serrated tear bar */}
+              <div className="reg-top">
+                <span className="reg-mouth" />
+              </div>
+              <span className="reg-heat" />
+              <span className="reg-cutter">
+                <i className="reg-blade" />
+              </span>
               <div className="reg-face">
-                <LogoMark className="reg-logo" />
-                <span className="reg-lcd">{lcd}</span>
-                <span className="reg-keys">
-                  <i />
-                  <i />
+                <span className="reg-roll" ref={roll}>
                   <i />
                 </span>
+                <span className="reg-lcd">
+                  <span key={`a-${lcd[0]}`}>{lcd[0]}</span>
+                  <span key={`b-${lcd[1]}`}>{lcd[1]}</span>
+                </span>
+                <span className="reg-pad">
+                  {Array.from({ length: 9 }, (_, i) => (
+                    <i key={i === pressed && printed ? `p${printed}` : i} data-on={(i === pressed && printed > 0) || undefined} />
+                  ))}
+                </span>
+              </div>
+              <div className="reg-foot">
+                <LogoMark className="reg-logo" />
+                <span>CBM · till 02 · thermal</span>
+                <i className="reg-led" />
               </div>
             </div>
+            {pop && phase !== "idle" && (
+              <span className="r-pop" key={pop.n} aria-hidden="true">
+                <small>Saved</small>
+                {pop.text}
+              </span>
+            )}
           </div>
         </div>
       </div>
