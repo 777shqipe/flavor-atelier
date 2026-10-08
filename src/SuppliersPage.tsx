@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { Clip } from "./ContactPanel";
 import { ImpactArt, MinArt, PayArt, SecondArt, SpeedArt, TrackArt } from "./SupplierArt";
 import { TruckScene } from "./TruckScene";
-import { CATEGORIES } from "./products";
-import { Stamp } from "./Stamp";
 import "./suppliers.css";
 
 const STEPS = [
@@ -133,31 +132,13 @@ function Bento() {
   );
 }
 
-const volumeLabel = (v: number) => (v < 34 ? "A few pallets" : v < 67 ? "Half a truck" : "A full truckload");
-
-function QuoteForm() {
-  const [values, setValues] = useState({ name: "", company: "", email: "", message: "" });
-  const [cats, setCats] = useState<string[]>([]);
-  const [volume, setVolume] = useState(30);
-  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
-  const [sent, setSent] = useState<string | null>(null);
-
-  const set = (key: keyof typeof values) => (event: { target: { value: string } }) =>
-    setValues((current) => ({ ...current, [key]: event.target.value }));
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    const next: typeof errors = {};
-    if (!values.name.trim()) next.name = "Tell us who we’re talking to.";
-    if (!/^\S+@\S+\.\S+$/.test(values.email)) next.email = "That email doesn’t look right.";
-    setErrors(next);
-    if (Object.keys(next).length) return;
-    // TODO: POST the enquiry to a real endpoint. Nothing is sent from here yet.
-    setSent(values.name.trim().split(" ")[0]);
-  };
-
-  const filled = Math.max(1, Math.round((volume / 100) * 12));
-
+/** The page ends on a docket you can't miss. Clicking it opens the contact panel. */
+function QuoteCta({ onContact }: { onContact: () => void }) {
+  const rows: Array<[string, string]> = [
+    ["From", "Your company"],
+    ["On the pallet", "Drinks, snacks"],
+    ["How much", "Half a truck"],
+  ];
   return (
     <section className="quote" id="contact" data-surface="green" aria-labelledby="quote-title">
       <div className="quote-copy rv">
@@ -174,90 +155,51 @@ function QuoteForm() {
             </li>
           ))}
         </ul>
+        <button className="button quote-open" type="button" onClick={onContact}>
+          Fill in a docket
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 12h15M13 6l6 6-6 6" />
+          </svg>
+        </button>
       </div>
 
-      <div className="quote-card rv" data-surface="cream" style={{ "--rv": "120ms" } as CSSProperties}>
-        {sent ? (
-          <div className="sent" role="status">
-            <Stamp on text="Received" sub="Surplus rescue in progress" tone="green" className="sent-stamp" />
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <circle cx="32" cy="32" r="28" />
-              <path d="M19 33l9 9 17-19" />
-            </svg>
-            <h3>Thanks, {sent}.</h3>
-            <p>Your enquiry is noted. Our buying team will be in touch.</p>
-            <button className="button outline" type="button" onClick={() => setSent(null)}>
-              Send another
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={submit} noValidate>
-            <div className="row2">
-              <label>
-                Name
-                <input type="text" value={values.name} onChange={set("name")} placeholder="Your name" autoComplete="name" aria-invalid={!!errors.name} />
-                {errors.name && <em>{errors.name}</em>}
-              </label>
-              <label>
-                Company
-                <input type="text" value={values.company} onChange={set("company")} placeholder="Company (optional)" autoComplete="organization" />
-              </label>
-            </div>
-            <label>
-              Email address
-              <input type="email" value={values.email} onChange={set("email")} placeholder="you@company.com" autoComplete="email" aria-invalid={!!errors.email} />
-              {errors.email && <em>{errors.email}</em>}
-            </label>
-
-            <fieldset>
-              <legend>What are you moving?</legend>
-              <div className="pick">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    aria-pressed={cats.includes(cat.id)}
-                    style={{ "--c": cat.color } as CSSProperties}
-                    onClick={() => setCats((current) => (current.includes(cat.id) ? current.filter((id) => id !== cat.id) : [...current, cat.id]))}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-
-            <div className="volume">
-              <label htmlFor="volume">
-                How much?
-                <b>{volumeLabel(volume)}</b>
-              </label>
-              <div className="pallet-row" aria-hidden="true">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <i key={i} data-on={i < filled || undefined} style={{ "--k": i } as CSSProperties} />
-                ))}
-              </div>
-              <input id="volume" type="range" min={0} max={100} value={volume} onChange={(event) => setVolume(Number(event.target.value))} aria-valuetext={volumeLabel(volume)} />
-            </div>
-
-            <label>
-              Anything else?
-              <textarea value={values.message} onChange={set("message")} placeholder="Tell us about your surplus stock" />
-            </label>
-            <button className="button dark send" type="submit">
-              Send enquiry
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 12h15M13 6l6 6-6 6" />
+      <button className="qd rv" type="button" onClick={onContact} style={{ "--rv": "140ms" } as CSSProperties}>
+        <span className="sr-only">Open the supplier docket</span>
+        <span className="qd-board" aria-hidden="true">
+          <Clip className="qd-clip" />
+          <span className="qd-sheet">
+            <span className="qd-head">
+              <b>Docket</b>
+              <small>Nº ____</small>
+            </span>
+            <span className="qd-to">
+              To <b>Buying team</b>
+            </span>
+            {rows.map(([label, value], i) => (
+              <span key={label} className="qd-row" style={{ "--i": i } as CSSProperties}>
+                <small>{label}</small>
+                <i>{value}</i>
+              </span>
+            ))}
+            <span className="qd-crates">
+              {Array.from({ length: 12 }, (_, i) => (
+                <i key={i} data-on={i < 6 || undefined} style={{ "--k": i } as CSSProperties} />
+              ))}
+            </span>
+            <span className="qd-go">
+              Your turn
+              <svg viewBox="0 0 16 16">
+                <path d="M3 8h10M9 4l4 4-4 4" />
               </svg>
-            </button>
-          </form>
-        )}
-      </div>
+            </span>
+          </span>
+        </span>
+      </button>
     </section>
   );
 }
 
-export function SuppliersPage() {
-  const toForm = () => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+export function SuppliersPage({ onContact }: { onContact: () => void }) {
 
   return (
     <main>
@@ -273,7 +215,7 @@ export function SuppliersPage() {
             </h1>
             <p className="lead">Fast decisions, flexible volumes and a better outcome for good food.</p>
             <div className="hero-actions">
-              <button className="button cream" type="button" onClick={toForm}>
+              <button className="button cream" type="button" onClick={onContact}>
                 Get a quote
               </button>
               <a className="text-link" href="#how" onClick={(event) => {
@@ -305,7 +247,7 @@ export function SuppliersPage() {
 
       <HowItWorks />
       <Bento />
-      <QuoteForm />
+      <QuoteCta onContact={onContact} />
     </main>
   );
 }

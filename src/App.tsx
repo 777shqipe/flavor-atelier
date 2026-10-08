@@ -1,7 +1,8 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { AboutPage } from "./AboutPage";
 import { BinPile } from "./BinPile";
+import { ContactPanel, type Topic } from "./ContactPanel";
 import { Flyer } from "./Flyer";
 import { Header, type Page } from "./Header";
 import { Hero } from "./Hero";
@@ -111,7 +112,7 @@ function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; o
   );
 }
 
-function Footer({ onNavigate }: { onNavigate: (page: Page) => void }) {
+function Footer({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onContact: () => void }) {
   return (
     <footer data-surface="deep">
       <BinPile />
@@ -129,6 +130,7 @@ function Footer({ onNavigate }: { onNavigate: (page: Page) => void }) {
           <button type="button" onClick={() => onNavigate("stores")}>Our stores</button>
           <button type="button" onClick={() => onNavigate("about")}>About us</button>
           <button type="button" onClick={() => onNavigate("suppliers")}>Suppliers</button>
+          <button type="button" onClick={onContact}>Contact us</button>
         </nav>
         <div>
           <p className="footer-label">Follow the bargains</p>
@@ -155,6 +157,10 @@ export default function App() {
   useReveal(page);
 
   const [swap, setSwap] = useState<Swap | null>(null);
+  const [contact, setContact] = useState<{ open: boolean; topic: Topic }>(() => ({
+    open: window.location.hash === "#contact",
+    topic: window.location.hash === "#contact" ? "stock" : "shop",
+  }));
 
   // Changing page goes through the sticker swap; same page (or reduced motion) just jumps.
   const go = (nextPage: Page, anchor?: string) => {
@@ -172,7 +178,10 @@ export default function App() {
     setSwap({ to: nextPage, anchor, n: Date.now() });
   };
   const navigate = (nextPage: Page) => go(nextPage);
-  const openContact = () => go("suppliers", "contact");
+  // Contact is a side panel over whatever page you are on. From Suppliers it opens on surplus stock.
+  const openContact = (topic?: Topic) =>
+    setContact((c) => ({ open: true, topic: topic ?? (page === "suppliers" ? "stock" : c.topic) }));
+  const closeContact = useCallback(() => setContact((c) => ({ ...c, open: false })), []);
   const cover = (next: Swap) => {
     flushSync(() => setPage(next.to));
     const target = next.anchor ? document.getElementById(next.anchor) : null;
@@ -182,23 +191,30 @@ export default function App() {
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
-    if (hash === "contact") window.setTimeout(() => document.getElementById("contact")?.scrollIntoView(), 80);
     if (hash === "map" || hash === "in-store") {
       window.setTimeout(() => document.getElementById(hash)?.scrollIntoView(), 60);
     }
   }, []);
 
   return (
-    <div className="app-shell">
-      <Header page={page} onNavigate={navigate} onContact={openContact} />
-      <div key={page} className="page-in">
-        {page === "home" && <Home onNavigate={navigate} onOpenStore={setStore} />}
-        {page === "stores" && <StoresPage active={store} onSelect={setStore} />}
-        {page === "about" && <AboutPage />}
-        {page === "suppliers" && <SuppliersPage />}
+    <>
+      <div className="app-shell" inert={contact.open}>
+        <Header page={page} onNavigate={navigate} onContact={() => openContact()} />
+        <div key={page} className="page-in">
+          {page === "home" && <Home onNavigate={navigate} onOpenStore={setStore} />}
+          {page === "stores" && <StoresPage active={store} onSelect={setStore} />}
+          {page === "about" && <AboutPage />}
+          {page === "suppliers" && <SuppliersPage onContact={() => openContact("stock")} />}
+        </div>
+        <Footer onNavigate={navigate} onContact={() => openContact()} />
+        <PageSwap swap={swap} onCover={cover} onDone={() => setSwap(null)} />
       </div>
-      <Footer onNavigate={navigate} />
-      <PageSwap swap={swap} onCover={cover} onDone={() => setSwap(null)} />
-    </div>
+      <ContactPanel
+        open={contact.open}
+        topic={contact.topic}
+        onTopic={(topic) => setContact((c) => ({ ...c, topic }))}
+        onClose={closeContact}
+      />
+    </>
   );
 }
