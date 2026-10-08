@@ -1,0 +1,115 @@
+/* Design tokens. Brand colours are sampled from the original Figma export:
+   green #005842, cream #f6f0db, off-white #fefcf7, sage #9cad9b, ink #27342f. */
+
+:root {
+  /* brand */
+  --green: #005842;
+  --green-700: #004734;
+  --green-900: #00382a;
+  --sage: #9cad9b;
+  --sage-200: #c9d6c8;
+  --cream: #f6f0db;
+  --cream-200: #ebe3c4;
+  --paper: #fefcf7;
+  --ink: #27342f;
+  --ink-soft: #55655e;
+
+  /* legacy names, kept until every stylesheet is migrated */
+  --green-dark: var(--green-700);
+  --green-deep: var(--green-900);
+  --green-soft: var(--sage);
+  --cream-deep: var(--cream-200);
+
+  /* campaign accents: only for the "pop" sections (posters, flyer, stickers) */
+  --sun: #f6b531;
+  --tomato: #e3261b;
+  --orange: #ff9a3d;
+  --lilac: #a98bf3;
+  --sky: #6bb8ff;
+  --mint: #6fd3b0;
+
+  /* semantic roles, flipped by [data-surface] */
+  --bg: var(--cream);
+  --fg: var(--green);
+  --fg-body: var(--ink);
+  --line: rgb(0 88 66 / 0.18);
+  --eyebrow: var(--green);
+
+  /* type */
+  --font-serif: "Libre Caslon Display", Georgia, serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-display: "Anton", "Arial Narrow", sans-serif;
+  --font-fun: "Bagel Fat One", "Arial Rounded MT Bold", sans-serif;
+  --font-cond: "Barlow Condensed", "Arial Narrow", sans-serif;
+
+  --fs-display: clamp(52px, 6.3vw, 100px);
+  --fs-h2: clamp(40px, 4.8vw, 76px);
+  --fs-h3: clamp(26px, 2.4vw, 36px);
+  --fs-lead: clamp(17px, 1.3vw, 19px);
+  --fs-body: 16px;
+  --fs-small: 14px;
+  --fs-eyebrow: 12px;
+
+  /* space */
+  --pad: clamp(22px, 6vw, 96px);
+  --section-y: clamp(80px, 10vw, 136px);
+  --gap-1: 8px;
+  --gap-2: 16px;
+  --gap-3: 24px;
+  --gap-4: 40px;
+
+  /* shape + depth */
+  --r-1: 12px;
+  --r-2: 20px;
+  --r-3: 32px;
+  --shadow-1: 0 1px 2px rgb(0 40 30 / 0.08), 0 8px 18px -12px rgb(0 40 30 / 0.3);
+  --shadow-2: 0 22px 44px -26px rgb(0 40 30 / 0.5);
+  --shadow-3: 0 40px 70px -34px rgb(0 20 14 / 0.7);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring: cubic-bezier(0.34, 1.3, 0.5, 1);
+  --bounce: cubic-bezier(0.34, 1.56, 0.5, 1);
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --spring: linear(0, 0.006, 0.025 2.2%, 0.101 4.5%, 0.539 12.3%, 0.719 16.4%, 0.839 20.7%, 0.929 25.1%, 0.992 30.1%, 1.027 36%, 1.044 41.6%, 1.047 46.7%, 1.034 56.2%, 1.014 66.5%, 1.003 78.2%, 1);
+    --bounce: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.077 22.1%, 1.121 25%, 1.149 27.9%, 1.159 30.9%, 1.154 34.4%, 1.129 38.2%, 1.051 45.3%, 1.017 49.5%, 0.991 54.2%, 0.977 59.5%, 0.974 65.4%, 0.987 75%, 1);
+  }
+}
+
+/* Surfaces: every section declares which one it is, and text follows. */
+[data-surface="green"] {
+  --eyebrow: var(--sage-200);
+  --bg: var(--green);
+  --fg: var(--cream);
+  --fg-body: #dbe6d9;
+  --line: rgb(246 240 219 / 0.22);
+  background: var(--bg);
+  color: var(--fg);
+}
+[data-surface="deep"] {
+  --eyebrow: var(--sage-200);
+  --bg: var(--green-900);
+  --fg: var(--cream);
+  --fg-body: #cfdccc;
+  --line: rgb(246 240 219 / 0.2);
+  background: var(--bg);
+  color: var(--fg);
+}
+[data-surface="cream"] {
+  --bg: var(--cream);
+  --fg: var(--green);
+  --fg-body: var(--ink);
+  --line: rgb(0 88 66 / 0.18);
+  background: var(--bg);
+  color: var(--fg);
+}
+[data-surface="paper"] {
+  --bg: var(--paper);
+  --fg: var(--green);
+  --fg-body: var(--ink);
+  --line: rgb(0 88 66 / 0.14);
+  background: var(--bg);
+  color: var(--fg);
+}

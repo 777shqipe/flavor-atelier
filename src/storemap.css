@@ -1,0 +1,314 @@
+/* Store finder: custom pins (one drawing per store), animated dashed route,
+   a cart that drives between stores, and glass controls over the map. */
+
+.finder { --glass-shadow: rgb(0 56 42 / 0.4); color: var(--green-900); }
+.finder-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--r-3);
+  background: #dfe7dd;
+  box-shadow: var(--shadow-3);
+}
+.finder-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 450;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(0 88 66 / 0.16), inset 0 0 90px rgb(0 56 42 / 0.2);
+  pointer-events: none;
+}
+.finder-map { width: 100%; height: clamp(480px, 66vh, 660px); font-family: var(--font-sans); background: #dfe7dd; }
+.finder.compact .finder-map { height: clamp(380px, 54vh, 520px); }
+/* Pull the stock street tiles towards the brand greens and creams. */
+.finder-map .leaflet-tile-pane { filter: saturate(0.5) sepia(0.28) hue-rotate(-14deg) contrast(0.96) brightness(1.04); }
+.finder-map .leaflet-control-attribution {
+  margin: 0;
+  padding: 3px 9px;
+  border-radius: 10px 0 0 0;
+  background: rgb(246 240 219 / 0.82);
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+.finder-map .leaflet-control-attribution a { color: inherit; }
+
+/* ---------- pins ------------------------------------------------------ */
+.sm-marker { width: 0; height: 0; outline: 0; }
+.pin {
+  position: absolute;
+  left: -23px;
+  top: -55.5px;
+  width: 46px;
+  height: 46px;
+  transform-origin: 23px 55.5px;
+  transition: scale 0.6s var(--spring);
+  animation: pin-in 0.9s var(--bounce) both;
+  animation-delay: calc(var(--i) * 130ms + 250ms);
+}
+@keyframes pin-in { from { translate: 0 -64px; opacity: 0; } }
+.sm-marker:hover .pin { scale: 1.12; }
+.sm-marker.active .pin { scale: 1.34; }
+.pin-body {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background: var(--c);
+  box-shadow: 0 12px 18px -6px rgb(0 40 30 / 0.55);
+  rotate: -45deg;
+}
+.pin-glyph { display: grid; width: 26px; height: 26px; color: var(--green-900); rotate: 45deg; }
+.pin-glyph svg { width: 100%; height: 100%; }
+.pin-pulse {
+  position: absolute;
+  left: 50%;
+  top: 55.5px;
+  width: 58px;
+  height: 28px;
+  margin: -14px 0 0 -29px;
+  border-radius: 50%;
+  background: var(--c);
+  opacity: 0;
+}
+.sm-marker.active .pin-pulse { animation: ground-pulse 1.9s ease-out infinite; }
+@keyframes ground-pulse { 0% { scale: 0.3; opacity: 0.75; } 100% { scale: 1.7; opacity: 0; } }
+.pin-tag {
+  position: absolute;
+  left: 50%;
+  top: 64px;
+  padding: 6px 12px 5px;
+  border-radius: 99px;
+  background: var(--green-900);
+  color: var(--cream);
+  font: 700 12px / 1 var(--font-sans);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  opacity: 0;
+  translate: -50% 4px;
+  transition: opacity 0.25s, translate 0.4s var(--spring);
+  pointer-events: none;
+}
+.sm-marker:hover .pin-tag,
+.sm-marker.active .pin-tag,
+.sm-marker:focus-visible .pin-tag { opacity: 1; translate: -50% 0; }
+.sm-marker:focus-visible .pin-body { outline: 3px solid var(--green-900); outline-offset: 3px; }
+
+/* ---------- route + cart + you-are-here ------------------------------ */
+.leaflet-overlay-pane path.route { animation: march 0.9s linear infinite; }
+@keyframes march { to { stroke-dashoffset: -11; } }
+.sm-cart { pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+.sm-cart.go { opacity: 1; }
+.cart-dot {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--green-900);
+  color: var(--cream);
+  box-shadow: 0 0 0 3px #fff, 0 10px 16px -4px rgb(0 0 0 / 0.5);
+}
+.sm-cart.go .cart-dot { animation: bob 0.3s ease-in-out infinite alternate; }
+@keyframes bob { to { translate: 0 -4px; rotate: 6deg; } }
+.cart-dot svg { width: 24px; height: 24px; }
+.leaflet-overlay-pane path.me { animation: me-pulse 2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes me-pulse { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: 0.4; } }
+
+/* ---------- controls -------------------------------------------------- */
+.finder-top { position: absolute; top: 16px; z-index: 500; display: grid; gap: 8px; justify-items: start; }
+.finder-top.left { left: 16px; }
+.finder-top.right { right: 16px; justify-items: end; }
+.finder .fglass { --glass-tint: rgb(255 255 255 / 0.42); }
+.locate {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 48px;
+  padding: 0 22px 0 17px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--green-900);
+  font: 700 14px / 1 var(--font-sans);
+  cursor: pointer;
+}
+.locate:disabled { opacity: 0.6; cursor: progress; }
+.locate svg, .fc-nav svg, .finder-open svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.zoom { display: grid; width: 52px; padding: 6px; }
+.zoom button {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--green-900);
+  font: 500 24px / 1 var(--font-sans);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.zoom button:hover { background: rgb(255 255 255 / 0.6); }
+.zoom .all { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+.finder button:focus-visible, .finder a:focus-visible { outline: 2px solid var(--green-900); outline-offset: 2px; }
+.finder-note {
+  max-width: 260px;
+  margin: 0;
+  padding: 9px 14px;
+  border-radius: 14px;
+  background: var(--green-900);
+  color: var(--cream);
+  font: 600 13px / 1.35 var(--font-sans);
+  animation: fc-in 0.5s var(--spring);
+}
+.finder-note.ok { background: var(--green); }
+
+/* ---------- detail card ---------------------------------------------- */
+.finder .finder-card {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 500;
+  width: min(480px, calc(100% - 32px));
+  padding: 12px 14px 10px;
+  --glass-tint: rgb(255 255 255 / 0.6);
+  color: var(--green-900);
+}
+.fc { position: relative; z-index: 1; display: grid; grid-template-columns: 112px 1fr auto; gap: 16px; align-items: center; animation: fc-in 0.6s var(--spring); }
+@keyframes fc-in { from { opacity: 0; translate: 0 10px; } }
+.fc-photo { position: relative; width: 112px; aspect-ratio: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 0 0 3px #fff; }
+.fc-photo img { width: 100%; height: 100%; object-fit: cover; }
+.fc-badge {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2.5px solid #fff;
+  border-radius: 50%;
+  background: var(--c);
+  color: var(--green-900);
+}
+.fc-badge svg { width: 19px; height: 19px; }
+.fc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  color: #9a3a26;
+  font: 700 11.5px / 1 var(--font-sans);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.fc-status i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.fc-status.open { color: #0a7a4f; }
+.fc-status.open i { animation: live 1.8s ease-out infinite; }
+@keyframes live { 0% { box-shadow: 0 0 0 0 rgb(10 122 79 / 0.55); } 100% { box-shadow: 0 0 0 9px rgb(10 122 79 / 0); } }
+.fc-body h3 { font: 400 32px / 1 var(--font-serif); letter-spacing: -0.02em; }
+.fc-address { margin: 5px 0 0; font: 600 13.5px / 1.3 var(--font-sans); }
+.fc-line { margin: 3px 0 0; color: var(--ink-soft); font: italic 500 13px / 1.35 var(--font-sans); }
+.fc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 10px; }
+.fc-actions a { color: var(--green-900); font: 700 13px / 1 var(--font-sans); text-decoration: none; }
+.fc-actions a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.fc-actions .fc-primary { padding: 10px 17px; border-radius: 99px; background: var(--green); color: var(--cream); transition: translate 0.35s var(--spring); }
+.fc-actions .fc-primary:hover { translate: 0 -2px; text-decoration: none; }
+.fc-nav { display: grid; gap: 8px; }
+.fc-nav button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1.5px solid rgb(0 88 66 / 0.3);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.5);
+  color: var(--green-900);
+  cursor: pointer;
+  transition: background-color 0.2s, translate 0.35s var(--spring);
+}
+.fc-nav button:hover { background: #fff; translate: 0 -2px; }
+.fc-near { position: relative; z-index: 1; margin: 10px 2px 0; padding-top: 9px; border-top: 1px solid rgb(0 88 66 / 0.16); color: var(--ink-soft); font: 500 12.5px / 1.3 var(--font-sans); }
+.fc-near b { color: var(--green-900); }
+
+/* ---------- chips under the map -------------------------------------- */
+.finder-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 18px 0 0; padding: 0; list-style: none; }
+.finder-chips button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--paper);
+  color: var(--green-900);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.25s, border-color 0.25s, translate 0.4s var(--spring), box-shadow 0.3s;
+}
+.finder-chips button:hover { translate: 0 -3px; box-shadow: var(--shadow-1); }
+.finder-chips button[aria-pressed="true"] { border-color: transparent; background: var(--c); box-shadow: var(--shadow-1); }
+.chip-glyph { display: grid; flex: none; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--c); transition: background-color 0.25s; }
+.finder-chips button[aria-pressed="true"] .chip-glyph { background: #fff; }
+.chip-glyph svg { width: 23px; height: 23px; }
+.finder-chips b { display: block; font: 400 21px / 1 var(--font-serif); letter-spacing: -0.01em; }
+.finder-chips small { display: block; margin-top: 3px; color: var(--ink-soft); font: 500 12.5px / 1.2 var(--font-sans); }
+.finder-chips button[aria-pressed="true"] small { color: var(--green-900); }
+
+/* ---------- compact (home) ------------------------------------------- */
+.finder-open {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--cream);
+  font: 700 14px / 1 var(--font-sans);
+  cursor: pointer;
+  box-shadow: 0 18px 30px -14px rgb(0 40 30 / 0.7);
+  transition: translate 0.4s var(--spring);
+}
+.finder-open:hover { translate: 0 -3px; }
+
+@media (max-width: 900px) {
+  .finder-chips { grid-template-columns: 1fr 1fr; }
+  .finder .finder-card { left: 10px; right: 10px; bottom: 10px; width: auto; }
+  .fc { grid-template-columns: 84px 1fr; gap: 12px; }
+  .fc-photo { width: 84px; border-radius: 16px; }
+  .fc-nav { display: none; }
+  .fc-body h3 { font-size: 26px; }
+  .fc-line { display: none; }
+  .finder-top.left { top: 10px; left: 10px; }
+  .finder-top.right { top: 10px; right: 10px; }
+}
+@media (max-width: 520px) {
+  .finder-map { height: 560px; }
+  .finder-chips button { padding: 10px; gap: 9px; }
+  .chip-glyph { width: 36px; height: 36px; }
+  .finder-chips b { font-size: 18px; }
+  .locate { padding: 0 16px 0 13px; font-size: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin, .fc, .finder-note { animation: none; }
+  .leaflet-overlay-pane path.route, .sm-marker.active .pin-pulse, .fc-status.open i, .sm-cart.go .cart-dot { animation: none; }
+}
+
+.finder .finder-card.refract { backdrop-filter: var(--glass-filter) blur(9px) saturate(1.7) brightness(1.06); }
+.finder .fglass.refract { backdrop-filter: var(--glass-filter) blur(5px) saturate(1.7) brightness(1.06); }
