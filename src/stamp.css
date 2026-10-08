@@ -1,0 +1,42 @@
+/* Rubber stamp. Ink texture is a turbulence mask, so it reads as pressed, not printed. */
+
+.ink-stamp {
+  --stamp: #d42a1e;
+  --rot: -12deg;
+  position: absolute;
+  z-index: 5;
+  display: inline-grid;
+  pointer-events: none;
+  color: var(--stamp);
+  rotate: var(--rot);
+  opacity: 0;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3.4 0 0 0 2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 180px 180px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3.4 0 0 0 2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 180px 180px;
+}
+.ink-stamp[data-tone="green"] { --stamp: #0a6b4f; }
+.ink-stamp[data-tone="ink"] { --stamp: var(--ink); }
+.ink-stamp-in {
+  display: grid;
+  justify-items: center;
+  gap: 0.18em;
+  padding: 0.32em 0.55em 0.36em;
+  border: 0.11em solid currentColor;
+  border-radius: 0.22em;
+  outline: 0.045em solid currentColor;
+  outline-offset: -0.26em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ink-stamp b { font: 400 1em / 0.92 var(--font-display); letter-spacing: 0.05em; }
+.ink-stamp small { font: 700 0.22em / 1 var(--font-mono); letter-spacing: 0.16em; }
+.ink-stamp[data-on] { animation: ink-slam 0.55s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+@keyframes ink-slam {
+  0% { opacity: 0; scale: 2.4; rotate: calc(var(--rot) - 16deg); filter: blur(3px); }
+  45% { opacity: 1; scale: 0.92; rotate: var(--rot); filter: blur(0); }
+  70% { scale: 1.04; }
+  100% { opacity: 0.92; scale: 1; rotate: var(--rot); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ink-stamp[data-on] { animation: none; opacity: 0.92; }
+}

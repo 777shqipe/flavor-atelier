@@ -10,6 +10,19 @@ export type CatId =
 
 export type Shape = "bottle" | "can" | "cans" | "jar" | "box" | "bag" | "carton" | "tub" | "spray";
 
+/** Tight box around each pack, white border included, for callers that need the real footprint. */
+export const PACK_BOX: Record<Shape, [number, number, number, number]> = {
+  bottle: [19, 3, 62, 136],
+  can: [23, 9, 54, 124],
+  cans: [3, 15, 94, 122],
+  jar: [11, 7, 78, 130],
+  box: [15, 5, 70, 132],
+  bag: [9, 5, 82, 135],
+  carton: [21, 7, 58, 132],
+  tub: [9, 19, 82, 120],
+  spray: [21, 21, 58, 118],
+};
+
 export type Item = {
   id: string;
   name: string;

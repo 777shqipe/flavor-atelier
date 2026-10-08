@@ -1,5 +1,7 @@
 import { useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import { CartSvg } from "./CartSvg";
+import { DateCheck } from "./DateCheck";
+import { Odometer } from "./Odometer";
 import { useRoadDrive } from "./useRoadDrive";
 import "./about.css";
 import "./scenery.css";
@@ -84,23 +86,6 @@ const ERAS: Era[] = [
     tone: "dark",
   },
 ];
-
-/** Mechanical odometer: every digit is a strip that rolls to its new value. */
-function Odometer({ value }: { value: string }) {
-  return (
-    <div className="odo" role="img" aria-label={value}>
-      {[...value].map((digit, column) => (
-        <span className="odo-col" key={column} style={{ "--c": column } as CSSProperties}>
-          <span className="odo-strip" style={{ translate: `0 ${-Number(digit) * 10}%` }}>
-            {"0123456789".split("").map((n) => (
-              <i key={n}>{n}</i>
-            ))}
-          </span>
-        </span>
-      ))}
-    </div>
-  );
-}
 
 function Timeline() {
   const root = useRef<HTMLElement>(null);
@@ -308,6 +293,7 @@ export function AboutPage() {
       </section>
 
       <Timeline />
+      <DateCheck />
     </main>
   );
 }

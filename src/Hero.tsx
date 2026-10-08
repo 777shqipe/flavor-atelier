@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Page } from "./Header";
+import { Peel } from "./Peel";
 import { RingBadge } from "./RingBadge";
 import "./hero.css";
 
@@ -23,6 +24,13 @@ const STICKERS = [
   { id: "orange", cls: "k1", src: "/media/sanpellegrino-cut.webp", w: 723, h: 827, label: "Sanpellegrino Aranciata Rossa, $4" },
   { id: "ramen", cls: "k2", src: "/media/shin-cut.webp", w: 840, h: 899, label: "Shin Ramyun Black, $4" },
   { id: "choc", cls: "k3", src: "/media/milka-cut.webp", w: 822, h: 345, label: "Milka Biscoff, $2" },
+] as const;
+
+/** Markdown stickers, each stuck over the shelf price it beat. Peel one to see. */
+const BURSTS = [
+  { cls: "b1", price: "$4", note: "4 × 330ml", from: "br", rrp: "Ouch." },
+  { cls: "b2", price: "$4", note: "4 pack", from: "bl", rrp: "Yikes." },
+  { cls: "b3", price: "$2", note: "Limited", from: "tl", rrp: "Nope." },
 ] as const;
 
 const STATS = [
@@ -129,18 +137,27 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
             </button>
           ))}
 
-          <div className="hb b1" aria-hidden="true">
-            <strong>$4</strong>
-            <small>4 × 330ml</small>
-          </div>
-          <div className="hb b2" aria-hidden="true">
-            <strong>$4</strong>
-            <small>4 pack</small>
-          </div>
-          <div className="hb b3" aria-hidden="true">
-            <strong>$2</strong>
-            <small>Limited</small>
-          </div>
+          {BURSTS.map((b) => (
+            <div key={b.cls} className={`hb ${b.cls}`} aria-hidden="true">
+              <Peel
+                className="hb-peel"
+                from={b.from}
+                bleed={0.06}
+                back={{ clipPath: "var(--burst)" }}
+                under={
+                  <span className="hb-under">
+                    <small>RRP</small>
+                    <s>{b.rrp}</s>
+                  </span>
+                }
+              >
+                <i className="hb-rim" />
+                <i className="hb-fill" />
+                <strong>{b.price}</strong>
+                <small>{b.note}</small>
+              </Peel>
+            </div>
+          ))}
           <span className="tag t1 outlined" aria-hidden="true">
             New<br />every week
           </span>

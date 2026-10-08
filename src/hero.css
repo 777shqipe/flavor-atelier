@@ -79,11 +79,11 @@
 .stk.k3 { --d: 30; --r: -12deg; left: 20cqw; top: 61cqw; z-index: 5; width: 58cqw; }
 .stk.k3 img { animation-delay: -3.6s; }
 
+/* Price bursts are markdown stickers: hover lifts a corner, click peels it back
+   to the shelf price underneath. */
 .hb {
   position: absolute;
   z-index: 6;
-  display: grid;
-  place-content: center;
   width: var(--s);
   aspect-ratio: 1;
   color: #fff;
@@ -94,18 +94,37 @@
   transition: scale 0.9s var(--bounce) var(--e);
 }
 .hero:not([data-ready]) .hb { scale: 0; }
-.hb::before,
-.hb::after { content: ""; position: absolute; z-index: -1; clip-path: var(--burst); animation: hb-pulse 2.8s ease-in-out infinite alternate; }
-.hb::before { inset: -1.1cqw; background: #fff; }
-.hb::after { inset: 0; background: var(--tomato); }
+.hb-peel { position: absolute; inset: 0; animation: hb-pulse 2.8s ease-in-out infinite alternate; }
+.hb-peel:hover { animation-play-state: paused; }
+.hb-rim,
+.hb-fill { position: absolute; z-index: -1; clip-path: var(--burst); }
+.hb-rim { inset: -1.1cqw; background: #fff; }
+.hb-fill { inset: 0; background: var(--tomato); }
+.hb .peel-front { isolation: isolate; }
+.hb .peel-back { clip-path: var(--burst); }
 .hb strong { font: 400 7.2cqw / 0.9 var(--font-fun); text-shadow: 0.3cqw 0.35cqw 0 rgb(110 0 0 / 0.35); }
 .hb small { margin-top: 0.4cqw; font: 700 max(11px, 1.8cqw) / 1 var(--font-cond); letter-spacing: 0.05em; text-transform: uppercase; }
+.hb-under {
+  position: absolute;
+  inset: 17%;
+  display: grid;
+  place-content: center;
+  border-radius: 1.2cqw;
+  background:
+    repeating-linear-gradient(90deg, var(--ink) 0 0.25cqw, transparent 0 0.5cqw, var(--ink) 0 0.6cqw, transparent 0 1.1cqw) 50% 88% / 62% 12% no-repeat,
+    #fff;
+  box-shadow: inset 0 0 0 0.35cqw rgb(39 52 47 / 0.12);
+  color: var(--ink);
+  rotate: 7deg;
+}
+.hb-under small { font: 700 max(10px, 1.5cqw) / 1 var(--font-cond); letter-spacing: 0.14em; opacity: 0.7; }
+.hb-under s { margin-top: 0.3cqw; font: 400 4cqw / 1 var(--font-display); text-transform: uppercase; text-decoration: line-through 0.5cqw var(--tomato); }
 @keyframes hb-pulse { to { scale: 1.07; } }
 .hb.b1 { --s: 19cqw; --r: -10deg; --e: 900ms; left: 1cqw; top: 3cqw; }
 .hb.b2 { --s: 19cqw; --r: 9deg; --e: 1040ms; left: 80cqw; top: 40cqw; }
-.hb.b2::after { background: var(--green); }
+.hb.b2 .hb-fill { background: var(--green); }
 .hb.b3 { --s: 17cqw; --r: -6deg; --e: 1180ms; left: 79cqw; top: 70cqw; }
-.hb.b3::after { background: #7a4ce0; }
+.hb.b3 .hb-fill { background: #7a4ce0; }
 .tag { position: absolute; z-index: 7; left: 1cqw; top: 70cqw; rotate: -8deg; --r: 0.5cqw; --line: #fff; font: 400 5cqw / 0.95 var(--font-fun); color: var(--sun); text-transform: uppercase; transition: scale 0.9s var(--bounce) 1300ms; }
 .hero:not([data-ready]) .tag { scale: 0; }
 .hero-ring { top: -2cqw; right: -1cqw; z-index: 8; width: 21cqw; height: 21cqw; translate: calc(var(--mx, 0) * 10px) calc(var(--my, 0) * 10px); }
@@ -130,7 +149,7 @@
   .spark.s1 { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spark, .stk img, .hb::before, .hb::after, .ring-art { animation: none; }
+  .spark, .stk img, .hb-peel, .ring-art { animation: none; }
   .squiggle path { stroke-dashoffset: 0; }
   .marker::before { scale: 1 1; }
   .marker { color: var(--green-900); }

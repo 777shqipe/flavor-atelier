@@ -1,0 +1,277 @@
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { LogoMark } from "./Logo";
+import { Odometer } from "./Odometer";
+import { ITEMS } from "./products";
+import { Stamp } from "./Stamp";
+import "./receipt.css";
+
+/**
+ * "Every receipt is a rescue": a till receipt that prints as you scroll, one
+ * line per item, each with the reason it would have been binned elsewhere.
+ * The savings and the kilos kept out of landfill roll up as lines print, then
+ * the receipt is torn off and stamped. On narrow screens it prints by itself
+ * once it is in view.
+ */
+
+/** Why each item would have been thrown out somewhere else. Weights in kg. */
+const BASKET = [
+  { id: "popcorn", why: "New bag design. Same corn.", kg: 0.12 },
+  { id: "muesli", why: "Overstock. Crunch intact.", kg: 0.75 },
+  { id: "almonds", why: "Christmas stock, in March.", kg: 0.2 },
+  { id: "dumplings", why: "Dented box. Dumplings fine.", kg: 0.75 },
+  { id: "cheddar", why: "Wonky cut. Still sharp.", kg: 0.5 },
+  { id: "oil", why: "Old label. Same olives.", kg: 0.69 },
+] as const;
+
+const LINES = BASKET.flatMap((entry) => {
+  const item = ITEMS.find((candidate) => candidate.id === entry.id);
+  return item ? [{ ...entry, name: item.name, price: item.price, was: item.was ?? item.price }] : [];
+});
+
+const PAID = LINES.reduce((sum, line) => sum + line.price, 0);
+const RRP = LINES.reduce((sum, line) => sum + line.was, 0);
+const KG = LINES.reduce((sum, line) => sum + line.kg, 0);
+
+const NOW = new Date();
+const STAMP_DATE = `${String(NOW.getDate()).padStart(2, "0")}/${String(NOW.getMonth() + 1).padStart(2, "0")}/${String(NOW.getFullYear()).slice(2)}`;
+
+const money = (value: number) => value.toFixed(2);
+const clamp = (value: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, value));
+
+/** Thin and thick bars from a fixed pattern, so the barcode never changes between renders. */
+const BARS = "3112213121411312221321121131222113".split("").map(Number);
+
+export function Receipt() {
+  const root = useRef<HTMLElement>(null);
+  const paper = useRef<HTMLDivElement>(null);
+  const fit = useRef<HTMLDivElement>(null);
+  const [printed, setPrinted] = useState(0);
+  const [phase, setPhase] = useState<"idle" | "printing" | "done">("idle");
+
+  useEffect(() => {
+    const el = root.current;
+    const pp = paper.current;
+    const box = fit.current;
+    if (!el || !pp || !box) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const wide = window.matchMedia("(min-width: 900px)");
+    let height = 0;
+    let rowEnds: number[] = [];
+    let count = -1;
+    let state = "";
+    let frame = 0;
+    let clock = 0;
+    let started = 0;
+
+    const measure = () => {
+      height = pp.offsetHeight;
+      rowEnds = Array.from(pp.querySelectorAll<HTMLElement>(".r-item")).map((row) => row.offsetTop + row.offsetHeight);
+      // Scale the printer so the whole receipt fits the pinned stage.
+      // scrollHeight would count the paper still hidden in the printer, so add the parts up.
+      const room = (box.parentElement?.clientHeight ?? 0) - 12;
+      const need = height + (box.querySelector<HTMLElement>(".register")?.offsetHeight ?? 0) + 20;
+      const scale = el.dataset.mode === "scroll" && room && need > room ? room / need : 1;
+      box.style.setProperty("--fit", scale.toFixed(3));
+    };
+
+    const show = (progress: number) => {
+      const t = clamp(progress / 0.8);
+      // Feed in small steps, like a thermal printer's stepper motor.
+      const fed = Math.round((t * height) / 6) * 6;
+      pp.style.translate = `0 ${Math.max(0, height - fed)}px`;
+      let n = 0;
+      for (const end of rowEnds) if (end <= fed) n += 1;
+      if (n !== count) {
+        count = n;
+        setPrinted(n);
+      }
+      const next = progress >= 0.86 ? "done" : t > 0 ? "printing" : "idle";
+      if (next !== state) {
+        state = next;
+        setPhase(next as typeof phase);
+      }
+    };
+
+    const fromScroll = () => {
+      frame = 0;
+      const rect = el.getBoundingClientRect();
+      const travel = rect.height - window.innerHeight;
+      show(travel > 0 ? clamp(-rect.top / travel) : 1);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(fromScroll);
+    };
+
+    // Narrow screens: print on a clock once the receipt is in view.
+    const run = (now: number) => {
+      if (!started) started = now;
+      const p = clamp((now - started) / 5200);
+      show(p);
+      clock = p < 1 ? requestAnimationFrame(run) : 0;
+    };
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || el.dataset.mode !== "time" || started || clock) return;
+        clock = requestAnimationFrame(run);
+      },
+      { threshold: 0.35 },
+    );
+
+    const setMode = () => {
+      el.dataset.mode = reduce ? "still" : wide.matches ? "scroll" : "time";
+      measure();
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (el.dataset.mode === "scroll") fromScroll();
+        else if (el.dataset.mode === "still") show(1);
+        else show(started ? clamp((performance.now() - started) / 5200) : 0);
+      });
+    };
+
+    setMode();
+    io.observe(el);
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    wide.addEventListener("change", setMode);
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(clock);
+      io.disconnect();
+      ro.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      wide.removeEventListener("change", setMode);
+    };
+  }, []);
+
+  const shown = LINES.slice(0, printed);
+  const saved = shown.reduce((sum, line) => sum + line.was - line.price, 0);
+  const kept = shown.reduce((sum, line) => sum + line.kg, 0);
+  const lcd = phase === "done" ? `SAVED $${money(RRP - PAID)}` : phase === "printing" ? "PRINTING…" : "READY";
+
+  return (
+    <section className="rcpt" ref={root} data-surface="green" data-phase={phase} aria-labelledby="rcpt-title">
+      <div className="rcpt-pin">
+        <div className="rcpt-copy">
+          <p className="eyebrow">The bin vs. your basket</p>
+          <h2 id="rcpt-title">
+            Every receipt
+            <br />
+            is a{" "}
+            <span className="rcpt-hl">
+              rescue.
+              {/* circled in pen, the way a cashier marks your savings */}
+              <svg viewBox="0 0 300 120" preserveAspectRatio="none" aria-hidden="true">
+                <path
+                  pathLength="1"
+                  d="M262 22C214 4 98 2 42 24 4 40 2 84 46 100c58 20 170 18 222-4 34-15 30-52-6-70-30-15-96-20-150-14"
+                />
+              </svg>
+            </span>
+          </h2>
+          <p className="lead">
+            Overstock, pack changes, short dates, last season’s range. Good food the big chains won’t shelve. We buy
+            it, you pay less, and none of it ends up in landfill.
+          </p>
+          <dl className="rcpt-meters">
+            <div>
+              <dt>Saved on one basket</dt>
+              <dd>
+                <Odometer value={`$${money(saved).padStart(5, "0")}`} />
+              </dd>
+            </div>
+            <div>
+              <dt>Good food kept out of the bin</dt>
+              <dd>
+                <Odometer value={kept.toFixed(1)} />
+                <small>kg</small>
+              </dd>
+            </div>
+          </dl>
+          <p className="rcpt-note">A sample basket from this week’s flyer. Prices and weights are placeholders.</p>
+        </div>
+
+        <div className="rcpt-stage">
+          <div className="rcpt-fit" ref={fit}>
+            <div className="rcpt-window">
+              <div className="rcpt-tear">
+                <div className="paper" ref={paper}>
+                  <header className="r-head">
+                    <LogoMark className="r-logo" />
+                    <strong>Cheaper Buy Miles</strong>
+                    <span>Discount grocer · Melbourne</span>
+                  </header>
+                  <p className="r-row r-meta">
+                    <span>Tax invoice</span>
+                    <span>{STAMP_DATE} 10:24</span>
+                  </p>
+                  <p className="r-row r-meta">
+                    <span>Footscray · reg 02</span>
+                    <span>#001995</span>
+                  </p>
+                  <hr />
+                  {LINES.map((line) => (
+                    <div className="r-item" key={line.id}>
+                      <p className="r-row">
+                        <span>{line.name}</span>
+                        <span>{money(line.price)}</span>
+                      </p>
+                      <p className="r-row r-why">
+                        <span>↳ {line.why}</span>
+                        <s>{money(line.was)}</s>
+                      </p>
+                    </div>
+                  ))}
+                  <hr />
+                  <p className="r-row">
+                    <span>{LINES.length} items · RRP</span>
+                    <s>{money(RRP)}</s>
+                  </p>
+                  <p className="r-row">
+                    <span>You paid</span>
+                    <span>{money(PAID)}</span>
+                  </p>
+                  <p className="r-row r-total">
+                    <span>You saved</span>
+                    <span>${money(RRP - PAID)}</span>
+                  </p>
+                  <p className="r-row">
+                    <span>Kept out of landfill</span>
+                    <span>{KG.toFixed(1)} kg</span>
+                  </p>
+                  <p className="r-bar" aria-hidden="true">
+                    {"█".repeat(18)}
+                  </p>
+                  <hr />
+                  <div className="r-code" aria-hidden="true">
+                    {BARS.map((w, i) => (
+                      <i key={i} style={{ "--w": w, opacity: i % 2 ? 0 : 1 } as CSSProperties} />
+                    ))}
+                  </div>
+                  <p className="r-digits" aria-hidden="true">9 312345 019950</p>
+                  <p className="r-thanks">Thanks for rescuing.</p>
+                  <p className="r-small">Best before: whenever you’re back.</p>
+                  <p className="r-small">* * * customer copy * * *</p>
+                  <Stamp on={phase === "done"} text="Rescued" sub={`${KG.toFixed(1)} kg · not wasted`} className="r-stamp" />
+                </div>
+              </div>
+            </div>
+            <div className="register" aria-hidden="true">
+              <span className="reg-slot" />
+              <div className="reg-face">
+                <LogoMark className="reg-logo" />
+                <span className="reg-lcd">{lcd}</span>
+                <span className="reg-keys">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

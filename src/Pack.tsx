@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Shape } from "./products";
+import { PACK_BOX, type Shape } from "./products";
 
 /**
  * Generic illustrated packs for flyer items that have no photo yet. Flat colour,
@@ -121,10 +121,13 @@ export function Pack({
   shape,
   color,
   label,
+  tight = false,
 }: {
   shape: Shape;
   color: string;
   label: [string, string?];
+  /** crop the drawing to PACK_BOX instead of the shared 100×140 frame */
+  tight?: boolean;
 }) {
   const { parts, box } = SHAPES[shape](color, shade(color, -0.28));
   const lines = label.filter((line): line is string => Boolean(line));
@@ -133,7 +136,7 @@ export function Pack({
   const dark = shade(color, -0.55);
 
   return (
-    <svg viewBox="0 0 100 140" aria-hidden="true" focusable="false">
+    <svg viewBox={tight ? PACK_BOX[shape].join(" ") : "0 0 100 140"} aria-hidden="true" focusable="false">
       <g strokeLinejoin="round" strokeLinecap="round">
         <g fill="#fff" stroke="#fff" strokeWidth="10">
           {parts.filter((p) => p.outline !== false).map((p, i) => partEl(p, i, {}))}

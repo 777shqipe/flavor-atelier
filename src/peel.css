@@ -1,0 +1,22 @@
+/* Peelable sticker. The host class positions and sizes it; these layers fill it. */
+
+.peel {
+  --peel-back-a: #e4dcc6;
+  --peel-back-b: #fffdf5;
+  --peel-back-c: #b9ae90;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+}
+.peel:active { cursor: grabbing; }
+.peel-under,
+.peel-front,
+.peel-flap,
+.peel-flap-in { position: absolute; inset: 0; }
+.peel-front { display: grid; place-content: center; }
+.peel-flap {
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(calc(var(--lift, 0) * 3px) calc(var(--lift, 0) * 6px) calc(var(--lift, 0) * 5px) rgb(0 20 14 / 0.32));
+}
+.peel-flap-in { visibility: hidden; transform-origin: 0 0; }
+.peel-back { position: absolute; inset: 0; }

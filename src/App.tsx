@@ -1,8 +1,12 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { flushSync } from "react-dom";
 import { AboutPage } from "./AboutPage";
+import { BinPile } from "./BinPile";
 import { Flyer } from "./Flyer";
 import { Header, type Page } from "./Header";
 import { Hero } from "./Hero";
+import { PageSwap, type Swap } from "./PageSwap";
+import { Receipt } from "./Receipt";
 import { Showcase } from "./Showcase";
 import { StoreMap } from "./StoreMap";
 import { StoresPage } from "./StoresPage";
@@ -84,6 +88,8 @@ function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; o
 
       <Flyer />
 
+      <Receipt />
+
       <section className="home-map" id="map" data-surface="cream" aria-labelledby="map-title">
         <header className="section-head centered rv">
           <p className="eyebrow">Inner Melbourne</p>
@@ -108,6 +114,7 @@ function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; o
 function Footer({ onNavigate }: { onNavigate: (page: Page) => void }) {
   return (
     <footer data-surface="deep">
+      <BinPile />
       <div className="footer-main">
         <div>
           <p className="eyebrow">Cheaper Buy Miles</p>
@@ -147,15 +154,30 @@ export default function App() {
   const [store, setStore] = useState(0);
   useReveal(page);
 
-  const navigate = (nextPage: Page) => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-    setPage(nextPage);
+  const [swap, setSwap] = useState<Swap | null>(null);
+
+  // Changing page goes through the sticker swap; same page (or reduced motion) just jumps.
+  const go = (nextPage: Page, anchor?: string) => {
+    if (swap) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (nextPage === page || reduce) {
+      setPage(nextPage);
+      window.setTimeout(() => {
+        const target = anchor ? document.getElementById(anchor) : null;
+        if (target) target.scrollIntoView({ behavior: "smooth" });
+        else window.scrollTo({ top: 0, behavior: nextPage === page ? "smooth" : "instant" });
+      }, 40);
+      return;
+    }
+    setSwap({ to: nextPage, anchor, n: Date.now() });
   };
-  const openContact = () => {
-    setPage("suppliers");
-    window.setTimeout(() => {
-      document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-    }, 80);
+  const navigate = (nextPage: Page) => go(nextPage);
+  const openContact = () => go("suppliers", "contact");
+  const cover = (next: Swap) => {
+    flushSync(() => setPage(next.to));
+    const target = next.anchor ? document.getElementById(next.anchor) : null;
+    if (target) target.scrollIntoView({ behavior: "instant" });
+    else window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   useEffect(() => {
@@ -176,6 +198,7 @@ export default function App() {
         {page === "suppliers" && <SuppliersPage />}
       </div>
       <Footer onNavigate={navigate} />
+      <PageSwap swap={swap} onCover={cover} onDone={() => setSwap(null)} />
     </div>
   );
 }

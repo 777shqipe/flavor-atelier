@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type P
 import { ImpactArt, MinArt, PayArt, SecondArt, SpeedArt, TrackArt } from "./SupplierArt";
 import { TruckScene } from "./TruckScene";
 import { CATEGORIES } from "./products";
+import { Stamp } from "./Stamp";
 import "./suppliers.css";
 
 const STEPS = [
@@ -178,6 +179,7 @@ function QuoteForm() {
       <div className="quote-card rv" data-surface="cream" style={{ "--rv": "120ms" } as CSSProperties}>
         {sent ? (
           <div className="sent" role="status">
+            <Stamp on text="Received" sub="Surplus rescue in progress" tone="green" className="sent-stamp" />
             <svg viewBox="0 0 64 64" aria-hidden="true">
               <circle cx="32" cy="32" r="28" />
               <path d="M19 33l9 9 17-19" />

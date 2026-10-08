@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-import { Glass } from "./Glass";
 import { Logo } from "./Logo";
 import "./header.css";
 
@@ -12,34 +11,97 @@ const LINKS: Array<[Page, string]> = [
   ["suppliers", "Suppliers"],
 ];
 
-type Tone = "dark" | "light";
-const SURFACE_TONE: Record<string, Tone> = { green: "dark", deep: "dark", cream: "light", paper: "light" };
-
-/** What is under one point: the nearest section that declares a tone or a surface. */
-function toneAt(x: number, y: number): Tone | null {
-  for (const el of document.elementsFromPoint(x, y)) {
-    if (el.closest(".hd")) continue;
-    const host = el.closest<HTMLElement>("[data-tone], [data-surface]");
-    if (!host) continue;
-    const tone = host.dataset.tone ?? SURFACE_TONE[host.dataset.surface ?? ""];
-    if (tone === "dark" || tone === "light") return tone;
-  }
-  return null;
+/** Label whose letters roll up one after another on hover. */
+function Roll({ text }: { text: string }) {
+  return (
+    <span className="roll" aria-hidden="true">
+      {[...text].map((char, i) => {
+        const glyph = char === " " ? " " : char;
+        return (
+          <span key={i} className="roll-ch" data-c={glyph} style={{ "--i": i } as CSSProperties}>
+            {glyph}
+          </span>
+        );
+      })}
+    </span>
+  );
 }
 
-/** The capsule spans ~60px, so several points vote on whether it sits over light or dark. */
-function toneUnderHeader(current: Tone): Tone {
-  const cx = window.innerWidth / 2;
-  const points: Array<[number, number]> = [[cx, 22], [cx, 44], [cx, 66], [cx - 170, 44], [cx + 170, 44]];
-  let light = 0;
-  let dark = 0;
-  for (const [x, y] of points) {
-    const tone = toneAt(x, y);
-    if (tone === "light") light += 1;
-    else if (tone === "dark") dark += 1;
-  }
-  if (light === dark) return current;
-  return light > dark ? "light" : "dark";
+/**
+ * The active-page marker is a yellow price tag. It springs to whichever link
+ * is hovered or current, and swings on its punched hole while it travels.
+ */
+function useTag() {
+  const tag = useRef<HTMLSpanElement>(null);
+  const api = useRef<((el: HTMLElement | null) => void) | null>(null);
+
+  useEffect(() => {
+    const t = tag.current;
+    if (!t) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let x = 0;
+    let w = 0;
+    let vx = 0;
+    let vw = 0;
+    let a = 0;
+    let va = 0;
+    let tx = 0;
+    let tw = 0;
+    let raf = 0;
+    let last = 0;
+    let placed = false;
+
+    const paint = () => {
+      t.style.translate = `${x.toFixed(2)}px 0`;
+      t.style.width = `${w.toFixed(2)}px`;
+      t.style.rotate = `${a.toFixed(2)}deg`;
+    };
+    const tick = (now: number) => {
+      const dt = Math.min(0.032, (now - last) / 1000 || 0.016);
+      last = now;
+      vx += (420 * (tx - x) - 30 * vx) * dt;
+      vw += (420 * (tw - w) - 30 * vw) * dt;
+      x += vx * dt;
+      w += vw * dt;
+      // Swing: lean with the speed of travel, then wobble back to level.
+      const lean = Math.max(-11, Math.min(11, vx * 0.016));
+      va += (300 * (lean - a) - 13 * va) * dt;
+      a += va * dt;
+      paint();
+      const busy = Math.abs(tx - x) + Math.abs(tw - w) + Math.abs(vx) / 40 + Math.abs(a) + Math.abs(va) / 20 > 0.05;
+      raf = busy ? requestAnimationFrame(tick) : 0;
+      if (!busy) {
+        x = tx;
+        w = tw;
+        a = 0;
+        paint();
+      }
+    };
+
+    api.current = (el) => {
+      if (!el) return;
+      tx = el.offsetLeft;
+      tw = el.offsetWidth;
+      if (!placed || reduce) {
+        placed = true;
+        x = tx;
+        w = tw;
+        paint();
+        t.dataset.ready = "";
+        return;
+      }
+      if (!raf) {
+        last = performance.now();
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    return () => {
+      cancelAnimationFrame(raf);
+      api.current = null;
+    };
+  }, []);
+
+  return { tag, to: useCallback((el: HTMLElement | null) => api.current?.(el), []) };
 }
 
 export function Header({
@@ -51,73 +113,48 @@ export function Header({
   onNavigate: (page: Page) => void;
   onContact: () => void;
 }) {
-  const [tone, setTone] = useState<Tone>("dark");
   const [stuck, setStuck] = useState(false);
   const [open, setOpen] = useState(false);
-  const [lens, setLens] = useState<{ x: number; w: number } | null>(null);
-  const [lensReady, setLensReady] = useState(false);
-  const navRef = useRef<HTMLElement>(null);
-  const lensRef = useRef<HTMLSpanElement>(null);
-  const lastX = useRef<number | null>(null);
+  const [hot, setHot] = useState<Page | null>(null);
+  const nav = useRef<HTMLElement>(null);
+  const { tag, to } = useTag();
 
-  const moveLens = (el: HTMLElement | null) => {
-    if (el) setLens({ x: el.offsetLeft, w: el.offsetWidth });
+  const placeTag = useCallback(() => {
+    to(nav.current?.querySelector<HTMLElement>('[aria-current="page"]') ?? null);
+  }, [to]);
+  const restTag = () => {
+    setHot(null);
+    placeTag();
   };
-  const restLens = useCallback(() => {
-    moveLens(navRef.current?.querySelector<HTMLElement>('[aria-current="page"]') ?? null);
-  }, []);
 
   useLayoutEffect(() => {
-    restLens();
-  }, [page, restLens]);
+    placeTag();
+  }, [page, placeTag]);
 
   useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    const observer = new ResizeObserver(restLens);
-    observer.observe(nav);
-    document.fonts?.ready.then(restLens);
-    const frame = requestAnimationFrame(() => setLensReady(true));
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  }, [restLens]);
-
-  // The lens stretches while it travels, like a drop of liquid being pulled.
-  useEffect(() => {
-    const el = lensRef.current;
-    if (!el || !lens || !lensReady) return;
-    if (lastX.current !== null && lastX.current !== lens.x && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.animate(
-        [{ scale: "1 1" }, { scale: "1.16 0.88", offset: 0.35 }, { scale: "1 1" }],
-        { duration: 600, easing: "cubic-bezier(0.3, 0.7, 0.3, 1)" },
-      );
-    }
-    lastX.current = lens.x;
-  }, [lens, lensReady]);
+    const el = nav.current;
+    if (!el) return;
+    const ro = new ResizeObserver(placeTag);
+    ro.observe(el);
+    document.fonts?.ready.then(placeTag);
+    return () => ro.disconnect();
+  }, [placeTag]);
 
   useEffect(() => {
     let frame = 0;
     const sample = () => {
       frame = 0;
-      setStuck(window.scrollY > 24);
-      setTone((current) => toneUnderHeader(current));
+      setStuck(window.scrollY > 40);
     };
     const request = () => {
       if (!frame) frame = requestAnimationFrame(sample);
     };
-    const settle = window.setTimeout(sample, 80);
-    sample();
     window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request);
     return () => {
-      window.clearTimeout(settle);
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", request);
-      window.removeEventListener("resize", request);
     };
-  }, [page]);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -132,87 +169,106 @@ export function Header({
     setOpen(false);
     onNavigate(next);
   };
+  const point = (id: Page, el: HTMLElement) => {
+    setHot(id);
+    to(el);
+  };
 
   return (
-    <header className="hd" data-tone={tone} data-stuck={stuck || undefined} data-open={open || undefined}>
-      <Logo onClick={() => go("home")} />
+    <header className="hd" data-stuck={stuck || undefined} data-open={open || undefined}>
+      <div className="bar">
+        <div className="bar-row">
+          <Logo onClick={() => go("home")} />
 
-      <Glass className="nav-pill">
-        <nav ref={navRef} aria-label="Main navigation" onPointerLeave={restLens}>
-          <span
-            ref={lensRef}
-            className={`lens${lensReady && lens ? " ready" : ""}`}
-            style={lens ? { translate: `${lens.x}px 0`, width: lens.w } : undefined}
-            aria-hidden="true"
-          />
-          {LINKS.map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              aria-current={page === id ? "page" : undefined}
-              onClick={() => go(id)}
-              onPointerEnter={(event) => moveLens(event.currentTarget)}
-              onFocus={(event) => moveLens(event.currentTarget)}
-              onBlur={restLens}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
-      </Glass>
+          <nav className="nav" ref={nav} aria-label="Main navigation" onPointerLeave={restTag}>
+            <span className="price-tag" ref={tag} aria-hidden="true">
+              <i className="price-tag-hole" />
+              <svg className="price-tag-string" viewBox="0 0 30 30">
+                <path d="M27 24C20 22 14 14 12 8S5 1 1 3" />
+              </svg>
+            </span>
+            {LINKS.map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                aria-label={label}
+                aria-current={page === id ? "page" : undefined}
+                data-lit={(hot ?? page) === id || undefined}
+                onClick={() => go(id)}
+                onPointerEnter={(event) => point(id, event.currentTarget)}
+                onFocus={(event) => point(id, event.currentTarget)}
+                onBlur={restTag}
+              >
+                <Roll text={label} />
+              </button>
+            ))}
+          </nav>
 
-      <button className="cta" type="button" onClick={onContact}>
-        <span>Contact us</span>
-        <span className="cta-arrow" aria-hidden="true">
-          <svg viewBox="0 0 16 16">
-            <path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-      </button>
+          <button className="cta" type="button" onClick={onContact}>
+            <Roll text="Contact us" />
+            <span className="sr-only">Contact us</span>
+            <span className="cta-arrow" aria-hidden="true">
+              <svg viewBox="0 0 16 16">
+                <path d="M3 8h10M9 4l4 4-4 4" />
+              </svg>
+            </span>
+          </button>
 
-      <Glass className="menu-btn" radius={26}>
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((value) => !value)}
-        >
-          <span />
-          <span />
-        </button>
-      </Glass>
-
-      <Glass className="sheet" radius={30}>
-        <div id="mobile-menu" role="menu" aria-hidden={!open}>
-          {LINKS.map(([id, label], index) => (
-            <button
-              key={id}
-              type="button"
-              role="menuitem"
-              tabIndex={open ? 0 : -1}
-              aria-current={page === id ? "page" : undefined}
-              style={{ "--i": index } as CSSProperties}
-              onClick={() => go(id)}
-            >
-              {label}
-            </button>
-          ))}
           <button
-            className="sheet-cta"
+            className="menu-btn"
             type="button"
-            role="menuitem"
-            tabIndex={open ? 0 : -1}
-            style={{ "--i": LINKS.length } as CSSProperties}
-            onClick={() => {
-              setOpen(false);
-              onContact();
-            }}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            onClick={() => setOpen((value) => !value)}
           >
-            Contact us
+            <span className="menu-word">{open ? "Close" : "Menu"}</span>
+            <span className="burger" aria-hidden="true">
+              <i />
+              <i />
+            </span>
           </button>
         </div>
-      </Glass>
+
+        <div className="drawer" id="mobile-menu" aria-hidden={!open}>
+          <div className="drawer-in">
+            <nav aria-label="Mobile navigation">
+              {LINKS.map(([id, label], index) => (
+                <button
+                  key={id}
+                  type="button"
+                  tabIndex={open ? 0 : -1}
+                  aria-current={page === id ? "page" : undefined}
+                  style={{ "--i": index } as CSSProperties}
+                  onClick={() => go(id)}
+                >
+                  <small>0{index + 1}</small>
+                  <span>{label}</span>
+                  {page === id && <em>You’re here</em>}
+                </button>
+              ))}
+            </nav>
+            <button
+              className="drawer-cta"
+              type="button"
+              tabIndex={open ? 0 : -1}
+              style={{ "--i": LINKS.length } as CSSProperties}
+              onClick={() => {
+                setOpen(false);
+                onContact();
+              }}
+            >
+              Contact us
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" />
+              </svg>
+            </button>
+            <p className="drawer-foot" style={{ "--i": LINKS.length + 1 } as CSSProperties}>
+              Four stores across inner Melbourne
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="scrim" aria-hidden="true" onClick={() => setOpen(false)} />
     </header>
   );
 }

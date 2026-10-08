@@ -225,7 +225,9 @@
 .send { justify-self: end; gap: 12px; }
 .send svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: translate 0.4s var(--spring); }
 .send:hover svg { translate: 4px 0; }
-.sent { display: grid; justify-items: center; gap: 14px; padding: 36px 10px; text-align: center; animation: fade-up 0.6s var(--ease-out); }
+.sent { position: relative; display: grid; justify-items: center; gap: 14px; padding: 36px 10px; text-align: center; animation: fade-up 0.6s var(--ease-out); }
+.sent-stamp { top: 0; right: 0; font-size: clamp(26px, 3vw, 36px); --rot: 11deg; }
+.sent .sent-stamp[data-on] { animation-delay: 0.95s; }
 .sent svg { width: 88px; height: 88px; fill: none; stroke: var(--green); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
 .sent svg circle { stroke-dasharray: 176; stroke-dashoffset: 176; animation: draw 0.8s 0.1s var(--ease-out) forwards; }
 .sent svg path { stroke-dasharray: 50; stroke-dashoffset: 50; animation: draw 0.5s 0.7s var(--ease-out) forwards; }

@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { Pack } from "./Pack";
 import { CATEGORIES, ITEMS, type CatId, type Item } from "./products";
@@ -50,6 +50,65 @@ function CatIcon({ id }: { id: CatFilter }) {
   );
 }
 
+/**
+ * Coupon edge along the top of the flyer: a pair of scissors cuts along the
+ * dotted line as the section scrolls up into view.
+ */
+function CutLine() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.style.setProperty("--cut", "1");
+      return;
+    }
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const top = el.getBoundingClientRect().top;
+      const p = Math.min(1, Math.max(0, (window.innerHeight - top) / (window.innerHeight * 0.7)));
+      el.style.setProperty("--cut", p.toFixed(4));
+      // Blades open and close as they travel.
+      el.style.setProperty("--snip", Math.abs(Math.sin(p * 46)).toFixed(3));
+    };
+    const request = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", request);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", request);
+      window.removeEventListener("resize", request);
+    };
+  }, []);
+
+  return (
+    <div className="cut" ref={ref} aria-hidden="true">
+      <span className="cut-slit" />
+      <span className="cut-label">Cut along the line. Keep the savings.</span>
+      <svg className="scissors" viewBox="0 0 66 40">
+        <g className="blade up">
+          <path d="M28 15.5Q48 15 64 19.4L28 21.5Z" fill="#e4e8eb" stroke="#0f2a22" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M15 13L30 20" stroke="#0f2a22" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="10" cy="10" r="7" fill="none" stroke="#0f2a22" strokeWidth="7.4" />
+          <circle cx="10" cy="10" r="7" fill="none" stroke="#e3261b" strokeWidth="4.4" />
+        </g>
+        <g className="blade down">
+          <path d="M28 18.5L64 20.6Q48 25 28 24.5Z" fill="#c4cace" stroke="#0f2a22" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M15 27L30 20" stroke="#0f2a22" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="10" cy="30" r="7" fill="none" stroke="#0f2a22" strokeWidth="7.4" />
+          <circle cx="10" cy="30" r="7" fill="none" stroke="#e3261b" strokeWidth="4.4" />
+        </g>
+        <circle cx="30" cy="20" r="2.4" fill="#0f2a22" />
+      </svg>
+    </div>
+  );
+}
+
 function Price({ value }: { value: number }) {
   const whole = Math.floor(value);
   const cents = Math.round((value - whole) * 100);
@@ -67,6 +126,7 @@ function Deal({ item }: { item: Item }) {
   return (
     <article className="deal" style={{ "--c": COLOR[item.cat] } as CSSProperties}>
       <div className="deal-art">
+        <span className="deal-scan" aria-hidden="true" />
         {item.tag && (
           <span className="deal-tag" data-tag={item.tag}>
             {item.tag}
@@ -148,6 +208,7 @@ export function Flyer() {
 
   return (
     <section className="flyer" id="flyer" data-surface="cream" aria-labelledby="flyer-title">
+      <CutLine />
       <div className="flyer-head rv">
         <div>
           <p className="eyebrow">Every aisle, every week</p>
