@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Glass } from "./Glass";
 import type { Page } from "./Header";
 import { RingBadge } from "./RingBadge";
-import { useOpenStatus } from "./useOpenStatus";
 import "./hero.css";
 
 const LINES = [
@@ -36,7 +34,6 @@ const STATS = [
 export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
   const root = useRef<HTMLElement>(null);
   const [ready, setReady] = useState(false);
-  const status = useOpenStatus();
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => requestAnimationFrame(() => setReady(true)));
@@ -86,11 +83,7 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
 
       <div className="hero-grid">
         <div className="hero-copy">
-          <Glass className="hero-pill" style={{ "--glass-tint": "rgb(255 255 255 / 0.08)" } as CSSProperties}>
-            <span className="hero-pill-inner">
-              <i /> Melbourne’s favourite discount grocer
-            </span>
-          </Glass>
+          <p className="eyebrow">Melbourne’s favourite discount grocer</p>
 
           <h1 id="hero-title">
             {LINES.map((line, index) => (
@@ -113,15 +106,6 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
               </svg>
             </button>
           </div>
-
-          <Glass className="hero-open" style={{ "--glass-tint": "rgb(255 255 255 / 0.08)" } as CSSProperties}>
-            <button className={`hero-open-btn${status.open ? " open" : ""}`} type="button" onClick={() => onNavigate("stores")}>
-              <i /> {status.open ? "Open now" : status.label.replace("Closed · opens", "Opens")} <b>·</b> 4 stores across Melbourne
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 12h15M13 6l6 6-6 6" />
-              </svg>
-            </button>
-          </Glass>
         </div>
 
         <div className="hero-stage">

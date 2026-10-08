@@ -21,10 +21,6 @@
 @keyframes twinkle { from { scale: 0.7; opacity: 0.35; rotate: -12deg; } to { scale: 1.15; opacity: 1; rotate: 12deg; } }
 
 /* ---------- copy ------------------------------------------------------ */
-.hero-pill { display: inline-flex; height: 42px; margin-bottom: 22px; }
-.hero-pill-inner { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 10px; padding: 0 20px 0 16px; color: var(--cream); font: 700 11.5px / 1 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; }
-.hero-pill-inner i { width: 8px; height: 8px; border-radius: 50%; background: var(--sun); animation: sun-ping 2s ease-out infinite; }
-@keyframes sun-ping { 0% { box-shadow: 0 0 0 0 rgb(246 181 49 / 0.7); } 100% { box-shadow: 0 0 0 10px rgb(246 181 49 / 0); } }
 .hero h1 { max-width: none; font-size: clamp(56px, 6.9vw, 112px); line-height: 0.93; letter-spacing: -0.04em; }
 .hero-line { display: block; overflow: hidden; padding-bottom: 0.2em; margin-bottom: -0.2em; }
 .hero-line > span { display: block; animation: line-up 1s var(--ease-out) both; animation-delay: calc(var(--l) * 110ms + 150ms); }
@@ -37,20 +33,14 @@
 .marker::before { content: ""; position: absolute; inset: 0.14em -0.02em 0.02em; z-index: -1; border-radius: 0.1em; background: var(--sun); rotate: -1.2deg; scale: 0 1; transform-origin: left center; transition: scale 0.8s var(--ease-out) 1.15s; }
 .hero[data-ready] .marker { color: var(--green-900); }
 .hero[data-ready] .marker::before { scale: 1 1; }
+.hero-copy .eyebrow { margin-bottom: 20px; animation: fade-up 0.8s 0.05s var(--ease-out) both; }
 .hero .lead { max-width: 470px; margin: 24px 0 26px; animation: fade-up 0.9s 0.55s var(--ease-out) both; }
-.hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; animation: fade-up 0.9s 0.68s var(--ease-out) both; }
+.hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; animation: fade-up 0.9s 0.68s var(--ease-out) both; }
 .button.ghost { gap: 10px; background: transparent; color: var(--cream); box-shadow: inset 0 0 0 1.5px rgb(246 240 219 / 0.4); }
 .button.ghost:hover { background: rgb(246 240 219 / 0.12); box-shadow: inset 0 0 0 1.5px var(--cream); }
 .button.ghost svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: translate 0.4s var(--spring); }
 .button.ghost:hover svg { translate: 0 3px; }
-.hero .hero-open { display: inline-flex; height: 50px; animation: fade-up 0.9s 0.8s var(--ease-out) both; }
-.hero-open-btn { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 10px; height: 100%; padding: 0 20px 0 18px; border: 0; background: none; color: var(--cream); font: 600 14px / 1 var(--font-sans); cursor: pointer; }
-.hero-open-btn b { opacity: 0.5; font-weight: 400; }
-.hero-open-btn i { width: 9px; height: 9px; border-radius: 50%; background: #ffb9a8; }
-.hero-open-btn.open i { background: #8ff0bd; animation: live-dot 1.8s ease-out infinite; }
-.hero-open-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: translate 0.4s var(--spring); }
-.hero-open-btn:hover svg { translate: 4px 0; }
-.hero-open-btn:focus-visible, .stk:focus-visible { outline: 2px solid var(--cream); outline-offset: 4px; border-radius: 99px; }
+.stk:focus-visible { outline: 2px solid var(--cream); outline-offset: 4px; border-radius: 99px; }
 
 /* ---------- sticker stage (everything in cqw) ------------------------- */
 .hero-stage { container: stage / inline-size; position: relative; width: 100%; max-width: 600px; justify-self: center; aspect-ratio: 1 / 1.02; }
@@ -140,7 +130,7 @@
   .spark.s1 { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spark, .stk img, .hb::before, .hb::after, .ring-art, .hero-pill-inner i { animation: none; }
+  .spark, .stk img, .hb::before, .hb::after, .ring-art { animation: none; }
   .squiggle path { stroke-dashoffset: 0; }
   .marker::before { scale: 1 1; }
   .marker { color: var(--green-900); }

@@ -211,8 +211,6 @@
 }
 .fc-status i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .fc-status.open { color: #0a7a4f; }
-.fc-status.open i { animation: live 1.8s ease-out infinite; }
-@keyframes live { 0% { box-shadow: 0 0 0 0 rgb(10 122 79 / 0.55); } 100% { box-shadow: 0 0 0 9px rgb(10 122 79 / 0); } }
 .fc-body h3 { font: 400 32px / 1 var(--font-serif); letter-spacing: -0.02em; }
 .fc-address { margin: 5px 0 0; font: 600 13.5px / 1.3 var(--font-sans); }
 .fc-line { margin: 3px 0 0; color: var(--ink-soft); font: italic 500 13px / 1.35 var(--font-sans); }
@@ -307,7 +305,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .pin, .fc, .finder-note { animation: none; }
-  .leaflet-overlay-pane path.route, .sm-marker.active .pin-pulse, .fc-status.open i, .sm-cart.go .cart-dot { animation: none; }
+  .leaflet-overlay-pane path.route, .sm-marker.active .pin-pulse, .sm-cart.go .cart-dot { animation: none; }
 }
 
 .finder .finder-card.refract { backdrop-filter: var(--glass-filter) blur(9px) saturate(1.7) brightness(1.06); }
