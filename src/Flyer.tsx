@@ -8,7 +8,6 @@ type Sort = "featured" | "price" | "saving";
 type CatFilter = CatId | "all";
 
 const COLOR = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.color])) as Record<CatId, string>;
-const LABEL = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label])) as Record<CatId, string>;
 const saving = (item: Item) => (item.was ? 1 - item.price / item.was : 0);
 const money = (value: number) => `$${value % 1 ? value.toFixed(2) : value}`;
 
@@ -74,8 +73,8 @@ function Deal({ item }: { item: Item }) {
           </span>
         )}
         {off > 0 && (
-          <span className="deal-off" aria-label={`${off}% off`}>
-            -{off}%
+          <span className="deal-save" aria-label={`${off}% off`}>
+            <b>-{off}%</b>
           </span>
         )}
         {item.img ? (
@@ -89,11 +88,10 @@ function Deal({ item }: { item: Item }) {
             draggable={false}
           />
         ) : (
-          item.shape && item.color && item.label && <Pack shape={item.shape} color={item.color} label={item.label} halo={false} />
+          item.shape && item.color && item.label && <Pack shape={item.shape} color={item.color} label={item.label} />
         )}
       </div>
       <div className="deal-info">
-        <p className="deal-cat">{LABEL[item.cat]}</p>
         <h4>{item.name}</h4>
         <p className="deal-line">{item.line}</p>
         <div className="deal-price">
@@ -149,12 +147,21 @@ export function Flyer() {
     });
 
   return (
-    <section className="flyer" id="flyer" data-surface="paper" aria-labelledby="flyer-title">
-      <header className="section-head flyer-head rv">
-        <p className="eyebrow">Every aisle, every week</p>
-        <h2 id="flyer-title">The weekly flyer</h2>
-        <p className="lead">Fresh finds in every aisle. Once it’s gone, it’s gone.</p>
-      </header>
+    <section className="flyer" id="flyer" data-surface="cream" aria-labelledby="flyer-title">
+      <div className="flyer-head rv">
+        <div>
+          <p className="eyebrow">Every aisle, every week</p>
+          <h2 id="flyer-title" className="flyer-title">
+            <span>The weekly</span>
+            <span className="fun">flyer</span>
+          </h2>
+        </div>
+        <div className="flyer-stamp" aria-hidden="true">
+          <b>While</b>
+          <b>stock</b>
+          <b>lasts</b>
+        </div>
+      </div>
 
       <div className="flyer-tools" role="search">
         <label className="search">

@@ -121,13 +121,10 @@ export function Pack({
   shape,
   color,
   label,
-  halo = true,
 }: {
   shape: Shape;
   color: string;
   label: [string, string?];
-  /** White sticker border around the silhouette. */
-  halo?: boolean;
 }) {
   const { parts, box } = SHAPES[shape](color, shade(color, -0.28));
   const lines = label.filter((line): line is string => Boolean(line));
@@ -138,18 +135,16 @@ export function Pack({
   return (
     <svg viewBox="0 0 100 140" aria-hidden="true" focusable="false">
       <g strokeLinejoin="round" strokeLinecap="round">
-        {halo && (
-          <g fill="#fff" stroke="#fff" strokeWidth="10">
-            {parts.filter((p) => p.outline !== false).map((p, i) => partEl(p, i, {}))}
-          </g>
-        )}
-        <g stroke="#00382a" strokeWidth="2">
+        <g fill="#fff" stroke="#fff" strokeWidth="10">
+          {parts.filter((p) => p.outline !== false).map((p, i) => partEl(p, i, {}))}
+        </g>
+        <g stroke="#141414" strokeWidth="2.4">
           {parts.map((p, i) => partEl(p, i, { fill: p.fill, ...(p.outline === false ? { stroke: "none" } : {}) }))}
         </g>
-        <rect x={box.x} y={box.y} width={box.w} height={box.h} fill="#fffaf0" stroke="#00382a" strokeWidth="2" />
-        <rect x={box.x} y={box.y} width={box.w} height="7" fill={color === "#f4f1e8" ? "#c9c2ae" : dark} stroke="#00382a" strokeWidth="2" />
+        <rect x={box.x} y={box.y} width={box.w} height={box.h} fill="#fffaf0" stroke="#141414" strokeWidth="2.4" />
+        <rect x={box.x} y={box.y} width={box.w} height="7" fill={color === "#f4f1e8" ? "#c9c2ae" : dark} stroke="#141414" strokeWidth="2.4" />
       </g>
-      <g fontFamily="Anton, sans-serif" textAnchor="middle" fill="#00382a" letterSpacing="0.4">
+      <g fontFamily="Anton, sans-serif" textAnchor="middle" fill="#141414" letterSpacing="0.4">
         {lines.map((line, i) => (
           <text
             key={line}
