@@ -4,6 +4,7 @@ import { AboutPage } from "./AboutPage";
 import { BinPile } from "./BinPile";
 import { ContactPanel, type Topic } from "./ContactPanel";
 import { Flyer } from "./Flyer";
+import { InstaShelf } from "./InstaShelf";
 import { Header, type Page } from "./Header";
 import { Hero } from "./Hero";
 import { PageSwap, type Swap } from "./PageSwap";
@@ -34,6 +35,9 @@ function useReveal(page: Page) {
 }
 
 const YEAR = new Date().getFullYear();
+
+/** The weekly flyer stays in the project. Home shows the Instagram shelf in its place. */
+const showWeeklyFlyer = false;
 const TICKER = ["Once it’s gone, it’s gone", "New finds every week", "Big brands, small prices", "Less waste, more taste"];
 
 function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; onOpenStore: (index: number) => void }) {
@@ -87,7 +91,7 @@ function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; o
         </div>
       </section>
 
-      <Flyer />
+      {showWeeklyFlyer ? <Flyer /> : <InstaShelf />}
 
       <Receipt />
 

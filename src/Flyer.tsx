@@ -60,7 +60,7 @@ function CatIcon({ id }: { id: CatFilter }) {
  * Coupon edge along the top of the flyer: a pair of scissors cuts along the
  * dotted line as the section scrolls up into view.
  */
-function CutLine() {
+export function CutLine() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

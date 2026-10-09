@@ -1,0 +1,251 @@
+/* Instagram posts, typeset as the weekly flyer: masthead, split feature,
+   and shelf-edge tickets. The flyer itself stays in the project. */
+
+.ig-shelf {
+  --ink: var(--green-900);
+  --hair: rgb(0 56 42 / 0.14);
+  --deep: #0c2f25;
+  position: relative;
+  padding: 100px var(--pad) 120px;
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.ig-head { margin-bottom: 36px; }
+.ig-mast {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 18px;
+  margin: 0 0 26px;
+  padding: 11px 0 10px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--hair);
+  font: 700 11px / 1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.ig-headline { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.ig-title {
+  margin: 0;
+  color: var(--ink);
+  font: 400 clamp(58px, 10.4vw, 166px) / 0.86 var(--font-display);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.ig-title em {
+  color: var(--tomato);
+  font: 400 1.04em / 0.8 var(--font-serif);
+  font-style: normal;
+  letter-spacing: -0.045em;
+  text-transform: none;
+}
+.ig-shelf .ig-ring {
+  position: relative;
+  flex: none;
+  width: clamp(100px, 10.5vw, 146px);
+  height: auto;
+  aspect-ratio: 1;
+  margin-bottom: 0.4vw;
+  background: var(--ink);
+  color: var(--cream);
+  box-shadow: none;
+}
+.ig-shelf .ig-ring strong { color: var(--sun); font: 400 clamp(30px, 3.2vw, 44px) / 1 var(--font-display); }
+.ig-dek-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px 28px;
+  margin-top: 22px;
+}
+.ig-dek { max-width: 520px; margin: 0; color: var(--fg-body); font: 500 17px / 1.5 var(--font-sans); }
+.ig-dek-row .button { flex: none; }
+
+.ig-feature { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.ig-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ig-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--paper);
+  color: inherit;
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px var(--hair);
+  transition: translate 0.45s var(--spring), box-shadow 0.35s;
+}
+.ig-card:hover { translate: 0 -4px; box-shadow: inset 0 0 0 1px rgb(0 56 42 / 0.18), 0 28px 40px -26px rgb(0 40 30 / 0.5); }
+.ig-card:focus-visible { outline: 2px solid var(--tomato); outline-offset: 3px; }
+.ig-card figure { margin: 0; overflow: hidden; background: #efe6cf; }
+.ig-card img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 42%; }
+.ig-ticket figure { position: relative; aspect-ratio: 3 / 4; }
+.ig-ticket img { position: absolute; inset: 0; transition: scale 0.6s var(--spring); }
+.ig-ticket:hover img { scale: 1.035; }
+
+/* Till scanner, same pass as a flyer card. */
+.ig-scan { position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: 0; }
+.ig-scan::before {
+  content: "";
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  top: 0;
+  height: 2px;
+  background: #ff3b2a;
+  box-shadow: 0 0 6px 1px #ff3b2a, 0 0 22px 5px rgb(255 59 42 / 0.45);
+}
+.ig-scan::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 40%;
+  background: linear-gradient(transparent, rgb(255 59 42 / 0.12));
+}
+.ig-card:hover .ig-scan { animation: ig-scan 0.85s cubic-bezier(0.45, 0, 0.55, 1); }
+.ig-card:hover .ig-price { animation: ig-beep 0.45s 0.8s var(--bounce); }
+@keyframes ig-scan {
+  0% { opacity: 1; translate: 0 0; }
+  88% { opacity: 1; }
+  100% { opacity: 0; translate: 0 100%; }
+}
+@keyframes ig-beep { 35% { scale: 1.08; } }
+
+/* Feature: photo beside a dark label, sun price bar. */
+.ig-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  background: var(--deep);
+  color: var(--cream);
+}
+.ig-hero figure { position: relative; min-height: 280px; }
+.ig-hero img { position: absolute; inset: 0; object-position: center 30%; }
+.ig-body { display: flex; flex-direction: column; min-width: 0; min-height: 100%; padding: 22px 22px 0; }
+.ig-kicker {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  color: var(--sun);
+  font: 700 10.5px / 1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ig-kicker span + span::before { content: "·"; margin-right: 10px; opacity: 0.7; }
+.ig-body h3 {
+  margin: 12px 0 8px;
+  font: 400 clamp(32px, 3.4vw, 54px) / 0.9 var(--font-display);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+.ig-line { margin: 0; color: rgb(246 240 219 / 0.72); font: 500 14.5px / 1.4 var(--font-sans); }
+.ig-cells {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 16px 0 0;
+  border: 1px solid rgb(246 240 219 / 0.16);
+  border-radius: 12px;
+}
+.ig-cells div { padding: 10px 11px; }
+.ig-cells div + div { border-left: 1px solid rgb(246 240 219 / 0.16); }
+.ig-cells dt { margin-bottom: 5px; font: 700 9px / 1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.55; }
+.ig-cells dd { margin: 0; font: 700 13px / 1.2 var(--font-sans); }
+.ig-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: auto -22px 0;
+  padding: 10px 22px 8px;
+  background: var(--sun);
+  color: #17140c;
+}
+.ig-bar > span { font: 400 clamp(16px, 1.6vw, 22px) / 1 var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
+.ig-price { font: 400 clamp(44px, 4.2vw, 68px) / 0.78 var(--font-display); letter-spacing: 0; }
+.ig-bar > .ig-price { font-size: clamp(52px, 5vw, 76px); }
+.ig-price sup { font-size: 0.46em; }
+.ig-price-long { font-size: clamp(26px, 2.4vw, 34px); line-height: 0.9; }
+
+/* Shelf-edge ticket under the photograph. */
+.ig-label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: auto;
+  padding: 11px 14px 10px;
+  border-top: 4px solid #17140c;
+  background: var(--sun);
+  color: #17140c;
+}
+.ig-label .ig-price { font-size: clamp(36px, 4vw, 48px); }
+.ig-label .ig-price-long { max-width: 7.2ch; font-size: clamp(20px, 2vw, 26px); }
+.ig-label-meta { display: grid; gap: 4px; min-width: 0; font: 400 10.5px / 1.15 var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase; }
+.ig-label-meta b {
+  overflow: hidden;
+  font: 400 clamp(15px, 1.5vw, 20px) / 0.95 var(--font-display);
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ig-code {
+  width: 30px;
+  height: 26px;
+  background: repeating-linear-gradient(90deg, #17140c 0 1.5px, transparent 1.5px 3px, #17140c 3px 5px, transparent 5px 6px, #17140c 6px 6.8px, transparent 6.8px 8.5px);
+}
+
+@media (max-width: 1100px) {
+  .ig-line { display: none; }
+  .ig-body { padding: 18px 18px 0; }
+  .ig-body h3 { margin: 10px 0 0; font-size: clamp(28px, 3.6vw, 40px); }
+  .ig-bar { margin-top: 14px; margin-left: -18px; margin-right: -18px; padding: 8px 18px 6px; }
+  .ig-cells { margin-top: 12px; }
+}
+
+@media (max-width: 860px) {
+  .ig-feature { grid-template-columns: 1fr; }
+  .ig-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ig-hero { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); }
+  .ig-line { display: block; }
+}
+
+@media (max-width: 640px) {
+  .ig-shelf { padding: 80px var(--pad) 90px; }
+  .ig-headline { align-items: flex-start; }
+  .ig-shelf .ig-ring { width: 84px; margin-top: 6px; }
+  .ig-dek { font-size: 15.5px; }
+  .ig-hero { grid-template-columns: 1fr; }
+  .ig-hero figure { aspect-ratio: 4 / 5; min-height: 0; }
+  .ig-body h3 { font-size: 36px; }
+  .ig-cells div:nth-child(2) { display: none; }
+  .ig-cells { grid-template-columns: 1fr 1fr; }
+  .ig-card { border-radius: 18px; }
+  .ig-code { display: none; }
+  .ig-label {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: 10px 12px 11px;
+  }
+  .ig-label .ig-price { font-size: 36px; }
+  .ig-label .ig-price-long { max-width: none; font-size: 22px; line-height: 1; }
+  .ig-label-meta b { white-space: normal; font-size: 18px; text-overflow: clip; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ig-card:hover .ig-scan,
+  .ig-card:hover .ig-price { animation: none; }
+  .ig-ticket img { transition: none; }
+  .ig-card { transition: none; }
+}
