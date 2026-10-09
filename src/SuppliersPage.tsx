@@ -156,7 +156,7 @@ function QuoteCta({ onContact }: { onContact: () => void }) {
           ))}
         </ul>
         <button className="button quote-open" type="button" onClick={onContact}>
-          Fill in a docket
+          Contact the buying team
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 12h15M13 6l6 6-6 6" />
           </svg>
@@ -164,7 +164,7 @@ function QuoteCta({ onContact }: { onContact: () => void }) {
       </div>
 
       <button className="qd rv" type="button" onClick={onContact} style={{ "--rv": "140ms" } as CSSProperties}>
-        <span className="sr-only">Open the supplier docket</span>
+        <span className="sr-only">Open the contact form</span>
         <span className="qd-board" aria-hidden="true">
           <Clip className="qd-clip" />
           <span className="qd-sheet">

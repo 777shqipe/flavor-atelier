@@ -1,67 +1,64 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { CATEGORIES } from "./products";
-import { Stamp } from "./Stamp";
 import { STORES } from "./stores";
 import "./contact.css";
 
 /**
- * Contact, as a side panel. A shop awning unrolls, then a clipboard slides up
- * holding a docket. Pick what it's about and the "To" line re-stamps itself.
- * Sending stamps the docket, tears it off the pad and leaves your yellow carbon
- * copy behind on the clip.
+ * Contact, as a side panel. A short enquiry form: who you are, what it is
+ * about, and a message. Sending only confirms on this page.
+ * TODO: POST the enquiry. Nothing leaves the browser yet.
  */
 
 export type Topic = "stock" | "shop" | "other";
 
-const TOPICS: Array<{ id: Topic; label: string; desk: string; placeholder: string }> = [
-  { id: "stock", label: "Surplus stock", desk: "Buying team", placeholder: "What is it, how much, and when does it need to move?" },
-  { id: "shop", label: "Shopping", desk: "Store team", placeholder: "A product, a store, something you bought…" },
-  { id: "other", label: "Something else", desk: "Head office", placeholder: "Press, partnerships or just a kind word" },
+const TOPICS: Array<{ id: Topic; label: string; desk: string; hint: string; placeholder: string }> = [
+  {
+    id: "stock",
+    label: "Selling stock",
+    desk: "Buying team",
+    hint: "Surplus food and wholesale lots go to the buying team.",
+    placeholder: "What you have, roughly how much, and when it needs to move.",
+  },
+  {
+    id: "shop",
+    label: "A store",
+    desk: "Store team",
+    hint: "A product, a visit, or something you bought goes to the store team.",
+    placeholder: "The product, the store, or what happened.",
+  },
+  {
+    id: "other",
+    label: "Something else",
+    desk: "Head office",
+    hint: "Press, partnerships, and general notes go to head office.",
+    placeholder: "How can we help?",
+  },
 ];
 
-const DATE = new Date().toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+const VOLUMES = [
+  { id: "", label: "Not sure yet" },
+  { id: "few", label: "A few pallets" },
+  { id: "half", label: "Half a truck" },
+  { id: "full", label: "A full truckload" },
+];
 
-const volumeLabel = (v: number) => (v < 34 ? "A few pallets" : v < 67 ? "Half a truck" : "A full truckload");
+type Fields = {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  category: string;
+  volume: string;
+  store: string;
+};
 
-type Phase = "idle" | "stamp" | "tear" | "copy";
-type Sent = { number: number; desk: string; name: string; email: string; re: string };
+type Errors = Partial<Record<"name" | "email" | "phone" | "message", string>>;
 
-function TopicIcon({ id }: { id: Topic }) {
-  const line = { stroke: "#141414", strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" } as const;
-  if (id === "stock") {
-    return (
-      <svg viewBox="0 0 48 40" aria-hidden="true">
-        <rect x="7" y="17" width="16" height="15" rx="1.5" fill="#d8b37a" {...line} />
-        <rect x="25" y="17" width="16" height="15" rx="1.5" fill="#e0a458" {...line} />
-        <rect x="15" y="3" width="17" height="14" rx="1.5" fill="#c79c5f" {...line} />
-        <path d="M15 22h8M25 22h16M15 8h17" stroke="#141414" strokeWidth="1.4" opacity="0.5" />
-        <rect x="4" y="32" width="40" height="4" rx="1" fill="#a87c45" {...line} />
-        <path d="M7 36v2.5M24 36v2.5M41 36v2.5" {...line} />
-      </svg>
-    );
-  }
-  if (id === "shop") {
-    return (
-      <svg viewBox="0 0 48 40" aria-hidden="true">
-        <path d="M12 18c0-13 24-13 24 0" fill="none" {...line} strokeWidth={2.6} />
-        <circle cx="18" cy="15" r="6.5" fill="#e3261b" {...line} />
-        <path d="M25 17c-2-8 5-11 8-6 3-5 9-2 6 6z" fill="#5fae5a" {...line} />
-        <path d="M5 17h38l-4.5 19h-29z" fill="#f6f0db" {...line} />
-        <path d="M14 22l1.5 10M24 22v10M34 22l-1.5 10" stroke="#141414" strokeWidth="1.6" strokeLinecap="round" opacity="0.55" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 48 40" aria-hidden="true">
-      <path d="M7 5h34a4 4 0 0 1 4 4v17a4 4 0 0 1-4 4H22l-9 7v-7H7a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4z" fill="#fffaf0" {...line} />
-      <text x="24" y="23.5" textAnchor="middle" fill="#005842" fontFamily="Anton, sans-serif" fontSize="14" letterSpacing="0.5">
-        HI!
-      </text>
-    </svg>
-  );
-}
+const EMPTY: Fields = { name: "", email: "", phone: "", message: "", category: "", volume: "", store: "" };
 
-/** Bulldog clip, sticker style. */
+const emailOk = (value: string) => /^\S+@\S+\.\S+$/.test(value);
+
+/** Bulldog clip, used by the suppliers page. */
 export function Clip({ className = "" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 132 64" aria-hidden="true">
@@ -90,82 +87,112 @@ export function ContactPanel({
   onClose: () => void;
 }) {
   const panel = useRef<HTMLElement>(null);
-  const copyHead = useRef<HTMLHeadingElement>(null);
+  const film = useRef<HTMLVideoElement>(null);
+  const [reduceMotion, setReduceMotion] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const [seen, setSeen] = useState(open);
+  if (open && !seen) setSeen(true);
   const nameInput = useRef<HTMLInputElement>(null);
-  const [values, setValues] = useState({ name: "", company: "", email: "", message: "" });
-  const [cats, setCats] = useState<string[]>([]);
-  const [store, setStore] = useState<string | null>(null);
-  const [volume, setVolume] = useState(30);
-  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
-  const [shake, setShake] = useState(0);
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [number, setNumber] = useState(() => 4200 + Math.floor(Math.random() * 600));
-  const [sent, setSent] = useState<Sent | null>(null);
+  const emailInput = useRef<HTMLInputElement>(null);
+  const phoneInput = useRef<HTMLInputElement>(null);
+  const messageInput = useRef<HTMLTextAreaElement>(null);
+  const thanks = useRef<HTMLHeadingElement>(null);
+  const sentRef = useRef(false);
+  const [values, setValues] = useState<Fields>(EMPTY);
+  const [errors, setErrors] = useState<Errors>({});
+  const [sent, setSent] = useState(false);
 
   const current = TOPICS.find((item) => item.id === topic) ?? TOPICS[0];
-  const first = values.name.trim().split(/\s+/)[0];
 
-  // A fresh sheet on the pad: keep who you are, clear what you said.
-  const fresh = useCallback(() => {
-    setValues((v) => ({ ...v, message: "" }));
-    setCats([]);
-    setStore(null);
+  useEffect(() => {
+    sentRef.current = sent;
+  }, [sent]);
+
+  const resetSheet = useCallback(() => {
+    setValues((v) => ({ ...EMPTY, name: v.name, email: v.email, phone: v.phone }));
     setErrors({});
-    setNumber((n) => n + 1);
-    setPhase("idle");
+    setSent(false);
   }, []);
 
-  // Open: lock the page, focus the panel, Escape closes. Close: focus goes back.
   useEffect(() => {
     if (!open) return;
     const back = document.activeElement as HTMLElement | null;
-    const root = document.documentElement;
-    root.classList.add("ct-lock");
-    const focus = window.setTimeout(() => panel.current?.focus({ preventScroll: true }), 80);
+    document.documentElement.classList.add("ct-lock");
+    const focus = window.setTimeout(() => {
+      (sentRef.current ? thanks.current : panel.current)?.focus({ preventScroll: true });
+    }, 80);
     const onKey = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !panel.current) return;
+      const nodes = [...panel.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), textarea, input, select")].filter(
+        (el) => !el.hasAttribute("disabled"),
+      );
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
       window.clearTimeout(focus);
-      root.classList.remove("ct-lock");
+      document.documentElement.classList.remove("ct-lock");
       window.removeEventListener("keydown", onKey);
       back?.focus?.({ preventScroll: true });
     };
   }, [open, onClose]);
 
-  // Stamp, then tear, then the carbon copy.
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (phase === "stamp") {
-      const t = window.setTimeout(() => setPhase("tear"), reduce ? 400 : 780);
-      return () => window.clearTimeout(t);
-    }
-    if (phase === "tear") {
-      const t = window.setTimeout(() => setPhase("copy"), reduce ? 0 : 1000);
-      return () => window.clearTimeout(t);
-    }
-    if (phase === "copy") copyHead.current?.focus({ preventScroll: true });
-  }, [phase]);
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduceMotion(mq.matches);
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
 
-  // Closed with a copy showing: next time it opens on a fresh sheet.
+  // The story starts from the top every time the card opens.
   useEffect(() => {
-    if (open || phase !== "copy") return;
-    const t = window.setTimeout(fresh, 700);
+    const video = film.current;
+    if (!video) return;
+    if (!open || reduceMotion) {
+      video.pause();
+      return;
+    }
+    const start = () => {
+      video.currentTime = 0;
+      void video.play().catch(() => {});
+    };
+    if (video.readyState >= 1) start();
+    else {
+      video.addEventListener("loadedmetadata", start, { once: true });
+      video.load();
+    }
+    return () => video.removeEventListener("loadedmetadata", start);
+  }, [open, reduceMotion]);
+
+  useEffect(() => {
+    if (open || !sent) return;
+    const t = window.setTimeout(resetSheet, 480);
     return () => window.clearTimeout(t);
-  }, [open, phase, fresh]);
+  }, [open, sent, resetSheet]);
 
-  const set = (key: keyof typeof values) => (event: { target: { value: string } }) => {
-    setValues((v) => ({ ...v, [key]: event.target.value }));
-    // the red line goes as soon as you start fixing it
-    if ((key === "name" || key === "email") && errors[key]) setErrors((e) => ({ ...e, [key]: undefined }));
+  const set = (key: keyof Fields) => (event: { target: { value: string } }) => {
+    const value = event.target.value;
+    setValues((v) => ({ ...v, [key]: value }));
+    if (key in errors) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
   const pickTopic = (next: Topic) => {
-    if (phase === "stamp" || phase === "tear") return;
-    if (phase === "copy") fresh();
+    if (sent) resetSheet();
     onTopic(next);
   };
+
   const onTopicKey = (event: KeyboardEvent) => {
     const i = TOPICS.findIndex((item) => item.id === topic);
     const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
@@ -178,269 +205,247 @@ export function ContactPanel({
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (phase !== "idle") return;
-    const next: typeof errors = {};
-    if (!values.name.trim()) next.name = "Tell us who we’re talking to.";
-    if (!/^\S+@\S+\.\S+$/.test(values.email)) next.email = "That email doesn’t look right.";
+    if (sent) return;
+    const next: Errors = {};
+    if (!values.name.trim()) next.name = "Enter your name.";
+    if (!emailOk(values.email.trim())) next.email = "Enter a valid email address.";
+    const digits = values.phone.replace(/\D/g, "");
+    if (values.phone.trim() && digits.length < 8) next.phone = "Enter a full phone number, or leave it blank.";
+    if (!values.message.trim()) next.message = "Write a short message.";
     setErrors(next);
-    if (Object.keys(next).length) {
-      setShake((n) => n + 1);
+    const invalid = next.name ? nameInput : next.email ? emailInput : next.phone ? phoneInput : next.message ? messageInput : null;
+    if (invalid) {
+      invalid.current?.focus();
       return;
     }
-    const re =
-      topic === "stock"
-        ? [cats.length ? cats.map((id) => CATEGORIES.find((c) => c.id === id)?.label).join(", ") : "Mixed stock", volumeLabel(volume)].join(" · ")
-        : topic === "shop"
-          ? store
-            ? `${STORES.find((s) => s.id === store)?.name} store`
-            : "Any store"
-          : values.company.trim() || "General";
-    // TODO: POST the enquiry to a real endpoint. Nothing is sent from here yet.
-    setSent({ number, desk: current.desk, name: values.name.trim(), email: values.email.trim(), re });
-    setPhase("stamp");
+    setSent(true);
+    window.setTimeout(() => thanks.current?.focus({ preventScroll: true }), 30);
   };
 
   const again = () => {
-    fresh();
+    resetSheet();
     window.requestAnimationFrame(() => nameInput.current?.focus({ preventScroll: true }));
   };
 
-  const filled = Math.max(1, Math.round((volume / 100) * 12));
-  const words = ["Drop", "us", "a"];
+  const first = values.name.trim().split(/\s+/)[0];
 
   return (
     <div className="ct" data-open={open || undefined}>
-      <div className="ct-scrim" aria-hidden="true" onClick={onClose} />
+      <div className="ct-scrim" onClick={onClose} />
       <aside className="ct-panel" ref={panel} role="dialog" aria-modal="true" aria-labelledby="ct-title" tabIndex={-1}>
-        <span className="ct-awning" aria-hidden="true" />
-
-        <header className="ct-head">
-          <p className="ct-eyebrow">Contact us</p>
+        <div className="ct-scroll">
+        <header className="ct-band">
+          <div className="ct-film" aria-hidden="true">
+            {seen &&
+              (reduceMotion ? (
+                <img src="/media/contact-story.jpg" alt="" />
+              ) : (
+                <video ref={film} src="/media/contact-story.mp4" poster="/media/contact-story.jpg" muted playsInline loop preload="none" />
+              ))}
+          </div>
+          <div className="ct-band-copy">
+            <p className="ct-eyebrow">Get in touch</p>
+            <h2 id="ct-title">Contact us</h2>
+          </div>
           <button className="ct-close" type="button" onClick={onClose} aria-label="Close">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
-          <h2 id="ct-title" className="ct-title">
-            {words.map((word, i) => (
-              <span key={word}>
-                <span className="ct-word" style={{ "--i": i } as CSSProperties}>
-                  <span>{word}</span>
-                </span>{" "}
-              </span>
-            ))}
-            <span className="ct-word" style={{ "--i": words.length } as CSSProperties}>
-              <em>docket.</em>
-            </span>
-          </h2>
-          <p className="ct-lead">Pick what it’s about and it lands on the right desk.</p>
         </header>
 
-        <div className="ct-topics" role="radiogroup" aria-label="What’s it about?" onKeyDown={onTopicKey}>
-          {TOPICS.map((item, i) => (
-            <button
-              key={item.id}
-              className="ct-topic"
-              type="button"
-              role="radio"
-              aria-checked={item.id === topic}
-              tabIndex={item.id === topic ? 0 : -1}
-              style={{ "--i": i } as CSSProperties}
-              onClick={() => pickTopic(item.id)}
-            >
-              <TopicIcon id={item.id} />
-              <b>{item.label}</b>
-              <small>To {item.desk}</small>
-            </button>
-          ))}
-        </div>
-
-        <div className="ct-board">
-          <Clip className="ct-clip" />
-          <span className="ct-stub" aria-hidden="true">
-            CBM · Docket book
-          </span>
-          <div className="ct-pad" data-phase={phase}>
-            {/* the yellow carbon copy underneath; it only says something once a docket is sent */}
-            <div className="ct-copy" inert={phase !== "copy"}>
-              {sent && (
-                <>
-                  <p className="ct-copy-kicker">
-                    Your copy <span>Nº {sent.number}</span>
-                  </p>
-                  <h3 ref={copyHead} tabIndex={-1}>
-                    Thanks, {sent.name.split(/\s+/)[0]}.
-                  </h3>
-                  <dl>
-                    <div>
-                      <dt>To</dt>
-                      <dd>{sent.desk}</dd>
-                    </div>
-                    <div>
-                      <dt>From</dt>
-                      <dd>{sent.name}</dd>
-                    </div>
-                    <div>
-                      <dt>Re</dt>
-                      <dd>{sent.re}</dd>
-                    </div>
-                    <div>
-                      <dt>Reply to</dt>
-                      <dd>{sent.email}</dd>
-                    </div>
-                  </dl>
-                  <p className="ct-copy-note">It’s on the {sent.desk.toLowerCase()}’s desk now. Keep this copy, we’ll do the rest.</p>
-                  <div className="ct-copy-actions">
-                    <button className="ct-btn" type="button" onClick={again}>
-                      New docket
-                    </button>
-                    <button className="ct-btn ghost" type="button" onClick={onClose}>
-                      Close
-                    </button>
-                  </div>
-                </>
-              )}
+        {sent ? (
+          <div className="ct-done">
+            <h3 ref={thanks} tabIndex={-1}>
+              Thanks{first ? `, ${first}` : ""}.
+            </h3>
+            <p>
+              Your note is with the {current.desk.toLowerCase()}. We’ll reply to <b>{values.email.trim()}</b>.
+            </p>
+            <div className="ct-done-actions">
+              <button className="ct-send" type="button" onClick={again}>
+                Send another message
+              </button>
+              <button className="ct-text" type="button" onClick={onClose}>
+                Close
+              </button>
             </div>
-
-            {phase !== "copy" && (
-              <form
-                key={number}
-                className="ct-sheet"
-                data-phase={phase}
-                data-shake={shake ? (shake % 2 ? "a" : "b") : undefined}
-                onSubmit={submit}
-                noValidate
-              >
-                <div className="ct-dhead">
-                  <b className="ct-dword">Docket</b>
-                  <span className="ct-dno">Nº {number}</span>
-                  <span className="ct-ddate">{DATE}</span>
-                </div>
-                <p className="ct-to">
-                  <span>To</span>
-                  <b key={topic}>{current.desk}</b>
-                </p>
-
-                <label className="ct-field" style={{ "--i": 0 } as CSSProperties}>
-                  <span>From</span>
-                  <span className="ct-line">
-                    <input ref={nameInput} type="text" value={values.name} onChange={set("name")} placeholder="Your name" autoComplete="name" aria-invalid={!!errors.name} />
-                  </span>
-                  {errors.name && <em className="ct-err">{errors.name}</em>}
-                </label>
-                {topic !== "shop" && (
-                  <label className="ct-field" style={{ "--i": 1 } as CSSProperties}>
-                    <span>Company</span>
-                    <span className="ct-line">
-                      <input type="text" value={values.company} onChange={set("company")} placeholder="Optional" autoComplete="organization" />
-                    </span>
-                  </label>
-                )}
-                <label className="ct-field" style={{ "--i": 2 } as CSSProperties}>
-                  <span>Email</span>
-                  <span className="ct-line">
-                    <input type="email" value={values.email} onChange={set("email")} placeholder="you@example.com" autoComplete="email" aria-invalid={!!errors.email} />
-                  </span>
-                  {errors.email && <em className="ct-err">{errors.email}</em>}
-                </label>
-
-                <div className="ct-extra" key={topic}>
-                  {topic === "stock" && (
-                    <>
-                      <fieldset className="ct-set">
-                        <legend>On the pallet</legend>
-                        <div className="ct-chips">
-                          {CATEGORIES.map((cat) => (
-                            <button
-                              key={cat.id}
-                              type="button"
-                              className="ct-chip"
-                              aria-pressed={cats.includes(cat.id)}
-                              style={{ "--c": cat.color } as CSSProperties}
-                              onClick={() => setCats((list) => (list.includes(cat.id) ? list.filter((id) => id !== cat.id) : [...list, cat.id]))}
-                            >
-                              {cat.label}
-                            </button>
-                          ))}
-                        </div>
-                      </fieldset>
-                      <div className="ct-vol">
-                        <label htmlFor="ct-volume">
-                          How much <b>{volumeLabel(volume)}</b>
-                        </label>
-                        <div className="ct-pallets" aria-hidden="true">
-                          {Array.from({ length: 12 }, (_, i) => (
-                            <i key={i} data-on={i < filled || undefined} style={{ "--k": i } as CSSProperties} />
-                          ))}
-                        </div>
-                        <input id="ct-volume" type="range" min={0} max={100} value={volume} onChange={(event) => setVolume(Number(event.target.value))} aria-valuetext={volumeLabel(volume)} />
-                      </div>
-                    </>
-                  )}
-                  {topic === "shop" && (
-                    <fieldset className="ct-set">
-                      <legend>Which store</legend>
-                      <div className="ct-chips">
-                        {STORES.map((s) => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            className="ct-chip"
-                            aria-pressed={store === s.id}
-                            style={{ "--c": s.color } as CSSProperties}
-                            onClick={() => setStore((id) => (id === s.id ? null : s.id))}
-                          >
-                            <i aria-hidden="true" />
-                            {s.name}
-                          </button>
-                        ))}
-                      </div>
-                    </fieldset>
-                  )}
-                </div>
-
-                <label className="ct-field ct-msg" style={{ "--i": 3 } as CSSProperties}>
-                  <span>Note</span>
-                  <textarea value={values.message} onChange={set("message")} placeholder={current.placeholder} rows={3} />
-                </label>
-
-                <div className="ct-send-row">
-                  <p className="ct-sign">
-                    Signed
-                    <span>{first || " "}</span>
-                  </p>
-                  <button className="ct-send" type="submit">
-                    Send docket
-                    <i aria-hidden="true">
-                      <svg viewBox="0 0 16 16">
-                        <path d="M3 8h10M9 4l4 4-4 4" />
-                      </svg>
-                    </i>
-                  </button>
-                </div>
-
-                <Stamp on={phase !== "idle"} text="Sent" sub={`Docket Nº ${number}`} className="ct-stamp" />
-              </form>
-            )}
           </div>
-        </div>
+        ) : (
+          <form className="ct-form" onSubmit={submit} noValidate>
+            <p className="ct-lead">A name, an email, and a short message is enough.</p>
+
+            <fieldset className="ct-about">
+              <legend>I’m writing about</legend>
+              <div className="ct-topics" role="radiogroup" aria-label="What is this about?" onKeyDown={onTopicKey}>
+                {TOPICS.map((item) => (
+                  <button
+                    key={item.id}
+                    className="ct-topic"
+                    type="button"
+                    role="radio"
+                    aria-checked={item.id === topic}
+                    tabIndex={item.id === topic ? 0 : -1}
+                    onClick={() => pickTopic(item.id)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <p className="ct-hint">{current.hint}</p>
+            </fieldset>
+
+            <label className="ct-field">
+              <span>Name</span>
+              <input
+                ref={nameInput}
+                type="text"
+                name="name"
+                value={values.name}
+                onChange={set("name")}
+                autoComplete="name"
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "ct-err-name" : undefined}
+              />
+              {errors.name && (
+                <em id="ct-err-name" className="ct-err">
+                  {errors.name}
+                </em>
+              )}
+            </label>
+
+            <label className="ct-field">
+              <span>Email</span>
+              <input
+                ref={emailInput}
+                type="email"
+                name="email"
+                value={values.email}
+                onChange={set("email")}
+                autoComplete="email"
+                inputMode="email"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "ct-err-email" : undefined}
+              />
+              {errors.email && (
+                <em id="ct-err-email" className="ct-err">
+                  {errors.email}
+                </em>
+              )}
+            </label>
+
+            <label className="ct-field">
+              <span>
+                Phone <small>optional</small>
+              </span>
+              <input
+                ref={phoneInput}
+                type="tel"
+                name="phone"
+                value={values.phone}
+                onChange={set("phone")}
+                autoComplete="tel"
+                inputMode="tel"
+                aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? "ct-err-phone" : undefined}
+              />
+              {errors.phone && (
+                <em id="ct-err-phone" className="ct-err">
+                  {errors.phone}
+                </em>
+              )}
+            </label>
+
+            {topic === "stock" && (
+              <fieldset className="ct-extra">
+                <legend>About the stock</legend>
+                <label className="ct-field">
+                  <span>
+                    Category <small>optional</small>
+                  </span>
+                  <select name="category" value={values.category} onChange={set("category")}>
+                    <option value="">Mixed or not sure</option>
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="ct-field">
+                  <span>
+                    How much <small>optional</small>
+                  </span>
+                  <select name="volume" value={values.volume} onChange={set("volume")}>
+                    {VOLUMES.map((item) => (
+                      <option key={item.id || "unsure"} value={item.id}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </fieldset>
+            )}
+
+            {topic === "shop" && (
+              <label className="ct-field">
+                <span>
+                  Which store <small>optional</small>
+                </span>
+                <select name="store" value={values.store} onChange={set("store")}>
+                  <option value="">Any store</option>
+                  {STORES.map((store) => (
+                    <option key={store.id} value={store.id}>
+                      {store.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            <label className="ct-field">
+              <span>Message</span>
+              <textarea
+                ref={messageInput}
+                name="message"
+                value={values.message}
+                onChange={set("message")}
+                placeholder={current.placeholder}
+                rows={4}
+                aria-invalid={!!errors.message}
+                aria-describedby={errors.message ? "ct-err-message" : undefined}
+              />
+              {errors.message && (
+                <em id="ct-err-message" className="ct-err">
+                  {errors.message}
+                </em>
+              )}
+            </label>
+
+            <button className="ct-send" type="submit">
+              Send message
+            </button>
+            <p className="ct-note">We only use this to reply to you.</p>
+          </form>
+        )}
 
         <footer className="ct-foot">
-          <p>Rather talk? Call a store</p>
-          <ul className="ct-phones">
-            {STORES.map((s) => (
-              <li key={s.id}>
-                <a href={`tel:${s.phone.replace(/\s/g, "")}`} style={{ "--c": s.color } as CSSProperties}>
-                  <span>{s.name}</span>
-                  <small>{s.phone}</small>
+          <p>Or call a store</p>
+          <ul>
+            {STORES.map((store) => (
+              <li key={store.id}>
+                <a href={`tel:${store.phone.replace(/\s/g, "")}`}>
+                  <span>{store.name}</span>
+                  <span>{store.phone}</span>
                 </a>
               </li>
             ))}
           </ul>
         </footer>
+        </div>
 
         <p className="sr-only" role="status">
-          {phase === "copy" ? "Docket sent. Thanks." : ""}
+          {sent ? "Message noted. Thanks." : ""}
         </p>
       </aside>
     </div>
