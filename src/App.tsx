@@ -137,9 +137,9 @@ function FootFilm() {
   return (
     <div className="foot-film" ref={spot} aria-hidden="true">
       {seen && !reduce ? (
-        <video src="/media/footer-fight.mp4" poster="/media/footer-fight.jpg" muted playsInline loop autoPlay preload="metadata" />
+        <video src="/media/footer-meadow.mp4" poster="/media/footer-meadow.jpg" muted playsInline loop autoPlay preload="metadata" />
       ) : (
-        <img src="/media/footer-fight.jpg" alt="" />
+        <img src="/media/footer-meadow.jpg" alt="" />
       )}
     </div>
   );
