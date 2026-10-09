@@ -46,10 +46,11 @@ function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; o
       <Hero onNavigate={onNavigate} />
 
       <section className="manifesto" data-surface="cream" aria-labelledby="manifesto-title">
-        <div className="display-letters rv" aria-label="CBM">
-          <span>C</span>
-          <span>B</span>
-          <span>M</span>
+        <div className="display-letters rv" tabIndex={0}>
+          <span aria-hidden="true">C</span>
+          <span aria-hidden="true">B</span>
+          <span aria-hidden="true">M</span>
+          <p className="display-name">Cheaper Buy Miles</p>
         </div>
         <div className="rv" style={{ "--rv": "100ms" } as CSSProperties}>
           <p className="eyebrow">Our purpose</p>
