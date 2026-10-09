@@ -53,13 +53,29 @@ function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; o
         </div>
         <div className="rv" style={{ "--rv": "100ms" } as CSSProperties}>
           <p className="eyebrow">Our purpose</p>
-          <h2 id="manifesto-title">One bargain at a time.</h2>
+          <h2 id="manifesto-title">
+            One <em>bargain</em> at a time.
+          </h2>
         </div>
         <div className="manifesto-copy rv" style={{ "--rv": "200ms" } as CSSProperties}>
           <p>
             We love food, and we hate waste. We’ve saved millions of kilograms of good food from being dumped—while
             giving you huge savings.
           </p>
+          <ul className="manifesto-facts">
+            <li>
+              <b>1995</b>
+              <span>Still the same fight</span>
+            </li>
+            <li>
+              <b>4</b>
+              <span>Shops, one purpose</span>
+            </li>
+            <li>
+              <b>kg</b>
+              <span>Millions kept from landfill</span>
+            </li>
+          </ul>
           <button className="button outline" type="button" onClick={() => onNavigate("about")}>
             About us
           </button>
