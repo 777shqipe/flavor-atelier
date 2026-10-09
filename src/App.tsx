@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { AboutPage } from "./AboutPage";
 import { BinPile } from "./BinPile";
@@ -116,9 +116,39 @@ function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; o
   );
 }
 
+function FootFilm() {
+  const spot = useRef<HTMLDivElement>(null);
+  const [reduce] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const [seen, setSeen] = useState(false);
+
+  useEffect(() => {
+    const node = spot.current?.closest("footer");
+    if (!node || reduce) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) setSeen(true);
+      },
+      { rootMargin: "280px" },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [reduce]);
+
+  return (
+    <div className="foot-film" ref={spot} aria-hidden="true">
+      {seen && !reduce ? (
+        <video src="/media/footer-fight.mp4" poster="/media/footer-fight.jpg" muted playsInline loop autoPlay preload="metadata" />
+      ) : (
+        <img src="/media/footer-fight.jpg" alt="" />
+      )}
+    </div>
+  );
+}
+
 function Footer({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onContact: () => void }) {
   return (
     <footer data-surface="deep">
+      <FootFilm />
       <BinPile />
       <div className="footer-main">
         <div>
