@@ -1,4 +1,5 @@
 import { CutLine } from "./Flyer";
+import { LogoMark } from "./Logo";
 import { RingBadge } from "./RingBadge";
 import "./insta.css";
 
@@ -19,7 +20,8 @@ type Hero = {
   aisle: string;
   where: string;
   name: string;
-  line: string;
+  /** One-liner in the same voice as the flyer cards. */
+  quip: string;
   price: string;
   size: string;
 };
@@ -31,6 +33,7 @@ type Ticket = {
   alt: string;
   name: string;
   meta: string;
+  quip: string;
   price: string;
   /** Spoken price when the printed one is a phrase, not a single figure. */
   priceLabel?: string;
@@ -46,7 +49,7 @@ const HEROES: Hero[] = [
     aisle: "Frozen",
     where: "Selected stores",
     name: "Pork & beef lasagne",
-    line: "A 2kg family bake. Use by 9 Oct, so it is priced to move.",
+    quip: "Two kilos. Nobody has to cook.",
     price: "$8",
     size: "2kg",
   },
@@ -59,7 +62,7 @@ const HEROES: Hero[] = [
     aisle: "Frozen",
     where: "Four stores",
     name: "Speculoos ice cream",
-    line: "Bulla family dairy, five litres. A second flavour is in the post.",
+    quip: "Five litres. Plans cancelled.",
     price: "$12",
     size: "5L",
   },
@@ -73,6 +76,7 @@ const TICKETS: Ticket[] = [
     alt: "Murni authentic Indonesian tempeh, 200 grams, three for $5",
     name: "Murni tempeh",
     meta: "6 Oct · 200g",
+    quip: "Protein, without the lecture.",
     price: "3 for $5",
     priceLabel: "3 for $5",
   },
@@ -83,6 +87,7 @@ const TICKETS: Ticket[] = [
     alt: "Mike and Ike sour blue raspberry chews, 120 grams, priced at $2",
     name: "Mike and Ike",
     meta: "9 Oct · 120g",
+    quip: "Sour enough to end a chat.",
     price: "$2",
   },
   {
@@ -92,6 +97,7 @@ const TICKETS: Ticket[] = [
     alt: "Melbourne Springs natural spring water, 1 litre, priced at $1",
     name: "Spring water",
     meta: "8 Oct · 1L",
+    quip: "A dollar, and the heat loses.",
     price: "$1",
   },
   {
@@ -101,6 +107,7 @@ const TICKETS: Ticket[] = [
     alt: "Nuttelex barista almond milk, 1 litre, priced at $2",
     name: "Almond milk",
     meta: "7 Oct · 1L",
+    quip: "Cafe coffee. Home prices.",
     price: "$2",
   },
   {
@@ -110,6 +117,7 @@ const TICKETS: Ticket[] = [
     alt: "Nuttelex Buttery spread, 500 grams, priced at $3",
     name: "Nuttelex Buttery",
     meta: "9 Oct · 500g",
+    quip: "Butter’s understudy. Nails it.",
     price: "$3",
   },
   {
@@ -119,9 +127,33 @@ const TICKETS: Ticket[] = [
     alt: "White King premium lavender bleach, 1.25 litres, priced at $3",
     name: "White King bleach",
     meta: "6 Oct · 1.25L",
+    quip: "Lavender, and no excuses.",
     price: "$3",
   },
 ];
+
+const HANDLE = "cheaperbuymiles";
+
+function StoryLink() {
+  return (
+    <a className="ig-story" href={PROFILE} target="_blank" rel="noopener noreferrer">
+      <span className="ig-story-ring" aria-hidden="true">
+        <span className="ig-story-face">
+          <LogoMark />
+        </span>
+      </span>
+      <span className="ig-story-name">{HANDLE}</span>
+    </a>
+  );
+}
+
+function CommentLink({ href }: { href: string }) {
+  return (
+    <a className="ig-comment" href={href} target="_blank" rel="noopener noreferrer">
+      <span>Leave a comment</span>
+    </a>
+  );
+}
 
 function Price({ value }: { value: string }) {
   const match = /^\$(\d+)$/.exec(value);
@@ -162,10 +194,13 @@ export function InstaShelf() {
 
       <div className="ig-feature">
         {HEROES.map((post) => (
-          <a key={post.id} className="ig-card ig-hero" href={post.href} target="_blank" rel="noopener noreferrer">
+          <article key={post.id} className="ig-card ig-hero">
             <span className="ig-scan" aria-hidden="true" />
+            <StoryLink />
+            <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
             <figure>
               <img src={post.img} alt={post.alt} width={1080} height={1440} />
+              <p className="ig-quip">{post.quip}</p>
             </figure>
             <div className="ig-body">
               <p className="ig-kicker">
@@ -173,7 +208,6 @@ export function InstaShelf() {
                 <span>{post.aisle}</span>
               </p>
               <h3>{post.name}</h3>
-              <p className="ig-line">{post.line}</p>
               <dl className="ig-cells">
                 <div>
                   <dt>Size</dt>
@@ -193,32 +227,35 @@ export function InstaShelf() {
                 <Price value={post.price} />
               </div>
             </div>
-            <span className="sr-only">Opens the Instagram post in a new tab.</span>
-          </a>
+            </a>
+            <CommentLink href={post.href} />
+          </article>
         ))}
       </div>
 
       <ul className="ig-grid">
         {TICKETS.map((post) => (
           <li key={post.id}>
-            <a className="ig-card ig-ticket" href={post.href} target="_blank" rel="noopener noreferrer">
+            <article className="ig-card ig-ticket">
               <span className="ig-scan" aria-hidden="true" />
-              <figure>
-                <img src={post.img} alt={post.alt} width={1080} height={1440} />
-              </figure>
-              <div className="ig-label">
-                <Price value={post.price} />
-                <span className="ig-label-meta">
-                  <b>{post.name}</b>
-                  {post.meta}
-                </span>
-                <span className="ig-code" aria-hidden="true" />
-              </div>
-              <span className="sr-only">
-                {post.priceLabel ? `${post.priceLabel}. ` : ""}
-                Opens the Instagram post in a new tab.
-              </span>
-            </a>
+              <StoryLink />
+              <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
+                <figure>
+                  <img src={post.img} alt={post.alt} width={1080} height={1440} />
+                  <p className="ig-quip">{post.quip}</p>
+                </figure>
+                <div className="ig-label">
+                  <Price value={post.price} />
+                  <span className="ig-label-meta">
+                    <b>{post.name}</b>
+                    {post.meta}
+                  </span>
+                  <span className="ig-code" aria-hidden="true" />
+                </div>
+                <span className="sr-only">{post.priceLabel ? `${post.priceLabel}. ` : ""}Opens the Instagram post.</span>
+              </a>
+              <CommentLink href={post.href} />
+            </article>
           </li>
         ))}
       </ul>

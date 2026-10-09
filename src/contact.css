@@ -33,7 +33,7 @@ html.ct-lock { overflow: hidden; }
   width: min(440px, calc(100vw - 24px));
   overflow: hidden;
   border-radius: 24px;
-  background: #24180f;
+  background: var(--cream);
   box-shadow:
     0 24px 60px -28px rgb(0 20 14 / 0.55),
     0 2px 8px rgb(0 20 14 / 0.08);
@@ -63,7 +63,7 @@ html.ct-lock { overflow: hidden; }
   z-index: 1;
   flex: 1;
   min-height: 0;
-  background: var(--paper);
+  background: transparent;
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -78,25 +78,15 @@ html.ct-lock { overflow: hidden; }
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  min-height: 300px;
-  padding: 22px 22px 18px;
-  overflow: hidden;
-  background: #24180f;
-  color: var(--cream);
+  min-height: 0;
+  padding: 18px 22px 12px;
+  background: linear-gradient(180deg, rgb(254 252 247 / 0.2), rgb(254 252 247 / 0));
+  color: var(--green-900);
 }
-.ct-band::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0;
-  z-index: 1;
-  height: 92px;
-  background: linear-gradient(180deg, transparent, rgb(8 18 14 / 0.82));
-  pointer-events: none;
-}
-.ct-band-copy { position: relative; z-index: 2; }
+.ct-band-copy { position: relative; z-index: 2; padding-right: 52px; }
 .ct-eyebrow {
   margin: 0 0 6px;
-  color: var(--sage-200);
+  color: var(--green);
   font: 700 11px / 1 var(--font-sans);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -129,7 +119,7 @@ html.ct-lock { overflow: hidden; }
 .ct-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
 
 .ct-form,
-.ct-done { display: grid; gap: 14px; padding: 20px 22px 8px; background: var(--paper); }
+.ct-done { display: grid; gap: 14px; padding: 8px 22px 8px; background: rgb(254 252 247 / 0.72); }
 .ct-lead,
 .ct-done p { margin: 0; color: var(--ink-soft); font-size: 15.5px; line-height: 1.5; }
 .ct-done h3 { margin: 4px 0 0; color: var(--green-900); font: 400 32px / 1.05 var(--font-serif); letter-spacing: -0.03em; outline: 0; }
@@ -232,7 +222,7 @@ html.ct-lock { overflow: hidden; }
 .ct-text:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 8px; }
 .ct-note { margin: -6px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
 
-.ct-foot { padding: 8px 22px 22px; background: var(--paper); }
+.ct-foot { padding: 8px 22px 22px; background: rgb(254 252 247 / 0.82); }
 .ct-foot p {
   margin: 18px 0 4px;
   padding-top: 16px;
@@ -260,7 +250,6 @@ html.ct-lock { overflow: hidden; }
 
 @media (max-width: 600px) {
   .ct-panel { top: 80px; right: 8px; bottom: 8px; width: calc(100vw - 16px); border-radius: 20px; }
-  .ct-band { min-height: 220px; }
   .ct-band,
   .ct-form,
   .ct-done { padding-right: 16px; padding-left: 16px; }

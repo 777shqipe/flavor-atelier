@@ -233,16 +233,16 @@ export function ContactPanel({
     <div className="ct" data-open={open || undefined}>
       <div className="ct-scrim" onClick={onClose} />
       <aside className="ct-panel" ref={panel} role="dialog" aria-modal="true" aria-labelledby="ct-title" tabIndex={-1}>
+        <div className="ct-film" aria-hidden="true">
+          {seen &&
+            (reduceMotion ? (
+              <img src="/media/contact-story.jpg?v=2" alt="" />
+            ) : (
+              <video ref={film} src="/media/contact-story.mp4?v=2" poster="/media/contact-story.jpg?v=2" muted playsInline loop preload="none" />
+            ))}
+        </div>
         <div className="ct-scroll">
         <header className="ct-band">
-          <div className="ct-film" aria-hidden="true">
-            {seen &&
-              (reduceMotion ? (
-                <img src="/media/contact-story.jpg" alt="" />
-              ) : (
-                <video ref={film} src="/media/contact-story.mp4" poster="/media/contact-story.jpg" muted playsInline loop preload="none" />
-              ))}
-          </div>
           <div className="ct-band-copy">
             <p className="ct-eyebrow">Get in touch</p>
             <h2 id="ct-title">Contact us</h2>
