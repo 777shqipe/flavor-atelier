@@ -160,33 +160,68 @@
 .ig-ticket img { position: absolute; inset: 0; transition: scale 0.6s var(--spring); }
 .ig-ticket:hover img { scale: 1.035; }
 
-/* Till scanner, same pass as a flyer card. */
-.ig-scan { position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: 0; }
-.ig-scan::before {
+/* Hover is either a camera shutter or a barcode sliding past the till. */
+.ig-fx { position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none; }
+.ig-fx[data-fx="snap"]::before,
+.ig-fx[data-fx="snap"]::after { content: ""; position: absolute; left: 0; right: 0; height: 52%; background: #12100e; }
+.ig-fx[data-fx="snap"]::before { top: 0; translate: 0 -110%; }
+.ig-fx[data-fx="snap"]::after { bottom: 0; translate: 0 110%; }
+.ig-card:hover .ig-fx[data-fx="snap"] { animation: ig-flash 0.72s linear; }
+.ig-card:hover .ig-fx[data-fx="snap"]::before { animation: ig-shut-top 0.72s cubic-bezier(0.45, 0, 0.2, 1); }
+.ig-card:hover .ig-fx[data-fx="snap"]::after { animation: ig-shut-bot 0.72s cubic-bezier(0.45, 0, 0.2, 1); }
+@keyframes ig-shut-top {
+  0% { translate: 0 -110%; }
+  34% { translate: 0 0; }
+  50% { translate: 0 0; }
+  100% { translate: 0 -110%; }
+}
+@keyframes ig-shut-bot {
+  0% { translate: 0 110%; }
+  34% { translate: 0 0; }
+  50% { translate: 0 0; }
+  100% { translate: 0 110%; }
+}
+@keyframes ig-flash {
+  0%, 30% { background: transparent; }
+  40% { background: rgb(255 255 255 / 0.78); }
+  52%, 100% { background: transparent; }
+}
+.ig-fx[data-fx="till"]::before {
   content: "";
   position: absolute;
-  left: -5%;
-  right: -5%;
-  top: 0;
+  left: 6%;
+  right: 6%;
+  top: 58%;
   height: 2px;
-  background: #ff3b2a;
-  box-shadow: 0 0 6px 1px #ff3b2a, 0 0 22px 5px rgb(255 59 42 / 0.45);
+  background: #3ecf6e;
+  box-shadow: 0 0 10px 2px rgb(62 207 110 / 0.85);
+  opacity: 0;
 }
-.ig-scan::after {
+.ig-fx[data-fx="till"]::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  height: 40%;
-  background: linear-gradient(transparent, rgb(255 59 42 / 0.12));
+  top: 50%;
+  left: -22%;
+  width: 18%;
+  height: 16%;
+  border-radius: 3px;
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(90deg, #17140c 0 1px, transparent 1px 3px, #17140c 3px 6px, transparent 6px 8px, #17140c 8px 9px, transparent 9px 12px);
+  box-shadow: 0 6px 14px -8px rgb(0 20 14 / 0.6);
+  opacity: 0;
 }
-.ig-card:hover .ig-scan { animation: ig-scan 0.85s cubic-bezier(0.45, 0, 0.55, 1); }
-.ig-card:hover .ig-price { animation: ig-beep 0.45s 0.8s var(--bounce); }
-@keyframes ig-scan {
-  0% { opacity: 1; translate: 0 0; }
-  88% { opacity: 1; }
-  100% { opacity: 0; translate: 0 100%; }
+.ig-card:hover .ig-fx[data-fx="till"]::before { animation: ig-laser 0.95s ease; }
+.ig-card:hover .ig-fx[data-fx="till"]::after { animation: ig-pass 0.95s cubic-bezier(0.4, 0, 0.2, 1); }
+.ig-card:has(.ig-fx[data-fx="till"]):hover .ig-price { animation: ig-beep 0.4s 0.42s var(--bounce); }
+@keyframes ig-laser {
+  0%, 100% { opacity: 0; }
+  18% { opacity: 0.45; }
+  48% { opacity: 1; }
+  78% { opacity: 0.3; }
+}
+@keyframes ig-pass {
+  0% { opacity: 1; left: -24%; }
+  100% { opacity: 1; left: 108%; }
 }
 @keyframes ig-beep { 35% { scale: 1.08; } }
 
@@ -314,7 +349,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ig-card:hover .ig-scan,
+  .ig-card:hover .ig-fx,
+  .ig-card:hover .ig-fx::before,
+  .ig-card:hover .ig-fx::after,
   .ig-card:hover .ig-price { animation: none; }
   .ig-ticket img { transition: none; }
   .ig-card { transition: none; }

@@ -134,6 +134,22 @@ const TICKETS: Ticket[] = [
 
 const HANDLE = "cheaperbuymiles";
 
+/** Stable mix: each card is either a camera snap or a till pass. */
+const FX: Record<string, "snap" | "till"> = {
+  lasagne: "snap",
+  icecream: "till",
+  tempeh: "till",
+  mikeike: "snap",
+  water: "snap",
+  almond: "till",
+  nuttelex: "snap",
+  bleach: "till",
+};
+
+function Fx({ id }: { id: string }) {
+  return <span className="ig-fx" data-fx={FX[id] ?? "snap"} aria-hidden="true" />;
+}
+
 function StoryLink() {
   return (
     <a className="ig-story" href={PROFILE} target="_blank" rel="noopener noreferrer">
@@ -195,12 +211,12 @@ export function InstaShelf() {
       <div className="ig-feature">
         {HEROES.map((post) => (
           <article key={post.id} className="ig-card ig-hero">
-            <span className="ig-scan" aria-hidden="true" />
             <StoryLink />
             <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
             <figure>
               <img src={post.img} alt={post.alt} width={1080} height={1440} />
               <p className="ig-quip">{post.quip}</p>
+              <Fx id={post.id} />
             </figure>
             <div className="ig-body">
               <p className="ig-kicker">
@@ -237,12 +253,12 @@ export function InstaShelf() {
         {TICKETS.map((post) => (
           <li key={post.id}>
             <article className="ig-card ig-ticket">
-              <span className="ig-scan" aria-hidden="true" />
               <StoryLink />
               <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
                 <figure>
                   <img src={post.img} alt={post.alt} width={1080} height={1440} />
                   <p className="ig-quip">{post.quip}</p>
+                  <Fx id={post.id} />
                 </figure>
                 <div className="ig-label">
                   <Price value={post.price} />
