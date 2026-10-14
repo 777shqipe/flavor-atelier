@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 /** Cart-in-a-circle mark, as on the shop signs in the illustrations. */
 export function LogoMark({ className = "" }: { className?: string }) {
@@ -16,11 +16,21 @@ export function LogoMark({ className = "" }: { className?: string }) {
   );
 }
 
-const WORDS = [
-  ["C", "HEAPER"],
+const WORDS: Array<[string, ReactNode]> = [
+  [
+    "C",
+    <>
+      HE
+      {/* Every so often this A turns into a blinking pixel heart for a moment. */}
+      <span className="logo-a">
+        A<i className="logo-a-heart" />
+      </span>
+      PER
+    </>,
+  ],
   ["B", "UY"],
   ["M", "ILES"],
-] as const;
+];
 
 /**
  * The wordmark printed on an electronic shelf label: light plastic housing, an
@@ -47,6 +57,24 @@ export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey
       delete el.dataset.flash;
     };
   }, [refreshKey]);
+
+  useEffect(() => {
+    const el = label.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let timer = 0;
+    let off = 0;
+    const love = () => {
+      el.dataset.love = "";
+      off = window.setTimeout(() => delete el.dataset.love, 1300);
+      timer = window.setTimeout(love, 8000 + Math.random() * 12000);
+    };
+    timer = window.setTimeout(love, 3000 + Math.random() * 7000);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(off);
+      delete el.dataset.love;
+    };
+  }, []);
 
   return (
     <button className="logo" type="button" onClick={onClick} aria-label="Cheaper Buy Miles, home">
