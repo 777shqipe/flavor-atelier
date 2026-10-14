@@ -32,11 +32,12 @@
 
 /* Clips only the bottom edge, at the printer's slot, so paper rises out of it. */
 .rcpt-window { position: relative; z-index: 2; clip-path: inset(-400px -200px 5px -200px); }
+/* Paper-wide and centred, so it lines up with the slot of the wider printer below. */
 .rcpt-tear {
+  width: var(--paper-w);
+  margin-inline: auto;
   filter: drop-shadow(0 22px 22px rgb(0 18 12 / 0.38));
-  transition: translate 0.8s var(--bounce), rotate 0.8s var(--bounce);
 }
-.rcpt[data-phase="done"] .rcpt-tear { translate: 0 -16px; rotate: -2.4deg; }
 
 .paper {
   --zz: 7px;
