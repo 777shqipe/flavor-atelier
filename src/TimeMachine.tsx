@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { CART_SVG } from "./mapArt";
-import { Odometer } from "./Odometer";
 import "./timemachine.css";
 
 /**
  * Our story as a time machine: a destination display, a rail with four stops
  * and the trolley that rides it. Pick a year and the display spins through
- * every year in between, the stars streak into a warp, and the window lands on
- * that era with what was happening to food waste in Australia at the time.
+ * every year in between on a "now serving" LED sign, the stars streak past, and
+ * the window cross-fades to that era, its highlights stuck on as stickers and
+ * what was happening to food waste in Australia at the time alongside.
  * While nobody touches it, it travels on its own.
  */
 
@@ -74,6 +74,32 @@ const STARS = Array.from({ length: 44 }, (_, i) => ({
   size: 0.6 + ((i * 29) % 10) / 10,
   delay: (i * 71) % 900,
 }));
+
+/** Seven-segment LED, like a "now serving" sign: which of the segments a–g each digit lights. */
+const SEGMENTS = {
+  a: "7.5,6 13,0.5 47,0.5 52.5,6 47,11.5 13,11.5",
+  b: "54,7.5 59.5,13 59.5,45 54,50.5 48.5,45 48.5,13",
+  c: "54,53.5 59.5,59 59.5,91 54,96.5 48.5,91 48.5,59",
+  d: "7.5,98 13,92.5 47,92.5 52.5,98 47,103.5 13,103.5",
+  e: "6,53.5 11.5,59 11.5,91 6,96.5 0.5,91 0.5,59",
+  f: "6,7.5 11.5,13 11.5,45 6,50.5 0.5,45 0.5,13",
+  g: "7.5,52 13,46.5 47,46.5 52.5,52 47,57.5 13,57.5",
+};
+const LIT = ["abcdef", "bc", "abdeg", "abcdg", "bcfg", "acdfg", "acdefg", "abc", "abcdefg", "abcdfg"];
+
+function Led({ value }: { value: string }) {
+  return (
+    <span className="tm-led-digits" role="img" aria-label={value}>
+      {[...value].map((char, column) => (
+        <svg key={column} viewBox="0 0 60 104" aria-hidden="true">
+          {Object.entries(SEGMENTS).map(([name, points]) => (
+            <polygon key={name} points={points} data-on={LIT[Number(char)]?.includes(name) || undefined} />
+          ))}
+        </svg>
+      ))}
+    </span>
+  );
+}
 
 const AUTO_MS = 7000;
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -174,19 +200,15 @@ export function TimeMachine() {
           </header>
 
           <div className="tm-screen">
-            <p className="tm-row">
-              <span>Destination time</span>
-              <span className="tm-led" aria-hidden="true" />
-            </p>
+            <p className="tm-plate">Destination time</p>
             <div className="tm-display" data-go={shown !== era.year || undefined}>
-              <span className="tm-ghost" aria-hidden="true">
-                <Odometer value="8888" />
-              </span>
-              <Odometer value={String(shown)} />
+              <Led value={String(shown)} />
             </div>
-            <p className="tm-row tm-present">
-              <span>Present time</span>
-              <b>{NOW}</b>
+            <p className="tm-row">
+              <span>
+                Present time <b>{NOW}</b>
+              </span>
+              <span className="tm-led" aria-hidden="true" />
             </p>
           </div>
 
@@ -226,23 +248,36 @@ export function TimeMachine() {
           </button>
         </div>
 
-        <article className="tm-window" id="tm-panel" role="tabpanel" aria-labelledby={`tm-tab-${index}`} key={era.year}>
+        <article className="tm-window" id="tm-panel" role="tabpanel" aria-labelledby={`tm-tab-${index}`}>
           <figure className="tm-photo">
-            <img src={era.src} alt={`${era.title}, ${index === last ? "today" : era.year}`} draggable={false} />
-            <figcaption>
-              <b>{index === last ? "Today" : era.year}</b>
-              <span>Stop 0{index + 1} / 0{ERAS.length}</span>
+            {ERAS.map((item, i) => (
+              <img
+                key={item.year}
+                src={item.src}
+                alt={i === index ? `${item.title}, ${i === last ? "today" : item.year}` : ""}
+                aria-hidden={i !== index || undefined}
+                data-on={i === index || undefined}
+                draggable={false}
+              />
+            ))}
+            <figcaption key={era.year}>
+              <b className="tm-year">{index === last ? "Today" : era.year}</b>
+              <ul className="tm-stickers">
+                {era.chips.map((chip, i) => (
+                  <li key={chip} style={{ "--k": i } as CSSProperties}>
+                    {chip}
+                  </li>
+                ))}
+              </ul>
+              <div className="tm-copy" aria-live="polite">
+                <span className="tm-stopno">
+                  Stop 0{index + 1} / 0{ERAS.length}
+                </span>
+                <h3>{era.title}</h3>
+                <p>{era.text}</p>
+              </div>
             </figcaption>
           </figure>
-          <div className="tm-copy" aria-live="polite">
-            <h3>{era.title}</h3>
-            <p>{era.text}</p>
-            <ul className="tm-chips">
-              {era.chips.map((chip) => (
-                <li key={chip}>{chip}</li>
-              ))}
-            </ul>
-          </div>
         </article>
       </div>
     </section>
