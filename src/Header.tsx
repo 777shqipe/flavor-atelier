@@ -27,6 +27,29 @@ function Roll({ text }: { text: string }) {
   );
 }
 
+/**
+ * A deli "take a number" ticket on its side: V-notched where it leaves the
+ * roll, pointed at the far end, yellow edge stripes, a perforation to tear at
+ * and the dispenser's triangle mark by the tip.
+ */
+function TicketArt() {
+  return (
+    <svg viewBox="0 0 164 40" focusable="false">
+      <path
+        d="M.6.6H136c12 5.4 21.5 13.4 24.4 17.8a2.6 2.6 0 0 1 0 3.2C157.5 26 148 34 136 39.4H.6l12-18.1a2.4 2.4 0 0 0 0-2.6z"
+        fill="#fffdf7"
+        stroke="#1d1d1b"
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+      />
+      <path d="M26 2.4h107v3.2H26zM26 34.4h107v3.2H26z" fill="#f5c400" />
+      <path d="M22 3v34" stroke="#cfc8b4" strokeWidth="1" strokeDasharray="1.6 2.2" />
+      <path d="M116.5 13h2.6v14h-2.6zM121.5 12.4L134 20l-12.5 7.6z" fill="#f5c400" />
+      <path d="M124.6 12v16" stroke="#fffdf7" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 export function Header({
   page,
   onNavigate,
@@ -92,7 +115,7 @@ export function Header({
       onContact();
       setTicket((n) => n + 1);
       setTorn(false);
-    }, 320);
+    }, 380);
   };
 
   return (
@@ -132,9 +155,18 @@ export function Header({
                     <b>You</b>
                   </span>
                 </span>
+                {/* Stub and ticket are the same drawing cut along a ragged tear line:
+                    hover starts the rip, click finishes it. */}
                 <span className="cta-ticket" key={ticket} aria-hidden="true">
-                  <span className="cta-paper">
-                    <span className="cta-word">Contact us</span>
+                  <span className="cta-stub">
+                    <TicketArt />
+                  </span>
+                  <span className="cta-tear">
+                    <TicketArt />
+                    <span className="cta-copy">
+                      <small>It’s my turn</small>
+                      <span className="cta-word">Contact us</span>
+                    </span>
                   </span>
                 </span>
               </button>
