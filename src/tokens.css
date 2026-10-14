@@ -114,3 +114,12 @@
   background: var(--bg);
   color: var(--fg);
 }
+
+/* Glow-up additions: layered depth, paper grain, soft easing. */
+:root {
+  --shadow-lift: 0 1px 1px rgb(0 40 30 / 0.06), 0 6px 12px -8px rgb(0 40 30 / 0.28), 0 22px 36px -22px rgb(0 40 30 / 0.45);
+  --shadow-press: 0 1px 2px rgb(0 40 30 / 0.2);
+  --hi-inset: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -1px 0 rgb(0 0 0 / 0.12);
+  --grain: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+}

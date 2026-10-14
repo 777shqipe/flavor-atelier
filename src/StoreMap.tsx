@@ -26,6 +26,7 @@ const pinHtml = (store: Store, index: number) => `
   <div class="pin" style="--c:${store.color};--i:${index}">
     <span class="pin-shadow"></span>
     <span class="pin-pulse"></span>
+    <span class="pin-pulse two"></span>
     <span class="pin-art">${shopPinSvg(store)}</span>
     <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><b>0${index + 1}</b>${store.name}</span>
   </div>`;
@@ -453,6 +454,9 @@ export function StoreMap({
           role="region"
           aria-label="Map of the four Cheaper Buy Miles stores in inner Melbourne"
         />
+        <span className="finder-plate" aria-hidden="true">
+          Inner Melbourne · <b>04</b> shops
+        </span>
         <svg className="finder-compass" viewBox="0 0 44 44" aria-hidden="true">
           <circle cx="22" cy="22" r="20" />
           <g className="needle">
@@ -493,6 +497,11 @@ export function StoreMap({
               </div>
             </div>
 
+            {!store && (
+              <p className="finder-hint" aria-live="polite">
+                Pick a shopfront on the map to see its details.
+              </p>
+            )}
             {store && (
               <article className="finder-card" style={{ "--c": store.color } as CSSProperties} aria-live="polite">
                 <span className="fc-awning" key={`aw-${store.id}`} aria-hidden="true" />
@@ -507,6 +516,11 @@ export function StoreMap({
                     </p>
                     <h3>{store.name}</h3>
                     <p className="fc-address">{store.address}</p>
+                    <p className="fc-hours">
+                      {store.hours.split(" · ").map((part) => (
+                        <span key={part}>{part}</span>
+                      ))}
+                    </p>
                     <p className="fc-line">{store.line}</p>
                     <div className="fc-actions">
                       <a className="fc-primary" href={directionsLink(store)} target="_blank" rel="noreferrer">
@@ -547,7 +561,7 @@ export function StoreMap({
           </p>
           <ol>
             {STORES.map((item, index) => (
-              <li key={item.id}>
+              <li key={item.id} style={{ "--i": index } as CSSProperties}>
                 <button
                   type="button"
                   style={{ "--c": item.color } as CSSProperties}

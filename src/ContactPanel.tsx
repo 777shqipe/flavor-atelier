@@ -280,7 +280,11 @@ export function ContactPanel({
               </div>
 
               {sent ? (
-                <div className="ct-done">
+                <>
+                  <span className="ct-stamp" aria-hidden="true">
+                    Received
+                  </span>
+                  <div className="ct-done">
                   <span className="ct-check" aria-hidden="true">
                     <svg viewBox="0 0 24 24">
                       <path d="M5 12.5l4.5 4.5L19 7.5" />
@@ -300,14 +304,21 @@ export function ContactPanel({
                       Close
                     </button>
                   </div>
-                </div>
+                  </div>
+                </>
               ) : (
                 <form className="ct-form" onSubmit={submit} noValidate>
                   <fieldset className="ct-group">
                     <legend>
                       <span className="ct-num" aria-hidden="true">1</span> What do you need?
                     </legend>
-                    <div className="ct-topics" role="radiogroup" aria-label="What do you need?" onKeyDown={onTopicKey}>
+                    <div
+                      className="ct-topics"
+                      role="radiogroup"
+                      aria-label="What do you need?"
+                      onKeyDown={onTopicKey}
+                      style={{ "--sel": TOPICS.findIndex((item) => item.id === topic) } as CSSProperties}
+                    >
                       {TOPICS.map((item) => {
                         const checked = item.id === topic;
                         return (

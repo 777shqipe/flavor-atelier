@@ -1,7 +1,12 @@
+import type { CSSProperties } from "react";
 import { CutLine } from "./Flyer";
 import { LogoMark } from "./Logo";
 import { RingBadge } from "./RingBadge";
 import "./insta.css";
+
+/** Each print sits on the shelf a touch crooked; the pattern repeats so it never looks random-generated. */
+const TILTS = [-1.1, 0.8, -0.6, 1.05, -0.85, 0.7];
+const slotStyle = (i: number, scale = 1) => ({ "--i": i, "--tilt": `${(TILTS[i % TILTS.length] * scale).toFixed(2)}deg` }) as CSSProperties;
 
 const PROFILE = "https://www.instagram.com/cheaperbuymiles/";
 
@@ -37,6 +42,8 @@ type Ticket = {
   price: string;
   /** Spoken price when the printed one is a phrase, not a single figure. */
   priceLabel?: string;
+  /** Two or three words on the round sticker over the photo. */
+  tag: string;
 };
 
 const HEROES: Hero[] = [
@@ -79,6 +86,7 @@ const TICKETS: Ticket[] = [
     quip: "Protein, without the lecture.",
     price: "3 for $5",
     priceLabel: "3 for $5",
+    tag: "New in",
   },
   {
     id: "mikeike",
@@ -89,6 +97,7 @@ const TICKETS: Ticket[] = [
     meta: "9 Oct · 120g",
     quip: "Sour enough to end a chat.",
     price: "$2",
+    tag: "Sour",
   },
   {
     id: "water",
@@ -99,6 +108,7 @@ const TICKETS: Ticket[] = [
     meta: "8 Oct · 1L",
     quip: "A dollar, and the heat loses.",
     price: "$1",
+    tag: "Chill",
   },
   {
     id: "almond",
@@ -109,6 +119,7 @@ const TICKETS: Ticket[] = [
     meta: "7 Oct · 1L",
     quip: "Cafe coffee. Home prices.",
     price: "$2",
+    tag: "Barista",
   },
   {
     id: "nuttelex",
@@ -119,6 +130,7 @@ const TICKETS: Ticket[] = [
     meta: "9 Oct · 500g",
     quip: "Butter’s understudy. Nails it.",
     price: "$3",
+    tag: "Plant",
   },
   {
     id: "bleach",
@@ -129,6 +141,7 @@ const TICKETS: Ticket[] = [
     meta: "6 Oct · 1.25L",
     quip: "Lavender, and no excuses.",
     price: "$3",
+    tag: "Shine",
   },
 ];
 
@@ -209,12 +222,14 @@ export function InstaShelf() {
       </header>
 
       <div className="ig-feature">
-        {HEROES.map((post) => (
-          <article key={post.id} className="ig-card ig-hero">
+        {HEROES.map((post, i) => (
+          <div key={post.id} className="ig-slot rv" style={slotStyle(i, 0.45)}>
+          <article className="ig-card ig-hero">
             <StoryLink />
             <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
             <figure>
               <img src={post.img} alt={post.alt} width={1080} height={1440} />
+              <span className="ig-sticker" aria-hidden="true">{post.size}</span>
               <p className="ig-quip">{post.quip}</p>
               <Fx id={post.id} />
             </figure>
@@ -246,17 +261,19 @@ export function InstaShelf() {
             </a>
             <CommentLink href={post.href} />
           </article>
+          </div>
         ))}
       </div>
 
       <ul className="ig-grid">
-        {TICKETS.map((post) => (
-          <li key={post.id}>
+        {TICKETS.map((post, i) => (
+          <li key={post.id} className="ig-slot rv" style={slotStyle(i + 2)}>
             <article className="ig-card ig-ticket">
               <StoryLink />
               <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
                 <figure>
                   <img src={post.img} alt={post.alt} width={1080} height={1440} />
+                  <span className="ig-sticker" aria-hidden="true">{post.tag}</span>
                   <p className="ig-quip">{post.quip}</p>
                   <Fx id={post.id} />
                 </figure>

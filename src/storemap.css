@@ -9,7 +9,25 @@
   overflow: hidden;
   border-radius: var(--r-3);
   background: var(--night);
-  box-shadow: var(--shadow-3);
+  /* a mounted print: thin rule, paper mat, second rule, then the drop */
+  box-shadow:
+    0 0 0 1px rgb(0 88 66 / 0.16),
+    0 0 0 8px var(--paper),
+    0 0 0 9px rgb(0 88 66 / 0.14),
+    0 50px 80px -40px rgb(0 30 20 / 0.75);
+}
+/* paper grain over the tiles (above the map, below every control) */
+.finder-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 440;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.9  0 0 0 0 0.9  0 0 0 0 0.8  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
+  background-size: 180px 180px;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 .finder-stage::after {
   content: "";
@@ -17,10 +35,23 @@
   inset: 0;
   z-index: 450;
   border-radius: inherit;
-  box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.08), inset 0 0 120px rgb(0 0 0 / 0.45);
+  background: radial-gradient(120% 90% at 50% 45%, transparent 58%, rgb(0 0 0 / 0.42) 100%);
+  box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.1), inset 0 1px 0 rgb(246 240 219 / 0.08), inset 0 0 120px rgb(0 0 0 / 0.45);
   pointer-events: none;
 }
-.finder-map { position: relative; z-index: 0; isolation: isolate; width: 100%; height: clamp(540px, 74vh, 720px); background: var(--night); font-family: var(--font-sans); }
+.finder-map {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  width: 100%;
+  height: clamp(540px, 74vh, 720px);
+  background:
+    radial-gradient(rgb(246 240 219 / 0.11) 1px, transparent 1.2px) 0 0 / 22px 22px,
+    linear-gradient(rgb(246 240 219 / 0.035) 1px, transparent 1px) 0 0 / 110px 110px,
+    linear-gradient(90deg, rgb(246 240 219 / 0.035) 1px, transparent 1px) 0 0 / 110px 110px,
+    var(--night);
+  font-family: var(--font-sans);
+}
 .finder.compact .finder-map { height: clamp(460px, 64vh, 600px); }
 /* Esri's dark grey canvas, pushed into the brand's deep greens. */
 .finder-map .leaflet-tile-pane { filter: sepia(1) hue-rotate(96deg) saturate(1.9) brightness(0.92) contrast(1.06); }
@@ -65,9 +96,9 @@
   width: var(--pw);
   height: calc(var(--pw) * 76 / 64);
   transform-origin: 50% 93.4%;
-  transition: translate 0.45s var(--spring), scale 0.55s var(--spring);
+  transition: translate 0.45s var(--spring), scale 0.65s var(--bounce);
 }
-.pin-art svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 10px 10px rgb(0 0 0 / 0.35)); }
+.pin-art svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1.5px 1px rgb(0 0 0 / 0.35)) drop-shadow(0 12px 12px rgb(0 0 0 / 0.38)); }
 .pin-shadow {
   position: absolute;
   left: -16px;
@@ -99,13 +130,13 @@
   padding: 0 11px 0 6px;
   border-radius: 99px;
   background: var(--cream);
-  box-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.5);
+  box-shadow: 0 0 0 1.5px #17140c, 0 8px 16px -6px rgb(0 0 0 / 0.6);
   color: #17140c;
   font: 700 12px / 1 var(--font-sans);
   letter-spacing: 0.01em;
   white-space: nowrap;
   pointer-events: none;
-  transition: background-color 0.3s, translate 0.45s var(--spring);
+  transition: background-color 0.3s, translate 0.45s var(--spring), rotate 0.55s var(--bounce);
 }
 .pin-tag.left { left: auto; right: 32px; }
 .pin-tag b { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--c); font: 700 9px / 1 var(--font-mono); }
@@ -117,9 +148,10 @@
 .sm-marker:hover .pin-tag,
 .sm-marker.hot .pin-tag { translate: 0 -7px; background: var(--sun); }
 .sm-marker.active .pin-art { scale: 1.22; }
-.sm-marker.active .pin-tag { translate: 8px -14px; background: var(--sun); }
-.sm-marker.active .pin-tag.left { translate: -8px -14px; }
-.sm-marker.active .pin-pulse { animation: ground-pulse 1.9s ease-out infinite; }
+.sm-marker.active .pin-tag { translate: 8px -14px; rotate: -4deg; background: var(--sun); }
+.sm-marker.active .pin-tag.left { translate: -8px -14px; rotate: 4deg; }
+.sm-marker.active .pin-pulse { animation: ground-pulse 2.2s ease-out infinite; }
+.sm-marker.active .pin-pulse.two { animation-delay: 0.75s; }
 .sm-marker.active .pin-aw { transform-box: fill-box; transform-origin: 50% 0; animation: awning 1.6s ease-in-out infinite; }
 .sm-marker:focus-visible .pin-art svg { outline: 3px solid var(--sun); outline-offset: 4px; border-radius: 8px; }
 @keyframes ground-pulse { 0% { scale: 0.3; opacity: 0.9; } 100% { scale: 1.7; opacity: 0; } }
@@ -241,7 +273,8 @@
 }
 .locate:hover { translate: 0 -2px; }
 .locate svg { color: var(--sun); }
-.locate:disabled { cursor: progress; }
+.locate:disabled { cursor: progress; animation: locate-pulse 1.1s ease-in-out infinite; }
+@keyframes locate-pulse { 50% { color: rgb(246 240 219 / 0.6); } }
 .locate:disabled svg { animation: lm-spin 1.2s linear infinite; }
 .locate svg, .fc-nav svg, .flegend-cta svg, .fc-primary svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .zoom { display: grid; gap: 2px; padding: 5px; border-radius: 26px; }
@@ -258,9 +291,14 @@
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
 }
-.zoom button:hover { background: rgb(246 240 219 / 0.1); }
-.zoom .all { margin-top: 2px; background: var(--sun); color: #17140c; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
-.zoom .all:hover { background: #ffd060; }
+.zoom button:hover { background: rgb(246 240 219 / 0.1); color: var(--sun); }
+.zoom button:active { scale: 0.9; transition-duration: 0.08s; }
+.zoom button + button::before { content: ""; position: absolute; top: -2px; left: 12px; right: 12px; height: 1px; background: rgb(246 240 219 / 0.1); }
+.zoom button { position: relative; transition: background-color 0.2s, color 0.2s, scale 0.3s var(--spring); }
+.zoom .all { margin-top: 2px; background: var(--sun); color: #17140c; font: 700 10px / 1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4); }
+.zoom .all::before { display: none; }
+.zoom .all:hover { background: #ffd060; color: #17140c; }
+.locate:active { translate: 0 0; scale: 0.98; }
 .finder button:focus-visible, .finder a:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
 .finder-note {
   max-width: 270px;
@@ -268,11 +306,55 @@
   padding: 10px 14px;
   border-radius: 14px;
   background: var(--cream);
+  box-shadow: 0 0 0 1.5px #17140c, 0 14px 22px -12px rgb(0 0 0 / 0.7);
   color: var(--green-900);
   font: 600 13px / 1.35 var(--font-sans);
-  animation: fc-in 0.5s var(--spring);
+  rotate: -1.5deg;
+  animation: note-in 0.6s var(--bounce);
 }
+@keyframes note-in { from { opacity: 0; translate: 0 8px; scale: 0.9; } }
 .finder-note.ok { background: var(--sun); color: #17140c; }
+.finder-note.ok b { font-family: var(--font-serif); font-weight: 400; font-size: 15px; }
+/* nothing picked yet: a little sticker where the card will land */
+.finder-hint {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 500;
+  margin: 0;
+  padding: 11px 16px;
+  border-radius: 14px;
+  background: var(--cream);
+  box-shadow: 0 0 0 1.5px #17140c, 0 14px 22px -12px rgb(0 0 0 / 0.7);
+  color: var(--green-900);
+  font: 600 13px / 1.3 var(--font-sans);
+  rotate: -1.5deg;
+  animation: note-in 0.6s var(--bounce) 0.6s both;
+}
+/* map plate: the cartouche a paper map carries */
+.finder-plate {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  background: var(--cream);
+  box-shadow: 0 0 0 1.5px #17140c, 0 10px 18px -10px rgb(0 0 0 / 0.7);
+  color: #17140c;
+  font: 700 10px / 1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  translate: -50% 0;
+  rotate: 1deg;
+  pointer-events: none;
+  animation: note-in 0.6s var(--bounce) 0.3s both;
+}
+.finder-plate b { padding: 2px 5px; border-radius: 4px; background: #17140c; color: var(--sun); }
 
 /* ---------- detail card: a little shop with its awning out ------------------- */
 .finder-card {
@@ -301,8 +383,11 @@
 @keyframes aw-roll { from { scale: 1 0; } }
 .fc { display: grid; grid-template-columns: 112px 1fr auto; gap: 16px; align-items: center; animation: fc-in 0.6s var(--spring) 0.08s both; }
 @keyframes fc-in { from { opacity: 0; translate: 0 10px; } }
-.fc-photo { position: relative; width: 112px; aspect-ratio: 1; overflow: hidden; border-radius: 18px; box-shadow: 0 0 0 3px var(--cream); }
-.fc-photo img { width: 100%; height: 100%; object-fit: cover; }
+.fc-photo { position: relative; width: 112px; aspect-ratio: 1; overflow: hidden; border-radius: 18px; box-shadow: 0 0 0 3px var(--cream), 0 16px 26px -14px rgb(0 0 0 / 0.8); animation: fc-pop 0.75s var(--bounce) 0.12s both; }
+@keyframes fc-pop { from { opacity: 0; scale: 0.6; rotate: -8deg; } }
+.fc-photo img { width: 100%; height: 100%; object-fit: cover; transition: scale 1.2s var(--ease-out); }
+.finder-card:hover .fc-photo img { scale: 1.08; }
+.fc-hours { display: grid; gap: 2px; margin: 5px 0 0; color: rgb(246 240 219 / 0.6); font: 500 11px / 1.3 var(--font-mono); letter-spacing: -0.01em; }
 .fc-badge {
   position: absolute;
   right: 6px;
@@ -317,18 +402,28 @@
   color: #141414;
 }
 .fc-badge svg { width: 19px; height: 19px; }
-.fc-status {
+.fc-status,
+.flegend-head {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 7px;
+  margin: 0 0 9px;
+  padding: 6px 11px 6px 9px;
+  border-radius: 99px;
+  background: rgb(255 185 168 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(255 185 168 / 0.28);
   color: #ffb9a8;
-  font: 700 11px / 1 var(--font-sans);
+  font: 700 10px / 1 var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.fc-status i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.fc-status.open { color: #8ff0bd; }
+.fc-status i,
+.flegend-head i { position: relative; flex: none; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.fc-status.open,
+.flegend-head.open { background: rgb(143 240 189 / 0.1); box-shadow: inset 0 0 0 1px rgb(143 240 189 / 0.3); color: #8ff0bd; }
+.fc-status.open i::after,
+.flegend-head.open i::after { content: ""; position: absolute; inset: -3px; border: 1.5px solid currentColor; border-radius: 50%; animation: live-ring 1.6s ease-out infinite; }
+@keyframes live-ring { from { scale: 0.6; opacity: 0.9; } to { scale: 2.4; opacity: 0; } }
 .fc-body h3 { color: var(--cream); font: 400 34px / 1 var(--font-serif); letter-spacing: -0.02em; }
 .fc-address { margin: 6px 0 0; font: 600 13.5px / 1.3 var(--font-sans); }
 .fc-line { margin: 3px 0 0; color: rgb(246 240 219 / 0.66); font: italic 500 13px / 1.35 var(--font-sans); }
@@ -342,11 +437,15 @@
   padding: 10px 14px 10px 18px;
   border-radius: 99px;
   background: var(--sun);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 10px 18px -10px rgb(246 181 49 / 0.7);
   color: #17140c;
-  transition: translate 0.35s var(--spring);
+  transition: translate 0.35s var(--spring), box-shadow 0.35s, scale 0.3s var(--spring);
 }
-.fc-actions .fc-primary svg { width: 16px; height: 16px; }
-.fc-actions .fc-primary:hover { translate: 0 -2px; text-decoration: none; }
+.fc-actions .fc-primary svg { width: 16px; height: 16px; transition: translate 0.35s var(--spring); }
+.fc-actions .fc-primary:hover { translate: 0 -2px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 16px 24px -10px rgb(246 181 49 / 0.75); text-decoration: none; }
+.fc-actions .fc-primary:hover svg { translate: 2px -2px; }
+.fc-actions .fc-primary:active { translate: 0 0; scale: 0.97; }
+.fc-nav button:active { scale: 0.92; }
 .fc-nav { display: grid; gap: 8px; }
 .fc-nav button {
   display: grid;
@@ -362,7 +461,7 @@
   transition: background-color 0.2s, border-color 0.2s, translate 0.35s var(--spring);
 }
 .fc-nav button:hover { border-color: var(--cream); background: rgb(246 240 219 / 0.08); translate: 0 -2px; }
-.fc-near { margin: 12px 2px 0; padding-top: 10px; border-top: 1px solid rgb(246 240 219 / 0.12); color: rgb(246 240 219 / 0.62); font: 500 12.5px / 1.3 var(--font-sans); }
+.fc-near { margin: 12px 2px 0; padding-top: 10px; border-top: 1px dashed rgb(246 240 219 / 0.22); color: rgb(246 240 219 / 0.62); font: 500 12.5px / 1.3 var(--font-sans); }
 .fc-near b { color: var(--cream); }
 
 /* ---------- compact (home): store list beside the map ----------------------- */
@@ -377,18 +476,7 @@
   background: var(--panel);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07), 0 30px 50px -24px rgb(0 0 0 / 0.8);
 }
-.flegend-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 8px 10px;
-  color: #ffb9a8;
-  font: 700 11px / 1 var(--font-sans);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.flegend-head i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.flegend-head.open { color: #8ff0bd; }
+.flegend-head { margin: 0 8px 10px; }
 .flegend ol { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
 .flegend li button {
   display: grid;
@@ -399,14 +487,22 @@
   padding: 8px;
   border: 0;
   border-radius: 16px;
+  position: relative;
   background: transparent;
   color: var(--cream);
   text-align: left;
   cursor: pointer;
   transition: background-color 0.25s, translate 0.4s var(--spring);
 }
+.flegend li button::before { content: ""; position: absolute; left: 0; top: 24%; bottom: 24%; width: 3px; border-radius: 3px; background: var(--c); scale: 1 0; transition: scale 0.4s var(--bounce); }
 .flegend li button:hover,
 .flegend li button:focus-visible { background: rgb(246 240 219 / 0.08); translate: 4px 0; }
+.flegend li button:hover::before,
+.flegend li button:focus-visible::before { scale: 1 1; }
+.flegend li button:active { translate: 2px 0; transition-duration: 0.1s; }
+.finder:not([data-live]) .flegend li { opacity: 0; }
+.finder[data-live] .flegend li { animation: fl-in 0.65s var(--ease-out) both; animation-delay: calc(var(--i) * 70ms + 350ms); }
+@keyframes fl-in { from { opacity: 0; translate: -10px 0; } }
 .fl-glyph { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--c); color: #141414; transition: rotate 0.5s var(--bounce); }
 .flegend li button:hover .fl-glyph { rotate: -14deg; }
 .fl-glyph svg { width: 21px; height: 21px; }
@@ -442,15 +538,23 @@
   padding: 12px 14px;
   border: 1.5px solid var(--line);
   border-radius: var(--r-2);
+  position: relative;
   background: var(--paper);
   color: var(--green-900);
   text-align: left;
   cursor: pointer;
   transition: background-color 0.25s, border-color 0.25s, translate 0.4s var(--spring), box-shadow 0.3s;
 }
-.finder-chips button:hover { translate: 0 -3px; box-shadow: var(--shadow-1); }
+.finder-chips { counter-reset: shop; }
+.finder-chips li { counter-increment: shop; }
+.finder-chips button::after { content: "0" counter(shop); position: absolute; top: 10px; right: 13px; font: 700 10px / 1 var(--font-mono); letter-spacing: 0.08em; opacity: 0.45; }
+.finder-chips button:hover { translate: 0 -3px; box-shadow: var(--shadow-2); }
+.finder-chips button:active { translate: 0 -1px; transition-duration: 0.1s; }
+.finder-chips button:hover .chip-glyph { rotate: -12deg; scale: 1.06; }
+.finder-chips button[aria-pressed="true"] .chip-glyph { rotate: -8deg; }
+.finder-chips button[aria-pressed="true"]::after { opacity: 0.7; }
 .finder-chips button[aria-pressed="true"] { border-color: transparent; background: var(--c); box-shadow: var(--shadow-1); }
-.chip-glyph { display: grid; flex: none; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--c); color: #141414; transition: background-color 0.25s; }
+.chip-glyph { display: grid; flex: none; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--c); color: #141414; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); transition: background-color 0.25s, rotate 0.5s var(--bounce), scale 0.5s var(--bounce); }
 .finder-chips button[aria-pressed="true"] .chip-glyph { background: #fff; }
 .chip-glyph svg { width: 23px; height: 23px; }
 .finder-chips b { display: block; font: 400 21px / 1 var(--font-serif); letter-spacing: -0.01em; }
@@ -466,6 +570,9 @@
   .fl-text b { font-size: 18px; }
   .fl-num { display: none; }
   .finder.compact .finder-map { height: 360px; }
+  .finder-plate { display: none; }
+  .finder-hint { left: 10px; right: 10px; bottom: 10px; }
+  .finder-stage { box-shadow: 0 0 0 1px rgb(0 88 66 / 0.16), 0 0 0 5px var(--paper), 0 0 0 6px rgb(0 88 66 / 0.14), 0 40px 60px -36px rgb(0 30 20 / 0.7); }
   .finder-compass { top: 12px; right: 12px; width: 40px; height: 40px; }
   .finder-card { left: 10px; right: 10px; bottom: 10px; width: auto; padding: 28px 12px 10px; }
   .fc { grid-template-columns: 84px 1fr; gap: 12px; }
@@ -479,6 +586,7 @@
 }
 @media (max-width: 900px) {
   .finder-chips { grid-template-columns: 1fr 1fr; }
+  .finder-plate { display: none; }
 }
 @media (max-width: 520px) {
   .finder-map { height: 580px; }
@@ -493,4 +601,7 @@
   .lm-spin, .lm-flag, .lm-ear, .lm-spark, .lm-blink, .lm-sway, .lm-bob circle, .finder-compass .needle { animation: none; }
   .finder[data-live] path.route-dots, .finder path.me-line, .sm-marker.active .pin-pulse, .sm-marker.active .pin-aw, .cart[data-moving] { animation: none; }
   .finder path.route-line { stroke-dashoffset: 0; }
+  .finder .flegend li, .fc-photo, .finder-hint, .finder-plate, .locate:disabled, .fc-status i::after, .flegend-head i::after { animation: none; }
+  .finder:not([data-live]) .flegend li { opacity: 1; }
+  .finder-note, .finder-hint, .finder-plate, .sm-marker.active .pin-tag { rotate: 0deg; }
 }

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { PACK_BOX, type Shape } from "./products";
 
 /**
@@ -122,14 +122,19 @@ export function Pack({
   color,
   label,
   tight = false,
+  lit = false,
 }: {
   shape: Shape;
   color: string;
   label: [string, string?];
   /** crop the drawing to PACK_BOX instead of the shared 100×140 frame */
   tight?: boolean;
+  /** studio lighting: a soft side sheen and a shaded far edge over the body, like a lit cylinder */
+  lit?: boolean;
 }) {
+  const gid = `pk-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const { parts, box } = SHAPES[shape](color, shade(color, -0.28));
+  const bodies = parts.filter((p) => p.outline !== false);
   const lines = label.filter((line): line is string => Boolean(line));
   const longest = Math.max(...lines.map((line) => line.length));
   const size = Math.min(12, (box.w - 8) / (longest * 0.5));
@@ -137,9 +142,20 @@ export function Pack({
 
   return (
     <svg viewBox={tight ? PACK_BOX[shape].join(" ") : "0 0 100 140"} aria-hidden="true" focusable="false">
+      {lit && (
+        <defs>
+          <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#000" stopOpacity="0.16" />
+            <stop offset="0.14" stopColor="#fff" stopOpacity="0.34" />
+            <stop offset="0.32" stopColor="#fff" stopOpacity="0.05" />
+            <stop offset="0.7" stopColor="#000" stopOpacity="0" />
+            <stop offset="1" stopColor="#000" stopOpacity="0.28" />
+          </linearGradient>
+        </defs>
+      )}
       <g strokeLinejoin="round" strokeLinecap="round">
         <g fill="#fff" stroke="#fff" strokeWidth="10">
-          {parts.filter((p) => p.outline !== false).map((p, i) => partEl(p, i, {}))}
+          {bodies.map((p, i) => partEl(p, i, {}))}
         </g>
         <g stroke="#141414" strokeWidth="2.4">
           {parts.map((p, i) => partEl(p, i, { fill: p.fill, ...(p.outline === false ? { stroke: "none" } : {}) }))}
@@ -159,6 +175,7 @@ export function Pack({
           </text>
         ))}
       </g>
+      {lit && <g fill={`url(#${gid})`}>{bodies.map((p, i) => partEl(p, i, {}))}</g>}
     </svg>
   );
 }

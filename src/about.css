@@ -418,3 +418,80 @@
   .ah-seal, .ah-facts div, .jar-wave, .jar-bubble, .shelf.in .jar-art, .jp-drip, .jp-photo, .jp-text, .tower-wave, .bags[data-go] .bag { animation: none !important; }
   .jar-fill { transition: none; translate: 0 0; }
 }
+
+/* ---------- glow-up pass: editorial hero, chapters, tactile shelf, condensed numbers ---------- */
+.about-hero .page-head h1 { max-width: 13ch; font-size: clamp(54px, 7vw, 112px); line-height: 0.98; letter-spacing: -0.03em; }
+.ah-italic { font-style: italic; color: var(--sage-200); }
+.ah-mark svg { stroke-width: 7; }
+.ah-facts dt::before { content: ""; display: block; width: 22px; height: 3px; margin-bottom: 10px; border-radius: 2px; background: var(--sun); }
+.ah-facts div:nth-child(2) dt::before { background: var(--mint); }
+.ah-facts div:nth-child(3) dt::before { background: var(--orange); }
+.ah-art { isolation: isolate; }
+.ah-glow { position: absolute; inset: 6% -8% 2%; z-index: -1; border-radius: 50%; background: radial-gradient(closest-side, rgb(246 181 49 / 0.3), rgb(246 181 49 / 0.06) 55%, transparent 74%); filter: blur(12px); animation: ah-glow 7s ease-in-out infinite alternate; pointer-events: none; }
+@keyframes ah-glow { to { scale: 1.08; opacity: 0.75; } }
+.ah-art .hero-illo { animation: fade-up 1s 0.15s var(--ease-out) both, ah-float 7s 1.2s ease-in-out infinite alternate; }
+@keyframes ah-float { to { translate: 0 -10px; rotate: 0.6deg; } }
+
+/* Space Mono chapter markers tie the four sections into one story. */
+.chapter { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; color: var(--eyebrow); font: 700 11px / 1 var(--font-mono); letter-spacing: 0.18em; opacity: 0.8; }
+.chapter::before { content: "Chapter"; }
+.chapter::after { content: ""; width: 42px; height: 1px; background: currentColor; opacity: 0.6; }
+
+/* story card: notepad rules, a strip of tape, numbered pillars */
+.story-card {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 29px, rgb(0 88 66 / 0.07) 29px 30px),
+    var(--paper);
+  box-shadow: 10px 12px 0 var(--sun), 0 34px 50px -28px rgb(90 50 15 / 0.5);
+}
+.story-card::before { content: ""; position: absolute; top: -13px; left: 50%; z-index: 2; width: 110px; height: 26px; translate: -50% 0; rotate: -3deg; background: rgb(246 181 49 / 0.78); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.story-card:hover .sc-num { scale: 1.02; }
+.sc-num { transform-origin: left bottom; transition: scale 0.5s var(--spring); }
+.story-pillars { counter-reset: pillar; }
+.story-pillars li { position: relative; counter-increment: pillar; padding-top: 30px; transition: translate 0.35s var(--spring), box-shadow 0.35s; }
+.story-pillars li::before { content: "0" counter(pillar); position: absolute; top: 11px; left: 14px; color: var(--ink-soft); font: 700 10px / 1 var(--font-mono); letter-spacing: 0.14em; }
+.story-pillars li:hover { translate: 0 -4px; box-shadow: inset 0 0 0 1px rgb(0 56 42 / 0.12), 0 18px 28px -18px rgb(0 40 30 / 0.45); }
+
+/* shelf: contact shadow under every jar, a lit front edge, hover wobble */
+.shelf-plank { box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.45), inset 0 -3px 0 rgb(90 50 15 / 0.22); }
+.jar::before { content: ""; position: absolute; left: 18%; right: 18%; bottom: calc(var(--ticket) + var(--rail) + var(--plank) - 5px); height: 12px; border-radius: 50%; background: radial-gradient(ellipse at center, rgb(60 35 10 / 0.4), transparent 72%); transition: scale 0.6s var(--spring), opacity 0.6s; }
+.jar[aria-selected="true"]::before { scale: 0.8 1; opacity: 0.5; }
+@keyframes jar-wobble { 0% { rotate: 0deg; } 25% { rotate: -3.2deg; } 55% { rotate: 2.4deg; } 80% { rotate: -1deg; } 100% { rotate: 0deg; } }
+.shelf.in .jar:hover:not([aria-selected="true"]) .jar-art {
+  animation-name: jar-in, jar-wobble;
+  animation-duration: 0.85s, 0.7s;
+  animation-timing-function: var(--bounce), var(--ease-out);
+  animation-fill-mode: backwards, none;
+  animation-delay: calc(var(--i) * 120ms), 0s;
+}
+.jar-ticket { box-shadow: 0 14px 22px -12px rgb(40 24 8 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.6); }
+
+/* opened jar: taped photo, warm shadow, slow hover zoom */
+.jp-photo { position: relative; box-shadow: 0 32px 46px -24px rgb(90 50 15 / 0.5), 0 2px 0 rgb(0 0 0 / 0.04); transition: rotate 0.6s var(--spring), scale 0.6s var(--spring); }
+.jp-photo::before { content: ""; position: absolute; top: -12px; left: 50%; z-index: 2; width: 96px; height: 26px; translate: -50% 0; rotate: -2deg; background: rgb(246 181 49 / 0.8); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.jp-photo:hover { rotate: -1deg; scale: 1.02; }
+.jp-photo-in { display: block; overflow: hidden; }
+.jp-photo img { transition: scale 0.9s var(--ease-out); }
+.jp-photo:hover img { scale: 1.05; }
+
+/* why it matters: condensed numerals, accent bar per card, striped meter */
+.wn::before { content: ""; position: absolute; top: 0; left: clamp(22px, 2.4vw, 32px); width: 56px; height: 5px; border-radius: 0 0 4px 4px; background: var(--wn-accent, var(--sun)); }
+.wn-tower { --wn-accent: var(--tomato); }
+.wn-tower::before { left: auto; right: clamp(22px, 2.4vw, 32px); }
+.wn-bags { --wn-accent: var(--tomato); }
+.wn-big { --wn-accent: var(--green-900); }
+.wn-edible { --wn-accent: var(--mint); }
+.wn-num { font: 700 clamp(64px, 7vw, 108px) / 0.92 var(--font-cond); letter-spacing: -0.01em; }
+.wn-num .odo-col { width: 0.5em; }
+.wn-num small { font: 700 11px / 1 var(--font-mono); letter-spacing: 0.16em; }
+.wn-tower .wn-num { font-size: clamp(48px, 4.4vw, 72px); }
+.wn-text { font-size: 16.5px; }
+.wn-meter { height: 14px; box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.18); }
+.wn-meter i { background: repeating-linear-gradient(-45deg, var(--sun) 0 8px, #ffd166 8px 16px); }
+
+@media (max-width: 640px) {
+  .wn-num { font-size: clamp(56px, 16vw, 72px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ah-glow, .ah-art .hero-illo, .shelf.in .jar:hover .jar-art { animation: none !important; }
+}

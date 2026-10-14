@@ -47,6 +47,7 @@ export function DateCheck() {
     <section className="dates" data-surface="cream" aria-labelledby="dates-title">
       <header className="section-head split rv">
         <div>
+          <span className="chapter" aria-hidden="true">04</span>
           <p className="eyebrow">Read the label</p>
           <h2 id="dates-title">Best before isn’t a bin day.</h2>
         </div>

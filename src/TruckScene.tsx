@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 /** Flat, looping illustration: pallets roll out of the warehouse door into the truck. */
 export function TruckScene() {
   return (
@@ -16,6 +18,14 @@ export function TruckScene() {
       <g className="cloud c2" fill="#f6f0db" opacity="0.7">
         <rect x="330" y="30" width="74" height="18" rx="9" />
         <rect x="348" y="20" width="36" height="20" rx="10" />
+      </g>
+
+      <g className="hills" fill="#0a6b4f" opacity="0.55">
+
+        <ellipse cx="120" cy="128" rx="200" ry="46" />
+
+        <ellipse cx="470" cy="136" rx="240" ry="40" />
+
       </g>
 
       {/* warehouse */}
@@ -54,6 +64,7 @@ export function TruckScene() {
       ))}
 
       {/* truck */}
+      <g className="truck-arrive">
       <g className="truck">
         <rect x="292" y="176" width="236" height="134" rx="10" fill="#f6f0db" />
         <rect x="292" y="270" width="236" height="12" fill="#f6b531" />
@@ -75,8 +86,15 @@ export function TruckScene() {
             <circle cx={cx} cy="312" r="24" fill="#1a1f1d" />
             <circle cx={cx} cy="312" r="10" fill="#f6f0db" />
             <path d={`M${cx - 10} 312h20M${cx} 302v20`} stroke="#9cad9b" strokeWidth="2" />
+            <path d={`M${cx - 7} 305l14 14M${cx - 7} 319l14-14`} stroke="#9cad9b" strokeWidth="2" />
           </g>
         ))}
+      </g>
+      <g className="exhaust" fill="#f6f0db">
+        {[0, 1, 2].map((i) => (
+          <circle key={i} className="puff" cx="538" cy="208" r={5 + i * 2} style={{ "--i": i } as CSSProperties} />
+        ))}
+      </g>
       </g>
     </svg>
   );

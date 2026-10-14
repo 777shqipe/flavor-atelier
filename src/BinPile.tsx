@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type * as MatterNS from "matter-js";
 import { Pack } from "./Pack";
 import { Apple, Banana, Bread, Carrot, Lemon } from "./Produce";
@@ -188,7 +188,7 @@ export function BinPile() {
           className="pi"
           data-i={index}
           data-circle={def.shape === "circle" || undefined}
-          style={{ width: def.w, height: def.h }}
+          style={{ width: def.w, height: def.h, "--i": index } as CSSProperties}
           aria-hidden="true"
         >
           {def.node}
@@ -414,6 +414,8 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
   items.forEach((it) => {
     let lastType = "";
     on(it.node, "pointerdown", (event) => {
+      // First touch ends the idle sway for the whole pile.
+      el.dataset.touched = "";
       lastType = event.pointerType;
       if (event.pointerType === "touch") return;
       event.preventDefault();

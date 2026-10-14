@@ -299,3 +299,67 @@
   .qd-row i { clip-path: none; transition: none; }
   .qd-crates i[data-on] { scale: 1; transition: none; }
 }
+
+/* ---------- glow-up pass: editorial hero, living truck, numbered steps, accent tiles, CTA shine ---------- */
+.sp-hero .page-head h1 { max-width: 13ch; font-size: clamp(54px, 7vw, 112px); line-height: 0.98; letter-spacing: -0.03em; }
+.sp-mark { position: relative; display: inline-block; color: var(--sun); font-style: italic; }
+.sp-mark::after { content: ""; position: absolute; right: 0.12em; bottom: 0.03em; left: 0; height: 0.07em; border-radius: 2px; background: var(--sun); transform-origin: left; scale: 0 1; animation: sp-rule 0.9s var(--ease-out) 0.8s forwards; }
+@keyframes sp-rule { to { scale: 1 1; } }
+.hero-actions .button, .quote-open { position: relative; overflow: hidden; }
+.hero-actions .button::after, .quote-open::after { content: ""; position: absolute; top: -40%; bottom: -40%; left: -30%; width: 34%; rotate: 18deg; background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.8), transparent); translate: -220% 0; pointer-events: none; }
+.hero-actions .button:hover::after, .quote-open:hover::after { animation: shine 0.8s var(--ease-out); }
+@keyframes shine { to { translate: 520% 0; } }
+
+/* truck scene: it arrives, hills drift behind, exhaust puffs, crisper wheels */
+.truck-scene { animation: fade-up 1s 0.15s var(--ease-out) both; }
+.truck-scene .truck-arrive { animation: truck-arrive 1.4s var(--ease-out) 0.2s both; }
+@keyframes truck-arrive { from { translate: 180px 0; } }
+.truck-scene .hills { animation: drift 44s ease-in-out infinite alternate-reverse; }
+.truck-scene .wheel { animation-duration: 0.6s; }
+.truck-scene .road-dash { animation-duration: 0.8s; }
+.truck-scene .puff { transform-box: fill-box; transform-origin: center; opacity: 0; animation: puff 2.4s ease-out infinite; animation-delay: calc(var(--i) * 0.8s); }
+@keyframes puff { 0% { opacity: 0; translate: 0 0; scale: 0.4; } 15% { opacity: 0.5; } 100% { opacity: 0; translate: 36px -48px; scale: 1.7; } }
+
+/* marquee: alternate italics, spinning stars, pause on hover */
+.marquee-track > div > span:nth-child(even) { color: var(--green-700); font-style: italic; }
+.marquee span i { display: inline-block; animation: spin 9s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+/* steps: Space Mono numbers, a ring when a step lights up, notched cards */
+.step-num { position: relative; font: 700 17px / 1 var(--font-mono); letter-spacing: 0.06em; }
+.step[data-on] .step-num::after { content: ""; position: absolute; inset: -2px; border: 2px solid var(--green); border-radius: 50%; animation: step-ring 0.9s var(--ease-out) both; }
+@keyframes step-ring { to { scale: 1.6; opacity: 0; } }
+.step-card { position: relative; }
+.step-card::before { content: ""; position: absolute; top: 50%; left: -8px; width: 14px; height: 14px; translate: 0 -50%; rotate: 45deg; border-bottom: 1.5px solid rgb(0 56 42 / 0.14); border-left: 1.5px solid rgb(0 56 42 / 0.14); background: var(--cream); transition: border-color 0.4s, background-color 0.4s; }
+.step[data-on] .step-card::before { border-color: rgb(0 56 42 / 0.28); background: #fff; }
+.step:hover .step-card { translate: 4px -2px; box-shadow: 0 24px 40px -24px rgb(0 40 30 / 0.45); }
+.step[data-on] .step-tag { animation: tag-pop 0.5s var(--bounce) 0.15s both; }
+@keyframes tag-pop { from { scale: 0.6; opacity: 0; } }
+
+/* bento: one accent per benefit, idle float on the art, deeper hover */
+.tile { --accent: var(--sun); }
+.t-pay { --accent: var(--tomato); }
+.t-track { --accent: var(--sky); }
+.t-second { --accent: var(--mint); }
+.t-min { --accent: var(--orange); }
+.t-waste { --accent: var(--lilac); }
+.tile::before { content: ""; position: absolute; top: 0; left: clamp(22px, 2.4vw, 34px); z-index: 2; width: 48px; height: 5px; border-radius: 0 0 4px 4px; background: var(--accent); transition: width 0.5s var(--spring); }
+.tile:hover::before { width: 88px; }
+.tile-kicker { font: 700 11px / 1 var(--font-mono); letter-spacing: 0.16em; }
+.tile-kicker span, .t-pay .tile-kicker span { color: var(--accent); }
+.tile:hover { box-shadow: 0 30px 50px -30px rgb(0 0 0 / 0.6); }
+.tile-art { animation: idle-float 6s ease-in-out infinite alternate; animation-delay: calc(var(--rv, 0ms) * 4); }
+@keyframes idle-float { to { translate: 0 -6px; } }
+
+/* quote: more light, bigger headline, points cascade in, lined docket */
+.quote { position: relative; isolation: isolate; overflow: hidden; background: radial-gradient(70vw 60vw at 85% 115%, rgb(246 181 49 / 0.18), transparent 60%), radial-gradient(50vw 40vw at 0% 0%, rgb(31 160 127 / 0.4), transparent 60%), var(--green); }
+.quote h2 { max-width: 14ch; font-size: clamp(44px, 5.4vw, 86px); line-height: 0.98; letter-spacing: -0.03em; }
+.quote-points li { opacity: 0; translate: -10px 0; transition: opacity 0.6s, translate 0.7s var(--spring); transition-delay: calc(0.3s + var(--i, 0) * 0.12s); }
+.quote-copy.in .quote-points li { opacity: 1; translate: 0 0; }
+.qd-sheet { background: repeating-linear-gradient(0deg, transparent 0 31px, rgb(0 88 66 / 0.05) 31px 32px), var(--paper); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-mark::after { animation: none; scale: 1 1; }
+  .truck-scene, .tile-art, .step[data-on] .step-num::after, .step[data-on] .step-tag, .hero-actions .button::after, .quote-open::after, .marquee span i { animation: none !important; }
+  .quote-points li { opacity: 1; translate: none; transition: none; }
+}

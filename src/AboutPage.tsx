@@ -23,7 +23,7 @@ export function AboutPage() {
                   <path pathLength="1" d="M4 13C70 5 160 4 296 9" />
                 </svg>
               </span>{" "}
-              since 1995.
+              <em className="ah-italic">since 1995.</em>
             </h1>
             <p className="lead">It started with a simple idea: perfectly good food should never go to waste.</p>
             <dl className="ah-facts">
@@ -42,6 +42,7 @@ export function AboutPage() {
             </dl>
           </header>
           <div className="ah-art">
+            <span className="ah-glow" aria-hidden="true" />
             <img className="hero-illo" src="/media/illo-about.png" alt="" />
             {/* peel the seal and the shop is still there */}
             <Peel
@@ -81,6 +82,7 @@ export function AboutPage() {
           </div>
         </div>
         <div className="story-copy rv" style={{ "--rv": "120ms" } as CSSProperties}>
+          <span className="chapter" aria-hidden="true">01</span>
           <p className="eyebrow">Our story</p>
           <h2 id="story-title">
             Ridiculous prices.

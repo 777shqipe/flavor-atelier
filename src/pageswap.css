@@ -12,13 +12,14 @@
   width: calc(100vw + var(--m) * 2);
   height: calc(100lvh + var(--m) * 2);
   rotate: -2deg;
-  animation: swap-slap 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+  will-change: transform, opacity;
+  animation: swap-slap 0.42s var(--bounce) both;
 }
+/* The bounce curve overshoots on its own: the sticker lands, squashes a hair
+   past flat and settles with a wobble. Same length as before. */
 @keyframes swap-slap {
-  0% { opacity: 0; scale: 1.22; rotate: -9deg; }
-  45% { opacity: 1; }
-  72% { scale: 0.985; rotate: -1.4deg; }
-  100% { opacity: 1; scale: 1; rotate: -2deg; }
+  0% { opacity: 0; scale: 1.3; rotate: -11deg; }
+  30% { opacity: 1; }
 }
 .swap-face,
 .swap-flap,
@@ -32,9 +33,32 @@
   border-radius: 48px;
   background:
     radial-gradient(rgb(255 255 255 / 0.22) 1.4px, transparent 1.8px) 0 0 / 18px 18px,
+    repeating-linear-gradient(-35deg, rgb(255 255 255 / 0.05) 0 2px, transparent 2px 7px),
     radial-gradient(circle at 30% 20%, #ffd25e, var(--sun) 55%, #e9a21c);
   color: #17140c;
 }
+/* A quick streak of light across the vinyl as it lands. */
+.swap-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.55) 48%, rgb(255 255 255 / 0.1) 52%, transparent 70%);
+  opacity: 0;
+  animation: swap-flash 0.55s var(--ease-out) 0.1s both;
+  pointer-events: none;
+}
+@keyframes swap-flash {
+  0% { opacity: 0; translate: -40% 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0; translate: 40% 0; }
+}
+/* Copy lands a beat after the sticker, line by line. */
+.swap-body > * { animation: swap-pop 0.55s var(--bounce) both; }
+.swap-body > :nth-child(1) { animation-delay: 0.1s; }
+.swap-body > :nth-child(2) { animation-delay: 0.14s; }
+.swap-body > :nth-child(3) { animation-delay: 0.2s; }
+@keyframes swap-pop { from { opacity: 0; translate: 0 22px; scale: 1.03; } }
 .swap-band {
   overflow: hidden;
   margin-inline: calc(var(--pad) * -1 - var(--m));
@@ -67,7 +91,9 @@
   color: #fff;
   text-align: center;
   rotate: 10deg;
+  animation: swap-price 0.6s var(--bounce) 0.22s both;
 }
+@keyframes swap-price { from { opacity: 0; scale: 1.9; rotate: 40deg; } }
 .swap-price::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--tomato); clip-path: var(--burst); }
 .swap-price b { font: 400 clamp(36px, 4vw, 58px) / 0.9 var(--font-fun); }
 .swap-price small { font: 700 clamp(11px, 1.1vw, 15px) / 1 var(--font-cond); letter-spacing: 0.08em; text-transform: uppercase; }
@@ -79,4 +105,10 @@
 @media (max-width: 640px) {
   .swap { --m: 40px; }
   .swap-face { padding-top: calc(var(--m) + 14px); }
+}
+
+@keyframes swap-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .swap { rotate: 0deg; animation: swap-fade 0.25s ease-out both; }
+  .swap-face::after, .swap-body > *, .swap-price, .swap-band span { animation: none; }
 }

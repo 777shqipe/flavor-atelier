@@ -154,6 +154,7 @@ export function WasteNumbers() {
     <section className="waste" data-surface="green" aria-labelledby="waste-title">
       <header className="section-head split rv">
         <div>
+          <span className="chapter" aria-hidden="true">03</span>
           <p className="eyebrow">Why it matters</p>
           <h2 id="waste-title">Good food, binned by the tonne.</h2>
         </div>
@@ -164,7 +165,7 @@ export function WasteNumbers() {
       </header>
 
       <div className="waste-grid" ref={grid}>
-        <article className="wn wn-tower">
+        <article className="wn wn-tower rv">
           <Tower />
           <div className="wn-copy">
             <p className="wn-num">
@@ -178,7 +179,7 @@ export function WasteNumbers() {
           </div>
         </article>
 
-        <article className="wn wn-bags">
+        <article className="wn wn-bags rv" style={{ "--rv": "90ms" } as CSSProperties}>
           <Bags go={seen} />
           <p className="wn-num">
             <span>1</span>
@@ -189,7 +190,7 @@ export function WasteNumbers() {
           <Cite source={SOURCES.bags} />
         </article>
 
-        <article className="wn wn-big">
+        <article className="wn wn-big rv" style={{ "--rv": "180ms" } as CSSProperties}>
           <p className="wn-num">
             <Odometer value={seen ? "7.6" : "0.0"} />
             <small>million tonnes</small>
@@ -200,7 +201,7 @@ export function WasteNumbers() {
           <Cite source={SOURCES.fial} />
         </article>
 
-        <article className="wn wn-edible">
+        <article className="wn wn-edible rv" style={{ "--rv": "270ms" } as CSSProperties}>
           <p className="wn-num">
             <Odometer value={seen ? "70" : "00"} />
             <small>%</small>

@@ -310,3 +310,60 @@
   .r-pop { animation: none !important; }
   .r-pop { display: none; }
 }
+
+/* ======================================================================
+   Glow-up: thermal paper. Faint scanlines and a heat-browned top band,
+   ink that bleeds a hair, each line darkening as its head pass lands,
+   guard bars on the barcode, and a thud when the stamp comes down.
+   ====================================================================== */
+.paper {
+  --zz: 8px;
+  letter-spacing: 0.015em;
+  text-shadow: 0 0 0.6px rgb(38 49 44 / 0.5);
+}
+.paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background:
+    repeating-linear-gradient(0deg, rgb(70 50 20 / 0.05) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgb(200 150 80 / 0.12), transparent 16%),
+    linear-gradient(0deg, rgb(200 150 80 / 0.08), transparent 10%);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+/* the strip the thermal head just passed: darker, a hair soft, then it settles; the price gets a highlighter pass */
+.r-item.on { animation: r-ink 0.7s var(--ease-out) both; }
+@keyframes r-ink {
+  0% { color: #000; filter: blur(0.5px) contrast(1.5); text-shadow: 0 0 1.4px rgb(0 0 0 / 0.7); }
+  100% { color: #26312c; filter: none; }
+}
+.r-item.on > .r-row:first-child > span:last-child { animation: r-hi 0.9s var(--ease-out) 0.08s both; }
+@keyframes r-hi { 0%, 30% { background: var(--sun); box-shadow: -4px 0 0 var(--sun), 4px 0 0 var(--sun); } }
+/* solid blacks on thermal paper band slightly */
+.r-total { background-image: repeating-linear-gradient(0deg, transparent 0 2px, rgb(255 255 255 / 0.08) 2px 3px); }
+/* EAN guard bars stand taller than the rest */
+.r-code { height: 48px; align-items: flex-start; }
+.r-code i { height: 40px; }
+.r-code i:nth-child(1),
+.r-code i:nth-child(3),
+.r-code i:nth-child(31),
+.r-code i:nth-child(33) { height: 48px; }
+/* stamp is pressed into the paper, not printed over it, and the paper thuds when it lands */
+.r-stamp { mix-blend-mode: multiply; }
+.rcpt[data-phase="done"] .rcpt-tear { animation: r-thud 0.55s var(--bounce) 0.28s; }
+@keyframes r-thud { 30% { scale: 0.975 0.985; } }
+/* the headline word pops with the stamp */
+.rcpt-hl { transform-origin: 50% 60%; }
+.rcpt[data-phase="done"] .rcpt-hl { animation: hl-pop 0.7s var(--bounce) 0.3s; }
+@keyframes hl-pop { 40% { scale: 1.07; rotate: -2deg; } }
+.rcpt-copy .eyebrow { display: inline-flex; align-items: center; gap: 12px; }
+.rcpt-copy .eyebrow::after { content: ""; width: 44px; height: 1px; background: currentColor; opacity: 0.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .r-item.on,
+  .r-item.on > .r-row:first-child > span:last-child,
+  .rcpt[data-phase="done"] .rcpt-tear,
+  .rcpt[data-phase="done"] .rcpt-hl { animation: none !important; }
+}

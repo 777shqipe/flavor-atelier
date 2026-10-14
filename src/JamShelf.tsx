@@ -174,6 +174,7 @@ export function JamShelf() {
     >
       <header className="section-head split jams-head rv">
         <div>
+          <span className="chapter" aria-hidden="true">02</span>
           <p className="eyebrow">Thirty years, four batches</p>
           <h2 id="jams-title">Our story, preserved.</h2>
         </div>
@@ -214,7 +215,7 @@ export function JamShelf() {
           <path d="M0 0H1000V14C980 14 976 34 966 34S952 14 930 14 880 46 866 46 852 14 820 14 760 22 748 22 736 14 700 14 650 52 636 52 622 14 590 14 520 26 508 26 496 14 460 14 420 40 406 40 392 14 360 14 300 20 288 20 276 14 240 14 190 44 176 44 162 14 130 14 80 28 68 28 56 14 0 14Z" />
         </svg>
         <figure className="jp-photo" key={`photo-${index}`}>
-          <img src={era.src} alt={`${era.title}, ${era.year}`} draggable={false} />
+          <span className="jp-photo-in"><img src={era.src} alt={`${era.title}, ${era.year}`} draggable={false} /></span>
           <figcaption>
             <b>{index === last ? "Today" : era.year}</b> {era.short}
           </figcaption>

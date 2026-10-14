@@ -232,8 +232,8 @@ export function Receipt() {
                     <span>#001995</span>
                   </p>
                   <hr />
-                  {LINES.map((line) => (
-                    <div className="r-item" key={line.id}>
+                  {LINES.map((line, i) => (
+                    <div className={i < printed ? "r-item on" : "r-item"} key={line.id} style={{ "--i": i } as CSSProperties}>
                       <p className="r-row">
                         <span>{line.name}</span>
                         <span>{money(line.price)}</span>

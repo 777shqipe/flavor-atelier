@@ -12,7 +12,9 @@ type Product = {
   tone: "dark" | "light";
   brand: string;
   name: string;
-  price: string;
+  price: number;
+  /** Sample RRP (same placeholder status as products.ts); drives the struck "was" and the save sticker. */
+  was?: number;
   unit: string;
   pack: { shape: Shape; color: string; label: [string, string?] };
   alt: string;
@@ -25,7 +27,8 @@ const PRODUCTS: Product[] = [
     tone: "light",
     brand: "Blood orange",
     name: "Citrus fizz",
-    price: "$4",
+    price: 4,
+    was: 7.5,
     unit: "4 × 330ml",
     pack: { shape: "cans", color: "#e8542f", label: ["BLOOD", "ORANGE"] },
     alt: "Four cans of blood orange fizz",
@@ -36,7 +39,8 @@ const PRODUCTS: Product[] = [
     tone: "dark",
     brand: "Instant noodles",
     name: "Spicy ramen",
-    price: "$4",
+    price: 4,
+    was: 6.95,
     unit: "4 pack",
     pack: { shape: "bag", color: "#c0290f", label: ["SPICY", "RAMEN"] },
     alt: "Bag of spicy instant ramen",
@@ -47,7 +51,8 @@ const PRODUCTS: Product[] = [
     tone: "light",
     brand: "Choc-biscuit",
     name: "Choc-biscuit bar",
-    price: "$2",
+    price: 2,
+    was: 3.5,
     unit: "Limited",
     pack: { shape: "box", color: "#7a4ce0", label: ["CHOC", "BISCUIT"] },
     alt: "Chocolate biscuit bar",
@@ -55,6 +60,28 @@ const PRODUCTS: Product[] = [
 ];
 
 const TOTAL = String(PRODUCTS.length).padStart(2, "0");
+
+const money = (n: number) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
+
+/** Supermarket price point: small dollar sign, big condensed numerals, superscript cents. */
+function Price({ value, className = "" }: { value: number; className?: string }) {
+  const [dollars, cents] = value.toFixed(2).split(".");
+  return (
+    <strong className={`pricepoint ${className}`}>
+      <span className="sr-only">{money(value)}</span>
+      <span className="pricepoint-face" aria-hidden="true">
+        <sup>$</sup>
+        <b>{dollars}</b>
+        <sup>{cents}</sup>
+      </span>
+    </strong>
+  );
+}
+
+/** Struck-through RRP, only when the product has one. */
+function Rrp({ p }: { p: Product }) {
+  return p.was ? <s className="rrp">was {money(p.was)}</s> : null;
+}
 
 /* ------------------------------------------------------------------ */
 /* Building blocks                                                     */
@@ -85,14 +112,12 @@ function Layer({
   children: ReactNode;
 }) {
   return (
-    <div className={`ly ${className}`} style={{ "--depth": depth } as CSSProperties}>
+    <div
+      className={`ly ${className}`}
+      style={{ "--depth": depth, ...(float ? { "--float": `${float}s`, "--phase": `${phase}s` } : null) } as CSSProperties}
+    >
       <div className="ly-ent" data-from={from} style={{ "--delay": `${delay}ms` } as CSSProperties}>
-        <div
-          className={float ? "ly-float" : undefined}
-          style={float ? ({ "--float": `${float}s`, "--phase": `${phase}s` } as CSSProperties) : undefined}
-        >
-          {children}
-        </div>
+        <div className={float ? "ly-float" : undefined}>{children}</div>
       </div>
     </div>
   );
@@ -222,7 +247,7 @@ function Crav({ p, index }: { p: Product; index: number }) {
 
       <Layer className="a-prod-ly" depth={1.4} delay={260} from="drop" float={6.5}>
         <div className="a-prod a-pack">
-          <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} />
+          <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} lit />
           <Eyes />
         </div>
       </Layer>
@@ -248,8 +273,10 @@ function Crav({ p, index }: { p: Product; index: number }) {
 
       <Layer className="a-burst-ly" depth={2.6} delay={820} from="pop" float={5} phase={-2}>
         <div className="burst">
-          <strong>{p.price}</strong>
+          <Price value={p.price} />
           <span>{p.unit}</span>
+          <Rrp p={p} />
+          {p.was && <em className="save-tag">save {money(p.was - p.price)}</em>}
         </div>
       </Layer>
 
@@ -275,7 +302,7 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
         </Layer>
         <Layer className="b-prod-ly" depth={1.6} delay={200} from="drop" float={7}>
           <div className="b-prod b-pack" role="img" aria-label={p.alt}>
-            <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} />
+            <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} lit />
           </div>
         </Layer>
         <Layer className="b-chili-ly c1" depth={3.4} delay={560} from="pop" float={5} phase={-1}>
@@ -359,10 +386,11 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
             </ul>
             <button className="b-cta" type="button" onClick={() => onNavigate("stores")}>
               <span>Find it in store</span>
-              <strong>
-                {p.price}
+              <span className="b-cta-price">
+                <Rrp p={p} />
+                <Price value={p.price} />
                 <small>a dollar a bowl</small>
-              </strong>
+              </span>
             </button>
           </div>
         </Layer>
@@ -402,7 +430,7 @@ function Cookie({ p, index, onNavigate }: { p: Product; index: number; onNavigat
 
       <Layer className="c-bar-ly" depth={1.6} delay={340} from="drop" float={6.2}>
         <div className="c-bar c-pack" role="img" aria-label={p.alt}>
-          <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} />
+          <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} lit />
         </div>
       </Layer>
 
@@ -429,7 +457,15 @@ function Cookie({ p, index, onNavigate }: { p: Product; index: number; onNavigat
         <Ribbon tone="pink" lines={["LIMITED", "RUN"]} />
       </Layer>
       <Layer className="c-rb3-ly" depth={3.4} delay={720} from="pop" float={4.6} phase={-0.4}>
-        <Ribbon tone="orange" className="price" lines={["ONLY", p.price]} />
+        <div className="rb-wrap">
+          <Ribbon tone="orange" className="price" lines={["ONLY", money(p.price)]} />
+          {p.was && (
+            <span className="save-dot">
+              <s>{money(p.was)}</s>
+              <b>save {money(p.was - p.price)}</b>
+            </span>
+          )}
+        </div>
       </Layer>
       <Layer className="c-rb4-ly" depth={4.2} delay={800} from="pop" float={5.2} phase={-3.2}>
         <Ribbon tone="teal" lines={["SHARING", "OPTIONAL"]} />
@@ -572,7 +608,7 @@ export function Showcase({ onNavigate }: { onNavigate: (page: Page) => void }) {
         >
           <article className="poster" data-scene={p.scene} aria-labelledby={`poster-${p.id}`}>
             <h3 className="sr-only" id={`poster-${p.id}`}>
-              {p.brand} {p.name}, {p.price} — {p.unit}
+              {p.brand} {p.name}, {money(p.price)} — {p.unit}
             </h3>
             {p.scene === "crav" && <Crav p={p} index={index} />}
             {p.scene === "bucks" && <Bucks p={p} index={index} onNavigate={onNavigate} />}

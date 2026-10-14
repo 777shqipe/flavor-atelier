@@ -225,9 +225,13 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                 <Icon d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" circle />
                 {store.address}
               </li>
-              <li>
+              <li className="hours">
                 <Icon d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5V12l3 2" />
-                {store.hours}
+                <span>
+                  {store.hours.split(" · ").map((part) => (
+                    <span key={part}>{part}</span>
+                  ))}
+                </span>
               </li>
               <li>
                 <Icon d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
@@ -285,7 +289,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                 role="tab"
                 aria-selected={index === active}
                 tabIndex={index === active ? 0 : -1}
-                style={{ "--c": item.color } as CSSProperties}
+                style={{ "--c": item.color, "--i": index } as CSSProperties}
                 onClick={() => onSelect(index)}
               >
                 <img src={item.src} alt="" style={{ objectPosition: item.pos }} />

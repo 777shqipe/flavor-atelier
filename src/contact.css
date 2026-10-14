@@ -17,9 +17,9 @@ html.ct-lock { overflow: hidden; }
 .ct-scrim {
   position: absolute;
   inset: 0;
-  background: rgb(3 14 10 / 0.56);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+  background: radial-gradient(120% 120% at 100% 50%, rgb(3 14 10 / 0.72), rgb(3 14 10 / 0.5));
+  -webkit-backdrop-filter: blur(7px) saturate(0.85);
+  backdrop-filter: blur(7px) saturate(0.85);
   opacity: 0;
   cursor: pointer;
   transition: opacity 0.4s var(--ease-out);
@@ -132,13 +132,50 @@ html.ct-lock { overflow: hidden; }
 
 .ct-sheet {
   position: relative;
-  padding: 24px 18px 20px;
-  border-radius: 6px 6px 10px 10px;
-  background: var(--paper);
+  padding: 24px 18px 26px;
+  border-radius: 6px 6px 0 0;
+  background:
+    repeating-linear-gradient(0deg, rgb(0 56 42 / 0.03) 0 1px, transparent 1px 27px),
+    var(--paper);
   box-shadow:
     0 1px 2px rgb(0 0 0 / 0.08),
     4px 6px 0 -1px #f5de99;
   color: var(--ink);
+}
+/* Perforated tear-off edge: a row of scallops along the bottom of the docket. */
+.ct-sheet::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 14px;
+  background: radial-gradient(circle at 7px 7px, var(--paper) 4.5px, transparent 5.2px) 0 0 / 14px 14px repeat-x;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.08));
+  pointer-events: none;
+}
+/* "Received" stamp slams onto the docket once it is sent. */
+.ct-stamp {
+  position: absolute;
+  top: 54px;
+  right: 16px;
+  z-index: 2;
+  padding: 6px 10px 5px;
+  border: 3px solid var(--tomato);
+  border-radius: 6px;
+  color: var(--tomato);
+  font: 400 20px / 1 var(--font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  rotate: -11deg;
+  opacity: 0.88;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  animation: ct-stamp 0.5s var(--bounce) 0.1s both;
+}
+@keyframes ct-stamp {
+  0% { opacity: 0; scale: 2.2; rotate: -30deg; }
+  40% { opacity: 0.88; }
 }
 
 .ct-docket-bar {
@@ -194,8 +231,22 @@ html.ct-lock { overflow: hidden; }
   border-radius: 50%;
   background: var(--green);
   color: var(--cream);
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--green);
+  animation: ct-slam 0.55s var(--bounce) both;
+}
+/* Stamp slam: the check lands from above, then the tick draws itself. */
+@keyframes ct-slam {
+  0% { opacity: 0; scale: 2.4; rotate: -24deg; }
+  35% { opacity: 1; }
 }
 .ct-check svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ct-check path { stroke-dasharray: 22; stroke-dashoffset: 22; animation: ct-tick 0.35s var(--ease-out) 0.3s forwards; }
+@keyframes ct-tick { to { stroke-dashoffset: 0; } }
+.ct-done > :not(.ct-check) { animation: ct-rise 0.5s var(--ease-out) both; }
+.ct-done > :nth-child(2) { animation-delay: 0.2s; }
+.ct-done > :nth-child(3) { animation-delay: 0.28s; }
+.ct-done > :nth-child(4) { animation-delay: 0.36s; }
+@keyframes ct-rise { from { opacity: 0; translate: 0 10px; } }
 .ct-done h3 { margin: 0; color: var(--green-900); font: 400 32px / 1.05 var(--font-serif); letter-spacing: -0.03em; outline: 0; }
 .ct-done p { margin: 0; color: var(--ink-soft); font-size: 15.5px; line-height: 1.5; }
 .ct-done b { color: var(--ink); font-weight: 600; }
@@ -227,11 +278,29 @@ html.ct-lock { overflow: hidden; }
 }
 
 .ct-topics {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
+/* One dark stub slides between the three tickets instead of each lighting up on its own. */
+.ct-topics::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc((100% - 16px) / 3);
+  height: 100%;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #0f3a2d, var(--green-900));
+  box-shadow: 0 12px 20px -12px rgb(0 20 14 / 0.7);
+  translate: calc(var(--sel, 0) * (100% + 8px)) 0;
+  transition: translate 0.5s var(--spring);
+  pointer-events: none;
+}
 .ct-topic {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -244,10 +313,26 @@ html.ct-lock { overflow: hidden; }
   color: var(--green-900);
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s, translate 0.3s var(--spring);
+  transition: border-color 0.2s, background-color 0.25s, color 0.25s, translate 0.3s var(--spring), scale 0.3s var(--spring);
+}
+/* Punched hole in the ticket corner. */
+.ct-topic::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: inset 0 1px 1.5px rgb(0 0 0 / 0.22);
+  transition: background-color 0.3s;
 }
 .ct-topic:hover { border-color: var(--green); translate: 0 -2px; }
-.ct-topic[aria-checked="true"] { border-color: var(--green); background: var(--green-900); color: var(--cream); }
+.ct-topic:active { scale: 0.97; translate: 0 0; }
+.ct-topic[aria-checked="true"] { border-color: transparent; background: transparent; color: var(--cream); }
+.ct-topic[aria-checked="true"]::before { background: var(--sun); box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.3); }
+.ct-topic[aria-checked="true"] .ct-topic-icon { rotate: -6deg; scale: 1.08; }
 .ct-topic:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .ct-topic-icon {
   display: grid;
@@ -257,6 +342,7 @@ html.ct-lock { overflow: hidden; }
   border-radius: 9px;
   background: var(--sun);
   color: #17140c;
+  transition: rotate 0.45s var(--spring), scale 0.45s var(--spring);
 }
 .ct-topic-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .ct-topic b { font: 700 13px / 1.2 var(--font-sans); }
@@ -274,8 +360,10 @@ html.ct-lock { overflow: hidden; }
   color: var(--green-900);
   font: 650 13px / 1 var(--font-sans);
   cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s, scale 0.3s var(--spring);
 }
 .ct-pill:hover { border-color: var(--green); }
+.ct-pill:active { scale: 0.95; }
 .ct-pill[aria-pressed="true"] { border-color: var(--green-900); background: var(--green-900); color: var(--cream); }
 .ct-pill:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 
@@ -289,13 +377,16 @@ html.ct-lock { overflow: hidden; }
   color: var(--green-900);
   font: 600 12.5px / 1 var(--font-sans);
   cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, scale 0.3s var(--spring);
 }
 .ct-chip:hover { border-color: var(--green); background: var(--cream); }
+.ct-chip:active { scale: 0.94; }
 .ct-chip:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 
 .ct-who { display: grid; gap: 12px; }
 .ct-field { display: grid; gap: 6px; min-width: 0; }
-.ct-field > span { color: var(--green-900); font: 650 13px / 1.2 var(--font-sans); }
+.ct-field > span { color: var(--green-900); font: 650 13px / 1.2 var(--font-sans); transition: color 0.2s; }
+.ct-field:focus-within > span { color: var(--green); }
 .ct-field > span small { color: var(--ink-soft); font-weight: 500; }
 .ct-field input,
 .ct-field select,
@@ -307,6 +398,7 @@ html.ct-lock { overflow: hidden; }
   color: var(--ink);
   font: 500 16px / 1.4 var(--font-sans);
   outline: 0;
+  transition: border-color 0.2s, box-shadow 0.3s var(--ease-out), background-color 0.2s;
 }
 .ct-field input { height: 46px; padding: 0 12px; }
 .ct-field select {
@@ -322,21 +414,69 @@ html.ct-lock { overflow: hidden; }
 .ct-field input::placeholder { color: rgb(39 52 47 / 0.42); }
 .ct-field input:focus,
 .ct-field select:focus,
-.ct-field textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgb(0 88 66 / 0.16); }
-.ct-field:has([aria-invalid="true"]) input,
-.ct-field:has([aria-invalid="true"]) textarea { border-color: #b3261b; }
-.ct-err { color: #b3261b; font: 600 13px / 1.3 var(--font-sans); font-style: normal; }
+.ct-field textarea:focus { border-color: var(--green); background: #fff; box-shadow: inset 0 -2px 0 var(--green), 0 0 0 3px rgb(0 88 66 / 0.14); }
+/* Invalid: red underline, a nudge, and the message drops in with a badge. */
+.ct-field input[aria-invalid="true"],
+.ct-field textarea[aria-invalid="true"] { border-color: #b3261b; background: #fff7f5; box-shadow: inset 0 -2px 0 #b3261b; animation: ct-shake 0.4s var(--ease-out); }
+.ct-field input[aria-invalid="true"]:focus,
+.ct-field textarea[aria-invalid="true"]:focus { box-shadow: inset 0 -2px 0 #b3261b, 0 0 0 3px rgb(179 38 27 / 0.16); }
+@keyframes ct-shake {
+  20% { translate: -5px 0; }
+  40% { translate: 5px 0; }
+  60% { translate: -3px 0; }
+  80% { translate: 2px 0; }
+}
+.ct-err {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b3261b;
+  font: 600 13px / 1.3 var(--font-sans);
+  font-style: normal;
+  animation: ct-err-in 0.3s var(--ease-out) both;
+}
+.ct-err::before {
+  content: "!";
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #b3261b;
+  color: #fff;
+  font: 700 10px / 1 var(--font-mono);
+}
+@keyframes ct-err-in { from { opacity: 0; translate: 0 -4px; } }
 
 .ct-send {
+  position: relative;
+  isolation: isolate;
   height: 50px;
+  overflow: hidden;
   border: 0;
   border-radius: 12px;
-  background: var(--green);
+  background: linear-gradient(180deg, #06634c, var(--green));
   color: var(--cream);
   font: 700 15px / 1 var(--font-sans);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 12px 22px -14px rgb(0 56 42 / 0.9);
   cursor: pointer;
+  transition: translate 0.3s var(--spring), scale 0.25s var(--spring), box-shadow 0.3s, filter 0.2s;
 }
-.ct-send:hover { background: var(--green-900); }
+/* Shine sweeps across on hover; the button sinks a pixel when pressed. */
+.ct-send::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 38%, rgb(255 255 255 / 0.22) 50%, transparent 62%);
+  translate: -110% 0;
+}
+.ct-send:hover { translate: 0 -1px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 16px 26px -14px rgb(0 56 42 / 0.9); }
+.ct-send:hover::after { translate: 110% 0; transition: translate 0.7s var(--ease-out); }
+.ct-send:active { translate: 0 1px; scale: 0.985; filter: brightness(0.94); transition-duration: 0.1s; }
 .ct-send:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 .ct-text {
   height: 40px;
@@ -396,13 +536,14 @@ html.ct-lock { overflow: hidden; }
   background: rgb(246 240 219 / 0.05);
   color: var(--cream);
   text-decoration: none;
-  transition: translate 0.3s var(--spring), background-color 0.2s, border-color 0.2s;
+  transition: translate 0.3s var(--spring), scale 0.3s var(--spring), background-color 0.2s, border-color 0.2s;
 }
 .ct-store-calls a:hover {
   translate: 0 -2px;
   border-color: var(--sc, var(--sun));
   background: rgb(246 240 219 / 0.1);
 }
+.ct-store-calls a:active { translate: 0 0; scale: 0.98; }
 .ct-store-calls a:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
 .ct-call-glyph {
   display: grid;
@@ -432,13 +573,18 @@ html.ct-lock { overflow: hidden; }
   .ct-board { margin-inline: 8px; padding-inline: 8px; }
   .ct-sheet { padding: 22px 14px 16px; }
   .ct-foot { padding-right: 12px; padding-left: 12px; }
-  .ct-topics { grid-template-columns: 1fr; }
+  .ct-topics { grid-template-columns: 1fr; grid-auto-rows: 1fr; }
+  .ct-topics::before { width: 100%; height: calc((100% - 16px) / 3); translate: 0 calc(var(--sel, 0) * (100% + 8px)); }
+  .ct-stamp { top: 50px; right: 12px; font-size: 17px; }
   .ct-topic { min-height: 0; flex-direction: row; align-items: center; gap: 10px; }
   .ct-store-calls { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ct { transition-duration: 0.2s; }
+  .ct-topics::before, .ct-topic, .ct-topic-icon, .ct-pill, .ct-chip, .ct-send, .ct-send::after, .ct-store-calls a, .ct-field input, .ct-field select, .ct-field textarea { transition-duration: 0.01ms; }
+  .ct-check, .ct-check path, .ct-done > *, .ct-stamp, .ct-err, .ct-field [aria-invalid="true"], .ct-docket-to strong { animation: none; }
+  .ct-check path { stroke-dashoffset: 0; }
   .ct-scrim { transition-duration: 0.2s; }
   .ct-panel,
   .ct[data-open] .ct-panel { translate: 0 0; rotate: 0deg; opacity: 0; transition: opacity 0.2s; }

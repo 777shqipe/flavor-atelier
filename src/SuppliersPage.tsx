@@ -165,8 +165,8 @@ function QuoteCta({ onContact }: { onContact: () => void }) {
         <h2 id="quote-title">Good food deserves a second chance.</h2>
         <p className="lead">Tell us what you have and our buying team will get back to you.</p>
         <ul className="quote-points">
-          {["Fast decisions", "Flexible volumes", "Paid upfront"].map((point) => (
-            <li key={point}>
+          {["Fast decisions", "Flexible volumes", "Paid upfront"].map((point, i) => (
+            <li key={point} style={{ "--i": i } as CSSProperties}>
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M5 12.5l4.5 4.5L19 7.5" />
               </svg>
@@ -222,7 +222,7 @@ export function SuppliersPage({ onContact }: { onContact: () => void }) {
 
   return (
     <main>
-      <section className="page-hero" data-surface="green" aria-labelledby="suppliers-title">
+      <section className="page-hero sp-hero" data-surface="green" aria-labelledby="suppliers-title">
         <div className="aurora" aria-hidden="true" />
         <div className="page-hero-inner">
           <header className="page-head">

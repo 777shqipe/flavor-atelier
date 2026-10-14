@@ -41,6 +41,7 @@ const YEAR = new Date().getFullYear();
 /** The weekly flyer stays in the project. Home shows the Instagram shelf in its place. */
 const showWeeklyFlyer = false;
 const TICKER = ["Once it’s gone, it’s gone", "New finds every week", "Big brands, small prices", "Less waste, more taste"];
+const TICKER_ALT = ["Up to 70% off RRP", "Rescued, not wasted", "Four Melbourne stores", "Fighting food waste since 1995"];
 
 function Home({
   onNavigate,
@@ -99,7 +100,7 @@ function Home({
             </span>
           </Peel>
         </div>
-        <div className="rv" style={{ "--rv": "100ms" } as CSSProperties}>
+        <div className="rv blur" style={{ "--rv": "100ms" } as CSSProperties}>
           <p className="eyebrow">Our purpose</p>
           <h2 id="manifesto-title">
             One <em>bargain</em> at a time.
@@ -157,17 +158,33 @@ function Home({
         </header>
         <Showcase onNavigate={onNavigate} />
         <div className="ticker" aria-hidden="true">
-          <div className="ticker-track">
-            {[0, 1].map((copy) => (
-              <div key={copy}>
-                {TICKER.map((phrase) => (
-                  <span key={phrase}>
-                    {phrase}
-                    <i>✦</i>
-                  </span>
-                ))}
-              </div>
-            ))}
+          <div className="ticker-row">
+            <div className="ticker-track">
+              {[0, 1].map((copy) => (
+                <div key={copy}>
+                  {TICKER.map((phrase) => (
+                    <span key={phrase}>
+                      {phrase}
+                      <i>✦</i>
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="ticker-row alt">
+            <div className="ticker-track reverse">
+              {[0, 1].map((copy) => (
+                <div key={copy}>
+                  {TICKER_ALT.map((phrase) => (
+                    <span key={phrase}>
+                      {phrase}
+                      <i>$</i>
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

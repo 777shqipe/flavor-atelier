@@ -12,7 +12,8 @@
   min-height: 100svh;
   padding: clamp(100px, 8.4vw, 118px) var(--pad) clamp(22px, 2.4vw, 34px);
 }
-.hero::before { content: ""; position: absolute; left: -260px; bottom: -330px; z-index: -1; width: 520px; height: 520px; border-radius: 50%; border: 1px solid rgb(246 240 219 / 0.16); }
+.hero::before { content: ""; position: absolute; left: -260px; bottom: -330px; z-index: -1; width: 520px; height: 520px; border-radius: 50%; border: 1px solid rgb(246 240 219 / 0.16); box-shadow: inset 0 0 0 40px rgb(246 240 219 / 0.03); }
+.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grain) 0 0 / 180px 180px; opacity: 0.11; mix-blend-mode: overlay; pointer-events: none; }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.02fr); align-items: center; gap: clamp(24px, 4vw, 64px); }
 .spark { position: absolute; z-index: -1; color: var(--sun); font-size: 22px; opacity: 0.8; animation: twinkle 3.4s ease-in-out infinite alternate; pointer-events: none; }
 .spark.s1 { left: 47%; top: 17%; }
@@ -21,9 +22,10 @@
 @keyframes twinkle { from { scale: 0.7; opacity: 0.35; rotate: -12deg; } to { scale: 1.15; opacity: 1; rotate: 12deg; } }
 
 /* ---------- copy ------------------------------------------------------ */
-.hero h1 { max-width: none; font-size: clamp(56px, 6.9vw, 112px); line-height: 0.93; letter-spacing: -0.04em; }
+.hero h1 { max-width: none; font-size: clamp(56px, 6.9vw, 112px); line-height: 0.93; letter-spacing: -0.045em; text-shadow: 0 2px 40px rgb(0 30 22 / 0.35); }
 .hero-line { display: block; overflow: hidden; padding-bottom: 0.2em; margin-bottom: -0.2em; }
-.hero-line > span { display: block; animation: line-up 1s var(--ease-out) both; animation-delay: calc(var(--l) * 110ms + 150ms); }
+.hero-line > span { display: block; transform-origin: 0 100%; animation: hero-line 1.05s var(--ease-out) both; animation-delay: calc(var(--l) * 110ms + 150ms); }
+@keyframes hero-line { from { translate: 0 110%; rotate: 3deg; } }
 .squiggle { position: relative; display: inline-block; }
 .squiggle svg { position: absolute; left: 0; right: 0; bottom: -0.05em; width: 100%; height: 0.2em; overflow: visible; fill: none; stroke: var(--sun); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .squiggle path { stroke-dasharray: 1; stroke-dashoffset: 1; }
@@ -33,7 +35,9 @@
 .marker::before { content: ""; position: absolute; inset: 0.14em -0.02em 0.02em; z-index: -1; border-radius: 0.1em; background: var(--sun); rotate: -1.2deg; scale: 0 1; transform-origin: left center; transition: scale 0.8s var(--ease-out) 1.15s; }
 .hero[data-ready] .marker { color: var(--green-900); }
 .hero[data-ready] .marker::before { scale: 1 1; }
-.hero-copy .eyebrow { margin-bottom: 20px; animation: fade-up 0.8s 0.05s var(--ease-out) both; }
+.hero-copy .eyebrow { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; animation: fade-up 0.8s 0.05s var(--ease-out) both; }
+.hero-copy .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 0 rgb(246 181 49 / 0.6); animation: ping 2.4s ease-out infinite; }
+@keyframes ping { 70% { box-shadow: 0 0 0 10px rgb(246 181 49 / 0); } 100% { box-shadow: 0 0 0 0 rgb(246 181 49 / 0); } }
 .hero .lead { max-width: 470px; margin: 24px 0 26px; animation: fade-up 0.9s 0.55s var(--ease-out) both; }
 .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; animation: fade-up 0.9s 0.68s var(--ease-out) both; }
 .button.ghost { gap: 10px; background: transparent; color: var(--cream); box-shadow: inset 0 0 0 1.5px rgb(246 240 219 / 0.4); }
@@ -53,12 +57,14 @@
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle at 34% 26%, #ffd766, var(--sun) 52%, #dd9410);
-  box-shadow: 0 0 0 2.6cqw rgb(246 181 49 / 0.2), 0 5cqw 9cqw -3cqw rgb(0 30 22 / 0.55);
+  box-shadow: 0 0 0 2.6cqw rgb(246 181 49 / 0.2), inset 0 -4cqw 8cqw rgb(170 100 0 / 0.3), inset 0 3cqw 6cqw rgb(255 240 200 / 0.4), 0 2cqw 3cqw -2cqw rgb(0 30 22 / 0.4), 0 6cqw 10cqw -3cqw rgb(0 30 22 / 0.55);
   translate: calc(var(--mx, 0) * -8px) calc(var(--my, 0) * -8px);
   scale: 1;
   transition: scale 1.1s var(--bounce) 0.1s, opacity 0.6s;
 }
 .hero:not([data-ready]) .disc { scale: 0.6; opacity: 0; }
+.disc::before { content: ""; position: absolute; inset: -2.6cqw; border-radius: 50%; border: 1px solid rgb(246 181 49 / 0.4); animation: halo 4.2s ease-in-out infinite alternate; }
+@keyframes halo { to { scale: 1.06; opacity: 0.25; } }
 .disc::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(rgb(255 255 255 / 0.5) 1.5px, transparent 1.9px) 0 0 / 2.3cqw 2.3cqw; -webkit-mask-image: radial-gradient(circle at 24% 80%, #000, transparent 58%); mask-image: radial-gradient(circle at 24% 80%, #000, transparent 58%); }
 .ring-art { position: absolute; left: 2cqw; top: 4cqw; z-index: 2; width: 96cqw; height: 96cqw; fill: none; stroke: rgb(246 240 219 / 0.4); stroke-width: 0.35; stroke-dasharray: 0.8 2.4; stroke-linecap: round; animation: spin 80s linear infinite; pointer-events: none; }
 
@@ -66,7 +72,8 @@
 .stk-in {
   display: block;
   rotate: var(--r);
-  filter: drop-shadow(0 2cqw 1.6cqw rgb(0 30 22 / 0.38));
+  filter: drop-shadow(0 0.5cqw 0.5cqw rgb(0 30 22 / 0.22)) drop-shadow(0 2.6cqw 2.2cqw rgb(0 30 22 / 0.32));
+  transition: filter 0.5s var(--ease-out);
   transition: translate 1.15s var(--bounce) var(--e), scale 1.15s var(--bounce) var(--e), opacity 0.5s ease var(--e);
 }
 .hero:not([data-ready]) .stk-in { opacity: 0; translate: 0 -30cqw; scale: 0.6; }
@@ -74,6 +81,7 @@
 .stk svg { display: block; width: 100%; height: auto; animation: hero-float 6s ease-in-out infinite alternate; transition: scale 0.5s var(--spring), rotate 0.5s var(--spring); }
 .stk:hover img,
 .stk:hover svg { scale: 1.07; rotate: 2deg; animation-play-state: paused; }
+.stk:hover .stk-in { filter: drop-shadow(0 0.8cqw 0.8cqw rgb(0 30 22 / 0.2)) drop-shadow(0 4cqw 3cqw rgb(0 30 22 / 0.38)); }
 @keyframes hero-float { from { translate: 0 -0.9cqw; rotate: -1deg; } to { translate: 0 0.9cqw; rotate: 1deg; } }
 .stk.k1 { --d: 14; --r: -9deg; left: 8cqw; top: 16cqw; width: 30cqw; }
 .stk.k2 { --d: 20; --r: 8deg; left: 54cqw; top: 8cqw; width: 32cqw; }
@@ -129,15 +137,18 @@
 .hb.b2 .hb-fill { background: var(--green); }
 .hb.b3 { --s: 17cqw; --r: -6deg; --e: 1180ms; left: 79cqw; top: 70cqw; }
 .hb.b3 .hb-fill { background: #7a4ce0; }
-.tag { position: absolute; z-index: 7; left: 1cqw; top: 70cqw; rotate: -8deg; --r: 0.5cqw; --line: #fff; font: 400 5cqw / 0.95 var(--font-fun); color: var(--sun); text-transform: uppercase; transition: scale 0.9s var(--bounce) 1300ms; }
+.tag { position: absolute; z-index: 7; left: 1cqw; top: 70cqw; rotate: -8deg; animation: tag-swing 5s ease-in-out infinite alternate; --r: 0.5cqw; --line: #fff; font: 400 5cqw / 0.95 var(--font-fun); color: var(--sun); text-transform: uppercase; transition: scale 0.9s var(--bounce) 1300ms; }
 .hero:not([data-ready]) .tag { scale: 0; }
+@keyframes tag-swing { from { rotate: -10deg; } to { rotate: -5deg; } }
 .hero-ring { top: -2cqw; right: -1cqw; z-index: 8; width: 21cqw; height: 21cqw; translate: calc(var(--mx, 0) * 10px) calc(var(--my, 0) * 10px); }
 .hero-ring strong { font-size: 3.4cqw; }
 
 /* ---------- stats ----------------------------------------------------- */
 .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 18px 0 0; border-top: 1px solid var(--line); list-style: none; }
 .hero-stats li { display: grid; gap: 4px; animation: fade-up 0.9s var(--ease-out) both; animation-delay: calc(var(--n) * 90ms + 1s); }
-.hero-stats strong { font: 400 clamp(26px, 2.8vw, 40px) / 1 var(--font-serif); letter-spacing: -0.02em; }
+.hero-stats li + li { padding-left: 24px; border-left: 1px solid var(--line); }
+.hero-stats strong { font: 400 clamp(26px, 2.8vw, 40px) / 1 var(--font-serif); letter-spacing: -0.03em; transition: color 0.3s; }
+.hero-stats li:hover strong { color: var(--sun); }
 .hero-stats span { color: var(--fg-body); font: 600 12px / 1.3 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; }
 
 @media (max-width: 980px) {
@@ -150,10 +161,11 @@
   .hero h1 { font-size: 54px; }
   .hero-stats { gap: 12px; }
   .hero-stats span { font-size: 10.5px; letter-spacing: 0.06em; }
+  .hero-stats li + li { padding-left: 10px; }
   .spark.s1 { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spark, .stk img, .stk svg, .hb-peel, .ring-art { animation: none; }
+  .spark, .stk img, .stk svg, .hb-peel, .ring-art, .hero-copy .eyebrow::before, .disc::before, .tag { animation: none; }
   .squiggle path { stroke-dashoffset: 0; }
   .marker::before { scale: 1 1; }
   .marker { color: var(--green-900); }

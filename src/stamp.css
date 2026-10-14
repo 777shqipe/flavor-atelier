@@ -40,3 +40,51 @@
 @media (prefers-reduced-motion: reduce) {
   .ink-stamp[data-on] { animation: none; opacity: 0.92; }
 }
+
+/* Glow-up: the stamp slams in on the house bounce, hits the paper twice (a faint
+   misregistered second ring), throws a few ink flecks, and multiplies into the paper. */
+.ink-stamp { mix-blend-mode: multiply; }
+.ink-stamp-in { position: relative; }
+.ink-stamp-in::after {
+  content: "";
+  position: absolute;
+  inset: -0.11em;
+  border: 0.11em solid currentColor;
+  border-radius: inherit;
+  opacity: 0.16;
+  translate: 0.045em 0.05em;
+  rotate: 0.6deg;
+}
+.ink-stamp::before,
+.ink-stamp::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+}
+.ink-stamp::before { left: -0.3em; top: 0.12em; width: 0.17em; height: 0.11em; rotate: -24deg; }
+.ink-stamp::after {
+  right: -0.24em;
+  bottom: -0.08em;
+  width: 0.1em;
+  height: 0.1em;
+  box-shadow: 0.34em -0.5em 0 -0.02em currentColor, -0.1em 0.22em 0 -0.035em currentColor, 0.1em 0.1em 0 -0.05em currentColor;
+}
+.ink-stamp[data-on] { animation: ink-slam 0.62s var(--bounce) both; }
+.ink-stamp[data-on]::before,
+.ink-stamp[data-on]::after { animation: ink-splat 0.45s var(--ease-out) 0.2s both; }
+@keyframes ink-slam {
+  0% { opacity: 0; scale: 2.6; rotate: calc(var(--rot) - 18deg); filter: blur(4px); }
+  38% { opacity: 1; scale: 0.9; rotate: var(--rot); filter: blur(0); }
+  100% { opacity: 0.92; scale: 1; rotate: var(--rot); }
+}
+@keyframes ink-splat { from { opacity: 0; scale: 0.2; } to { opacity: 0.72; scale: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ink-stamp[data-on],
+  .ink-stamp[data-on]::before,
+  .ink-stamp[data-on]::after { animation: none; }
+  .ink-stamp[data-on]::before,
+  .ink-stamp[data-on]::after { opacity: 0.72; }
+}
