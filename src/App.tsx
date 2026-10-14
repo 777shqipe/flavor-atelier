@@ -178,9 +178,13 @@ function FootFilm() {
   return (
     <div className="foot-film" ref={spot} aria-hidden="true">
       {seen && !reduce ? (
-        <video src="/media/footer-meadow.mp4" poster="/media/footer-meadow.jpg" muted playsInline loop autoPlay preload="metadata" />
+        // WebM first (a quarter of the size); the MP4 is there for older iPhones.
+        <video poster="/media/footer-dance.jpg" muted playsInline loop autoPlay preload="metadata">
+          <source src="/media/footer-dance.webm" type="video/webm" />
+          <source src="/media/footer-dance.mp4" type="video/mp4" />
+        </video>
       ) : (
-        <img src="/media/footer-meadow.jpg" alt="" />
+        <img src="/media/footer-dance.jpg" alt="" />
       )}
     </div>
   );
