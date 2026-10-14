@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { receiptStrings } from "./i18n/strings/Receipt";
+import { useLang, useT } from "./i18n";
 import { LogoMark } from "./Logo";
 import { Odometer } from "./Odometer";
 import { ITEMS } from "./products";
@@ -12,14 +14,14 @@ import "./receipt.css";
  * lines print, then the receipt is torn off and stamped.
  */
 
-/** Why each item would have been thrown out somewhere else. Weights in kg. */
+/** Why each item would have been thrown out somewhere else is in the strings. Weights in kg. */
 const BASKET = [
-  { id: "popcorn", why: "New bag design. Same corn.", kg: 0.12 },
-  { id: "muesli", why: "Overstock. Crunch intact.", kg: 0.75 },
-  { id: "almonds", why: "Christmas stock, in March.", kg: 0.2 },
-  { id: "dumplings", why: "Dented box. Dumplings fine.", kg: 0.75 },
-  { id: "cheddar", why: "Wonky cut. Still sharp.", kg: 0.5 },
-  { id: "oil", why: "Old label. Same olives.", kg: 0.69 },
+  { id: "popcorn", kg: 0.12 },
+  { id: "muesli", kg: 0.75 },
+  { id: "almonds", kg: 0.2 },
+  { id: "dumplings", kg: 0.75 },
+  { id: "cheddar", kg: 0.5 },
+  { id: "oil", kg: 0.69 },
 ] as const;
 
 const LINES = BASKET.flatMap((entry) => {
@@ -31,9 +33,6 @@ const PAID = LINES.reduce((sum, line) => sum + line.price, 0);
 const RRP = LINES.reduce((sum, line) => sum + line.was, 0);
 const KG = LINES.reduce((sum, line) => sum + line.kg, 0);
 
-const NOW = new Date();
-const STAMP_DATE = `${String(NOW.getDate()).padStart(2, "0")}/${String(NOW.getMonth() + 1).padStart(2, "0")}/${String(NOW.getFullYear()).slice(2)}`;
-
 const money = (value: number) => value.toFixed(2);
 const clamp = (value: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, value));
 
@@ -41,6 +40,15 @@ const clamp = (value: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, value
 const BARS = "3112213121411312221321121131222113".split("").map(Number);
 
 export function Receipt() {
+  const s = useT(receiptStrings);
+  const { locale } = useLang();
+  // Till receipts keep the Australian dd/mm/yy date in every language.
+  const [stampDate] = useState(() => {
+    const now = new Date();
+    return `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getFullYear()).slice(2)}`;
+  });
+  // Kilos follow the language's decimal mark; money stays "$12.50" everywhere.
+  const kgText = (value: number) => value.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const root = useRef<HTMLElement>(null);
   const paper = useRef<HTMLDivElement>(null);
   const roll = useRef<HTMLSpanElement>(null);
@@ -129,25 +137,25 @@ export function Receipt() {
   const latest = shown[shown.length - 1];
   const lcd: [string, string] =
     phase === "done"
-      ? ["THANK YOU", `SAVED $${money(RRP - PAID)}`]
+      ? [s.lcd.done, s.lcd.saved(money(RRP - PAID))]
       : phase === "printing"
         ? latest
-          ? [latest.name, `${money(latest.price)}  WAS ${money(latest.was)}`]
-          : ["PRINTING", "PLEASE WAIT"]
-        : ["READY", "SCAN A BASKET"];
+          ? [latest.name, s.lcd.line(money(latest.price), money(latest.was))]
+          : [s.lcd.printing, s.lcd.wait]
+        : [s.lcd.ready, s.lcd.scan];
   const pressed = printed % 9;
 
   return (
     <section className="rcpt" ref={root} data-surface="green" data-phase={phase} aria-labelledby="rcpt-title">
       <div className="rcpt-pin">
         <div className="rcpt-copy">
-          <p className="eyebrow">The bin vs. your basket</p>
+          <p className="eyebrow">{s.eyebrow}</p>
           <h2 id="rcpt-title">
-            Every receipt
+            {s.title.top}
             <br />
-            is a{" "}
+            {s.title.mid}
             <span className="rcpt-hl">
-              rescue.
+              {s.title.mark}
               {/* circled in pen, the way a cashier marks your savings */}
               <svg viewBox="0 0 300 120" preserveAspectRatio="none" aria-hidden="true">
                 <path
@@ -157,26 +165,23 @@ export function Receipt() {
               </svg>
             </span>
           </h2>
-          <p className="lead">
-            Overstock, pack changes, short dates, last season’s range. Good food the big chains won’t shelve. We buy
-            it, you pay less, and none of it ends up in landfill.
-          </p>
+          <p className="lead">{s.lead}</p>
           <dl className="rcpt-meters">
             <div>
-              <dt>Saved on one basket</dt>
+              <dt>{s.meterSaved}</dt>
               <dd>
                 <Odometer value={`$${money(saved).padStart(5, "0")}`} />
               </dd>
             </div>
             <div>
-              <dt>Good food kept out of the bin</dt>
+              <dt>{s.meterKept}</dt>
               <dd>
-                <Odometer value={kept.toFixed(1)} />
+                <Odometer value={kgText(kept)} />
                 <small>kg</small>
               </dd>
             </div>
           </dl>
-          <p className="rcpt-note">A sample basket from this week’s flyer. Prices and weights are placeholders.</p>
+          <p className="rcpt-note">{s.note}</p>
         </div>
 
         <div className="rcpt-stage">
@@ -187,14 +192,14 @@ export function Receipt() {
                   <header className="r-head">
                     <LogoMark className="r-logo" />
                     <strong>Cheaper Buy Miles</strong>
-                    <span>Discount grocer · Melbourne</span>
+                    <span>{s.shop}</span>
                   </header>
                   <p className="r-row r-meta">
-                    <span>Tax invoice</span>
-                    <span>{STAMP_DATE} 10:24</span>
+                    <span>{s.taxInvoice}</span>
+                    <span>{stampDate} 10:24</span>
                   </p>
                   <p className="r-row r-meta">
-                    <span>Footscray · reg 02</span>
+                    <span>{s.till}</span>
                     <span>#001995</span>
                   </p>
                   <hr />
@@ -205,27 +210,27 @@ export function Receipt() {
                         <span>{money(line.price)}</span>
                       </p>
                       <p className="r-row r-why">
-                        <span>↳ {line.why}</span>
+                        <span>↳ {s.why[line.id]}</span>
                         <s>{money(line.was)}</s>
                       </p>
                     </div>
                   ))}
                   <hr />
                   <p className="r-row">
-                    <span>{LINES.length} items · RRP</span>
+                    <span>{s.items(LINES.length)}</span>
                     <s>{money(RRP)}</s>
                   </p>
                   <p className="r-row">
-                    <span>You paid</span>
+                    <span>{s.paid}</span>
                     <span>{money(PAID)}</span>
                   </p>
                   <p className="r-row r-total">
-                    <span>You saved</span>
+                    <span>{s.youSaved}</span>
                     <span>${money(RRP - PAID)}</span>
                   </p>
                   <p className="r-row">
-                    <span>Kept out of landfill</span>
-                    <span>{KG.toFixed(1)} kg</span>
+                    <span>{s.landfill}</span>
+                    <span>{kgText(KG)} kg</span>
                   </p>
                   <p className="r-bar" aria-hidden="true">
                     {"█".repeat(18)}
@@ -237,10 +242,10 @@ export function Receipt() {
                     ))}
                   </div>
                   <p className="r-digits" aria-hidden="true">9 312345 019950</p>
-                  <p className="r-thanks">Thanks for rescuing.</p>
-                  <p className="r-small">Best before: whenever you’re back.</p>
-                  <p className="r-small">* * * customer copy * * *</p>
-                  <Stamp on={phase === "done"} text="Rescued" sub={`${KG.toFixed(1)} kg · not wasted`} className="r-stamp" />
+                  <p className="r-thanks">{s.thanks}</p>
+                  <p className="r-small">{s.bestBefore}</p>
+                  <p className="r-small">{s.customerCopy}</p>
+                  <Stamp on={phase === "done"} text={s.stamp.text} sub={s.stamp.sub(kgText(KG))} className="r-stamp" />
                 </div>
               </div>
             </div>
@@ -269,13 +274,13 @@ export function Receipt() {
               </div>
               <div className="reg-foot">
                 <LogoMark className="reg-logo" />
-                <span>CBM · till 02 · thermal</span>
+                <span>{s.foot}</span>
                 <i className="reg-led" />
               </div>
             </div>
             {pop && phase !== "idle" && (
               <span className="r-pop" key={pop.n} aria-hidden="true">
-                <small>Saved</small>
+                <small>{s.popSaved}</small>
                 {pop.text}
               </span>
             )}

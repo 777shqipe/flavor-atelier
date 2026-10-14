@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { Page } from "./Header";
+import { useT } from "./i18n";
+import { pageSwapStrings } from "./i18n/strings/PageSwap";
 import { peelFrame } from "./peelGeometry";
 import "./pageswap.css";
 
@@ -11,17 +13,11 @@ import "./pageswap.css";
 
 export type Swap = { to: Page; anchor?: string; n: number };
 
-const LABELS: Record<Page, [string, string]> = {
-  home: ["Home", "Fresh finds, every week."],
-  stores: ["Our stores", "Four shops. One map."],
-  about: ["About us", "Rescuing good food since 1995."],
-};
-
-const BAND = "Cheaper Buy Miles ✦ Reduced to clear ✦ ";
 const SLAP_MS = 400;
 const PEEL_MS = 860;
 
 export function PageSwap({ swap, onCover, onDone }: { swap: Swap | null; onCover: (swap: Swap) => void; onDone: () => void }) {
+  const s = useT(pageSwapStrings);
   const root = useRef<HTMLDivElement>(null);
   const face = useRef<HTMLDivElement>(null);
   const flap = useRef<HTMLDivElement>(null);
@@ -80,16 +76,16 @@ export function PageSwap({ swap, onCover, onDone }: { swap: Swap | null; onCover
   }, [swap]);
 
   if (!swap) return null;
-  const [title, line] = LABELS[swap.to];
+  const { title, line } = s.labels[swap.to];
 
   return (
     <div className="swap" ref={root} key={swap.n} aria-hidden="true">
       <div className="swap-face" ref={face}>
         <div className="swap-band">
-          <span>{BAND.repeat(6)}</span>
+          <span>{s.band.repeat(6)}</span>
         </div>
         <div className="swap-body">
-          <small>Now showing</small>
+          <small>{s.nowShowing}</small>
           <strong>{title}</strong>
           <p>{line}</p>
         </div>
@@ -97,7 +93,7 @@ export function PageSwap({ swap, onCover, onDone }: { swap: Swap | null; onCover
           <span className="swap-code" />
           <span className="swap-price">
             <b>$0</b>
-            <small>to browse</small>
+            <small>{s.toBrowse}</small>
           </span>
         </div>
       </div>

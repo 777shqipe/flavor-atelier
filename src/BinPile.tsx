@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type * as MatterNS from "matter-js";
+import { useLang, useT } from "./i18n";
+import { binPileStrings } from "./i18n/strings/BinPile";
 import { LogoMark } from "./Logo";
 import { Pack } from "./Pack";
 import { Apple, Banana, Bread } from "./Produce";
@@ -17,13 +19,15 @@ import "./binpile.css";
  */
 
 type Perish = { tag: string; warn: string; tips: string[] };
+/** One grocery's words, by item key: the use-by date (short and long) is passed in, in the visitor's language. */
+type PerishLines = (short: string, when: string) => Perish;
 type Def = {
   key: string;
   name: string;
   price: number;
   was: number;
-  /** Use-by (or keep-frozen) groceries: the till warns, the bin gives a tip. */
-  perish?: Perish;
+  /** Use-by (days from now) or, with no days, keep-frozen groceries: the till warns, the bin gives a tip. The words are in the strings file. */
+  perish?: { days?: number };
   w: number;
   h: number;
   shape: "box" | "circle";
@@ -31,6 +35,11 @@ type Def = {
   node: ReactNode;
 };
 type Look = Pick<Def, "w" | "h" | "shape" | "round" | "node">;
+
+/** Everything a line can depend on. Lines are resolved at render time, so a bubble on screen follows a language switch. */
+type Copy = typeof binPileStrings.en;
+type Kit = { s: Copy; locale: string };
+type Line = (kit: Kit) => string;
 
 const PACK_SCALE = 0.52;
 const packLook = (shape: Shape, color: string, label: [string, string?]): Look => {
@@ -47,14 +56,14 @@ const stocked = (id: string) => {
 };
 
 const day = (days: number) => new Date(Date.now() + days * 86_400_000);
-const longDate = (days: number) =>
-  day(days).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" }).replace(",", "");
-const shortDate = (days: number) => day(days).toLocaleDateString("en-AU", { day: "2-digit", month: "short" }).toUpperCase();
-const useBy = (days: number, warn: (when: string) => string, tips: (when: string) => string[]): Perish => ({
-  tag: `Use by ${shortDate(days)}`,
-  warn: warn(longDate(days)),
-  tips: tips(longDate(days)),
-});
+const longDate = (days: number, locale: string) =>
+  day(days).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" }).replace(",", "");
+const shortDate = (days: number, locale: string) => day(days).toLocaleDateString(locale, { day: "2-digit", month: "short" }).toUpperCase();
+/** A grocery's use-by words, dated from today in the visitor's language. */
+const perishOf = (def: Def, { s, locale }: Kit): Perish => {
+  const days = def.perish?.days ?? 0;
+  return (s.perish as Record<string, PerishLines>)[def.key](shortDate(days, locale), longDate(days, locale));
+};
 
 /** Ten groceries in drop order; phones get the first seven. Produce and milk prices are placeholders. */
 const DEFS: Def[] = [
@@ -64,11 +73,7 @@ const DEFS: Def[] = [
     name: "Fresh milk",
     price: 1.5,
     was: 3.2,
-    perish: useBy(
-      3,
-      (when) => `Use by ${when}. Keep it cold. After that, it can make you sick.`,
-      (when) => [`Use by ${when}. Freeze it, or make pancakes tonight.`, "Milk freezes fine. Thaw it in the fridge, then give it a shake."],
-    ),
+    perish: { days: 3 },
     ...packLook("carton", "#6bb8ff", ["FRESH", "MILK"]),
   },
   { key: "apple", name: "Wonky apple", price: 0.5, was: 1.2, w: 46, h: 46, shape: "circle", round: 0, node: <Apple /> },
@@ -76,11 +81,7 @@ const DEFS: Def[] = [
   {
     key: "yoghurt",
     name: "Greek yoghurt",
-    perish: useBy(
-      6,
-      (when) => `Use by ${when}. Past that, don’t risk it, even if it looks fine.`,
-      (when) => [`Use by ${when}. Freeze dollops for smoothies.`, "Bake it into a cake. Or a curry. Your call."],
-    ),
+    perish: { days: 6 },
     ...stocked("yoghurt"),
   },
   { key: "banana", name: "Spotty banana", price: 0.3, was: 0.8, w: 90, h: 38, shape: "box", round: 14, node: <Banana /> },
@@ -88,11 +89,7 @@ const DEFS: Def[] = [
   {
     key: "dumplings",
     name: "Dumplings",
-    perish: {
-      tag: "Keep frozen",
-      warn: "Keep frozen. Once thawed, cook within a day and never refreeze.",
-      tips: ["Still frozen? It’s got months. Back in the freezer.", "Ten minutes in a pan. That’s dinner."],
-    },
+    perish: {},
     ...stocked("dumplings"),
   },
   { key: "bread", name: "Day-old loaf", price: 1.5, was: 4.5, w: 86, h: 48, shape: "box", round: 16, node: <Bread /> },
@@ -100,59 +97,21 @@ const DEFS: Def[] = [
 ];
 const BY_KEY = Object.fromEntries(DEFS.map((def) => [def.key, def]));
 
-/** What the bin says when it spits something good back. Shuffled, no repeats until the deck runs out. */
-const LINES = [
-  "Oi! That’s still good.",
-  "Not in my bin.",
-  "Best before isn’t use by.",
-  "Someone will eat that.",
-  "Rescued. Again.",
-  "Nice try.",
-  "I’m a bin, not a fridge.",
-  "Ugly isn’t off.",
-  "That’s dinner, mate.",
-  "Return to sender.",
-  "Back on the shelf with you.",
-  "Dented? Still delicious.",
-  "Have you tried eating it?",
-  "Denied.",
-  "Not today, landfill.",
-  "Plenty of life left in that.",
-  "I only take actual rubbish.",
-  "Pop it in a lunchbox.",
-  "Wrong bin. Try the till.",
-  "Smell it. Taste it. Eat it.",
-  "That’s someone’s lunch.",
-];
+/** Indexes into the strings' lists (shuffled into decks below). The words are read at render time, in the current language. */
+const LINE_IDS = binPileStrings.en.lines.map((_, i) => i);
+const FED_UP_IDS = binPileStrings.en.fedUp.map((_, i) => i);
+const BEEP_IDS = binPileStrings.en.beeps.map((_, i) => i);
 
-/** First time a particular grocery lands in the bin, it gets its own comeback. */
-const ABOUT: Record<string, string> = {
-  banana: "Brown spots? That’s banana bread.",
-  bread: "Stale? That’s French toast.",
-  apple: "A bruise isn’t a bin ticket.",
-  popcorn: "New bag. Same corn.",
-  cornflakes: "Best before. Not bad after.",
-  chickpeas: "Tins keep for years, mate.",
-  pb: "Peanut butter never gives up.",
-};
+/** The tone label that the CSS shows on a bubble. */
+const tagOf = (tags: Copy["tags"], tone?: string) => (tone === "tip" ? tags.tip : tone === "ok" ? tags.beep : tone === "warn" ? tags.warn : undefined);
 
-/** Keep chucking things in quickly and the bin loses patience. */
-const FED_UP = ["Seriously?", "Again?!", "Mate. Stop.", "I can do this all day.", "Lid’s staying shut.", "Persistent, aren’t you?"];
-
-/** What the till says once something good is rung up. */
-const BEEPS = [
-  (price: string, saved: string) => `$${price}. You saved $${saved}.`,
-  (price: string, saved: string) => `Rescued for $${price}. That’s $${saved} off.`,
-  (_price: string, saved: string) => `Into the bag. $${saved} saved.`,
-];
-
-type Say = { text: string; tone?: "item" | "mad" | "tip" };
-type Ring = { lcd: [string, string]; text: string; tone: "ok" | "warn"; count: number };
+type Say = { text: Line; tone?: "item" | "mad" | "tip" };
+type Ring = { lcd: [string, Line]; text: Line; tone: "ok" | "warn"; count: number };
 
 const money = (value: number) => value.toFixed(2);
 
 /** Melbourne's red-lid landfill bin, with a face, because it has opinions. */
-function BinArt() {
+function BinArt({ sticker }: { sticker: Copy["sticker"] }) {
   return (
     <svg viewBox="0 0 120 160" aria-hidden="true" focusable="false">
       <defs>
@@ -212,10 +171,10 @@ function BinArt() {
         <g transform="rotate(-3 60 112)">
           <rect x="31" y="98" width="58" height="28" rx="4" fill="#fffdf6" stroke="#141414" strokeWidth="2" />
           <text x="60" y="113" textAnchor="middle" fontFamily="Anton, sans-serif" fontSize="12" letterSpacing="0.6" fill="#141414">
-            LANDFILL
+            {sticker.top}
           </text>
           <text x="60" y="121.5" textAnchor="middle" fontFamily="DM Sans, sans-serif" fontWeight="700" fontSize="6.4" fill="#d42a1e">
-            NO GOOD FOOD
+            {sticker.bottom}
           </text>
         </g>
       </g>
@@ -256,6 +215,9 @@ function TillArt() {
 }
 
 export function BinPile() {
+  const s = useT(binPileStrings);
+  const { locale } = useLang();
+  const kit: Kit = { s, locale };
   const stage = useRef<HTMLDivElement>(null);
   const bin = useRef<HTMLDivElement>(null);
   const till = useRef<HTMLDivElement>(null);
@@ -286,24 +248,25 @@ export function BinPile() {
       { rootMargin: "600px 0px" },
     );
     near.observe(el);
+
+    // The till's laser and the bin's blink are SVG loops, which Chrome runs on the main thread: they only run near the screen.
+    const sight = new IntersectionObserver(([entry]) => el.toggleAttribute("data-off", !entry.isIntersecting), { rootMargin: "120px 0px" });
+    sight.observe(el);
     return () => {
       disposed = true;
       near.disconnect();
+      sight.disconnect();
       teardown();
     };
   }, []);
 
-  const lcd = ring?.lcd ?? ["Ready", "Saved $0.00"];
+  const lcd = ring ? [ring.lcd[0], ring.lcd[1](kit)] : [s.ready, s.saved(money(0))];
 
   return (
     <div className="pile" ref={stage}>
       <div className="pile-copy">
-        <p className="eyebrow">Drag them. Try the bin. Try the till.</p>
-        <p className="pile-title">
-          Nothing good goes
-          <br />
-          in the bin.
-        </p>
+        <p className="eyebrow">{s.eyebrow}</p>
+        <p className="pile-title">{s.title}</p>
       </div>
       <div className="pile-till" ref={till} data-tone={ring?.tone} style={{ "--n": Math.min(7, ring?.count ?? 0) } as CSSProperties} aria-hidden="true">
         <TillArt />
@@ -314,16 +277,16 @@ export function BinPile() {
         </span>
         <span className="till-rcpt" />
         {ring && (
-          <span className="pile-bubble till-bubble" key={ring.n} data-tone={ring.tone}>
-            {ring.text}
+          <span className="pile-bubble till-bubble" key={ring.n} data-tone={ring.tone} data-tag={tagOf(s.tags, ring.tone)}>
+            {ring.text(kit)}
           </span>
         )}
       </div>
       <div className="pile-bin" ref={bin} aria-hidden="true">
-        <BinArt />
+        <BinArt sticker={s.sticker} />
         {bubble && (
-          <span className="pile-bubble" key={bubble.n} data-tone={bubble.tone}>
-            {bubble.text}
+          <span className="pile-bubble" key={bubble.n} data-tone={bubble.tone} data-tag={tagOf(s.tags, bubble.tone)}>
+            {bubble.text(kit)}
           </span>
         )}
       </div>
@@ -336,7 +299,8 @@ export function BinPile() {
           style={{ width: def.w, height: def.h, "--i": index } as CSSProperties}
           aria-hidden="true"
         >
-          {def.node}
+          {/* The sway, the pop-in and the shrink run on this div: on the <svg> itself they would stay on the main thread. */}
+          <div className="pi-art">{def.node}</div>
         </div>
       ))}
     </div>
@@ -354,8 +318,8 @@ function shuffled<T>(list: readonly T[]): T[] {
 
 /** Picks the bin's next line: a tip for use-by food, the item's own comeback, then the generic deck, and a sulk when spammed. */
 function lineMaker() {
-  let deck: string[] = [];
-  let fedUp: string[] = [];
+  let deck: number[] = [];
+  let fedUp: number[] = [];
   const heard = new Set<string>();
   const tipped: Record<string, number> = {};
   let streak = 0;
@@ -365,21 +329,29 @@ function lineMaker() {
     streak = now - last < 4500 ? streak + 1 : 0;
     last = now;
     if (streak >= 3) {
-      if (!fedUp.length) fedUp = shuffled(FED_UP);
-      return { text: fedUp.pop()!, tone: "mad" };
+      if (!fedUp.length) fedUp = shuffled(FED_UP_IDS);
+      const i = fedUp.pop()!;
+      return { text: (k) => k.s.fedUp[i], tone: "mad" };
     }
-    const tips = BY_KEY[key]?.perish?.tips;
-    if (tips) {
+    const def = BY_KEY[key];
+    if (def?.perish) {
       const n = tipped[key] ?? 0;
       tipped[key] = n + 1;
-      return { text: tips[n % tips.length], tone: "tip" };
+      return {
+        text: (k) => {
+          const { tips } = perishOf(def, k);
+          return tips[n % tips.length];
+        },
+        tone: "tip",
+      };
     }
-    if (ABOUT[key] && !heard.has(key)) {
+    if (Object.hasOwn(binPileStrings.en.about, key) && !heard.has(key)) {
       heard.add(key);
-      return { text: ABOUT[key], tone: "item" };
+      return { text: (k) => (k.s.about as Record<string, string>)[key], tone: "item" };
     }
-    if (!deck.length) deck = shuffled(LINES);
-    return { text: deck.pop()! };
+    if (!deck.length) deck = shuffled(LINE_IDS);
+    const i = deck.pop()!;
+    return { text: (k) => k.s.lines[i] };
   };
 }
 
@@ -499,7 +471,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
   // ---- the till rings it up --------------------------------------------------------
   let count = 0;
   let saved = 0;
-  let beeps: typeof BEEPS = [];
+  let beeps: number[] = [];
   const restock = (it: It) => {
     drop(it, spawnX(it), it.h / 2 + 12 + Math.random() * H * 0.12);
     kick();
@@ -519,13 +491,16 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
 
     count += 1;
     saved += def.was - def.price;
+    const total = saved;
     replay(tillEl, "data-beep");
     if (def.perish) {
-      hooks.ring({ lcd: [def.name, def.perish.tag], text: def.perish.warn, tone: "warn", count });
+      hooks.ring({ lcd: [def.name, (k) => perishOf(def, k).tag], text: (k) => perishOf(def, k).warn, tone: "warn", count });
     } else {
-      if (!beeps.length) beeps = shuffled(BEEPS);
-      const text = beeps.pop()!(money(def.price), money(def.was - def.price));
-      hooks.ring({ lcd: [def.name, `Saved $${money(saved)}`], text, tone: "ok", count });
+      if (!beeps.length) beeps = shuffled(BEEP_IDS);
+      const i = beeps.pop()!;
+      const price = money(def.price);
+      const off = money(def.was - def.price);
+      hooks.ring({ lcd: [def.name, (k) => k.s.saved(money(total))], text: (k) => k.s.beeps[i](price, off), tone: "ok", count });
     }
   };
 

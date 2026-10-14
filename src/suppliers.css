@@ -37,7 +37,8 @@
 .route-fill { position: absolute; inset: 0; border-radius: inherit; background: var(--green); transform-origin: left; scale: 0 1; }
 /* The truck rides the line and pulls up just short of each pin (its nose 4px off the pin edge). */
 .route-truck { position: absolute; bottom: -3px; left: 0; z-index: 2; width: 56px; translate: calc(-100% - var(--pin) / 2 - 4px) 0; }
-.route-truck svg { display: block; width: 100%; height: auto; animation: route-bob 0.5s ease-in-out infinite alternate; }
+.route-bob { display: block; animation: route-bob 0.5s ease-in-out infinite alternate; }
+.route-truck svg { display: block; width: 100%; height: auto; }
 .route-truck .wheel { transform-box: fill-box; transform-origin: center; }
 @keyframes route-bob { to { translate: 0 -1.5px; } }
 
@@ -179,7 +180,7 @@
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none !important; }
   .sp-mark::after { animation: none; scale: 1 1; }
-  .hero-actions .button::after, .marquee span i, .route-truck svg { animation: none !important; }
+  .hero-actions .button::after, .marquee span i, .route-bob { animation: none !important; }
   .route .route-truck { left: 100%; animation: none !important; }
   .route .route-fill { scale: 1 1; animation: none !important; }
   .route .stop-card { opacity: 1; translate: none; animation: none !important; }

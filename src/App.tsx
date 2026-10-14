@@ -7,6 +7,8 @@ import { Flyer } from "./Flyer";
 import { InstaShelf } from "./InstaShelf";
 import { Header, type Page } from "./Header";
 import { Hero } from "./Hero";
+import { useT } from "./i18n";
+import { appStrings } from "./i18n/strings/App";
 import { Mix } from "./Mix";
 import { PageSwap, type Swap } from "./PageSwap";
 import { Peel } from "./Peel";
@@ -26,18 +28,16 @@ const YEAR = new Date().getFullYear();
 const showWeeklyFlyer = false;
 /** The product posters (Showcase) stay in the project for later. Home shows only the feed for now. */
 const showShowcase = false;
-const TICKER = ["Once it’s gone, it’s gone", "New finds every week", "Big brands, small prices", "Less waste, more taste"];
-const TICKER_ALT = ["Up to 70% off RRP", "Rescued, not wasted", "Four Melbourne stores", "Fighting food waste since 1995"];
-
 function Products({ onNavigate }: { onNavigate: (page: Page) => void }) {
+  const s = useT(appStrings);
   return (
     <section className="products" data-surface="green" aria-labelledby="in-store">
       <header className="section-head split rv">
         <div>
-          <p className="eyebrow">Fresh finds every week</p>
-          <h2 id="in-store">In store now</h2>
+          <p className="eyebrow">{s.products.eyebrow}</p>
+          <h2 id="in-store">{s.products.heading}</h2>
         </div>
-        <p className="lead">Unexpected brands, unbelievable prices. Once it’s gone, it’s gone.</p>
+        <p className="lead">{s.products.lead}</p>
       </header>
       <Showcase onNavigate={onNavigate} />
       <div className="ticker" aria-hidden="true">
@@ -45,7 +45,7 @@ function Products({ onNavigate }: { onNavigate: (page: Page) => void }) {
           <div className="ticker-track">
             {[0, 1].map((copy) => (
               <div key={copy}>
-                {TICKER.map((phrase) => (
+                {s.ticker.map((phrase) => (
                   <span key={phrase}>
                     {phrase}
                     <i>✦</i>
@@ -59,7 +59,7 @@ function Products({ onNavigate }: { onNavigate: (page: Page) => void }) {
           <div className="ticker-track reverse">
             {[0, 1].map((copy) => (
               <div key={copy}>
-                {TICKER_ALT.map((phrase) => (
+                {s.tickerAlt.map((phrase) => (
                   <span key={phrase}>
                     {phrase}
                     <i>$</i>
@@ -79,6 +79,7 @@ function Feed() {
 }
 
 function Home({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onContact: (topic?: Topic) => void }) {
+  const s = useT(appStrings);
   return (
     <main>
       <Hero onNavigate={onNavigate} />
@@ -87,10 +88,10 @@ function Home({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onC
       {showShowcase ? (
         <Mix
           id="finds"
-          label="This week’s finds"
+          label={s.mix.label}
           tabs={[
-            { id: "store", label: "In store now", render: () => <Products onNavigate={onNavigate} /> },
-            { id: "feed", label: "On Instagram", render: () => <Feed /> },
+            { id: "store", label: s.mix.store, render: () => <Products onNavigate={onNavigate} /> },
+            { id: "feed", label: s.mix.feed, render: () => <Feed /> },
           ]}
         />
       ) : (
@@ -110,47 +111,36 @@ function Home({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onC
             from="tr"
             bleed={0.04}
             back={{ borderRadius: "10px" }}
-            under={
-              <span className="mani-seal-under">
-                Zero
-                <br />
-                landfill
-              </span>
-            }
+            under={<span className="mani-seal-under">{s.home.sealUnder}</span>}
           >
             <span className="mani-seal-face">
-              <small>RESCUED</small>
-              <b>DAILY</b>
+              <small>{s.home.sealSmall}</small>
+              <b>{s.home.sealBig}</b>
             </span>
           </Peel>
         </div>
         <div className="rv blur" style={{ "--rv": "100ms" } as CSSProperties}>
-          <p className="eyebrow">Our purpose</p>
-          <h2 id="manifesto-title">
-            One <em>bargain</em> at a time.
-          </h2>
+          <p className="eyebrow">{s.home.purposeEyebrow}</p>
+          <h2 id="manifesto-title">{s.home.purposeTitle}</h2>
           <p className="mani-tag">
-            <span>Surplus in</span>
+            <span>{s.home.tagIn}</span>
             <i>→</i>
-            <span>Savings out</span>
+            <span>{s.home.tagOut}</span>
           </p>
         </div>
         <div className="manifesto-copy rv" style={{ "--rv": "200ms" } as CSSProperties}>
-          <p>
-            We love food, and we hate waste. We’ve saved millions of kilograms of good food from being dumped—while
-            giving you huge savings.
-          </p>
+          <p>{s.home.copy}</p>
           {/* Short dates make some people wary, so the promise sits right under the pitch. */}
           <p className="mani-promise">
             <span aria-hidden="true">✓</span>
-            <b>100% money-back guarantee.</b> Not happy with something? Bring it back.
+            {s.home.promise}
           </p>
           <div className="mani-actions">
             <button className="button" type="button" onClick={() => onNavigate("about")}>
-              Our story
+              {s.home.story}
             </button>
             <button className="button outline" type="button" onClick={() => onContact("stock")}>
-              Got surplus stock?
+              {s.home.stock}
             </button>
           </div>
         </div>
@@ -196,6 +186,7 @@ function FootFilm() {
 }
 
 function Footer({ onNavigate, onContact }: { onNavigate: (page: Page, anchor?: string) => void; onContact: () => void }) {
+  const s = useT(appStrings);
   return (
     <footer data-surface="deep">
       <FootFilm />
@@ -203,40 +194,36 @@ function Footer({ onNavigate, onContact }: { onNavigate: (page: Page, anchor?: s
       <div className="footer-main">
         <div className="footer-brand">
           <p className="eyebrow">Cheaper Buy Miles</p>
-          <h2>
-            More taste.
-            <br />
-            <em>Less waste.</em>
-          </h2>
+          <h2>{s.footer.title}</h2>
           <button className="footer-ticket" type="button" onClick={onContact}>
-            <span className="ft-tag">OPEN DOCKET</span>
+            <span className="ft-tag">{s.footer.ticketTag}</span>
             <span className="ft-copy">
-              <b>Have surplus stock or a question?</b>
-              <small>Write to our buying or store team →</small>
+              <b>{s.footer.ticketTitle}</b>
+              <small>{s.footer.ticketSub}</small>
             </span>
           </button>
         </div>
-        <nav className="footer-links" aria-label="Footer">
-          <p className="footer-label">Explore</p>
+        <nav className="footer-links" aria-label={s.footer.navLabel}>
+          <p className="footer-label">{s.footer.explore}</p>
           <button type="button" onClick={() => onNavigate("home")}>
-            <small>01</small> Home
+            <small>01</small> {s.footer.links.home}
           </button>
           <button type="button" onClick={() => onNavigate("stores")}>
-            <small>02</small> Our stores
+            <small>02</small> {s.footer.links.stores}
           </button>
           <button type="button" onClick={() => onNavigate("about")}>
-            <small>03</small> About us
+            <small>03</small> {s.footer.links.about}
           </button>
           <button type="button" onClick={() => onNavigate("about", "suppliers")}>
-            <small>04</small> Suppliers
+            <small>04</small> {s.footer.links.suppliers}
           </button>
           <button type="button" onClick={onContact}>
-            <small>05</small> Contact us
+            <small>05</small> {s.footer.links.contact}
           </button>
         </nav>
         <div className="footer-social-col">
-          <p className="footer-label">Follow the bargains</p>
-          <p className="footer-sub">New arrivals land on our feed daily before they hit the shelves.</p>
+          <p className="footer-label">{s.footer.followLabel}</p>
+          <p className="footer-sub">{s.footer.followSub}</p>
           <div className="socials">
             <a href="https://www.instagram.com/cheaperbuymiles/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <span>ig</span>
@@ -247,27 +234,27 @@ function Footer({ onNavigate, onContact }: { onNavigate: (page: Page, anchor?: s
             <a href="https://twitter.com/CheaperBuyMiles" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
               <span>tw</span>
             </a>
-            <button type="button" onClick={() => onNavigate("stores")} aria-label="Our 4 Melbourne stores">
+            <button type="button" onClick={() => onNavigate("stores")} aria-label={s.footer.socialStores}>
               <span>4×</span>
             </button>
-            <button type="button" onClick={onContact} aria-label="Contact us">
+            <button type="button" onClick={onContact} aria-label={s.footer.links.contact}>
               <span>✉</span>
             </button>
           </div>
         </div>
       </div>
       <div className="footer-bottom">
-        <span>Melbourne, Australia · Est. 1995</span>
-        <span>Good food shouldn’t go to waste.</span>
+        <span>{s.footer.place}</span>
+        <span>{s.footer.tagline}</span>
         <span>
           © {YEAR} Cheaper Buy Miles ·{" "}
           {/* The policies live on the current site until they move here. */}
           <a href="https://www.cheaperbuymiles.com/privacy-policy" target="_blank" rel="noopener noreferrer">
-            Privacy
+            {s.footer.privacy}
           </a>{" "}
           ·{" "}
           <a href="https://www.cheaperbuymiles.com/cookie-policy" target="_blank" rel="noopener noreferrer">
-            Cookies
+            {s.footer.cookies}
           </a>
         </span>
       </div>

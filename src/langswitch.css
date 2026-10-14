@@ -1,0 +1,35 @@
+/* Language picker: a small three-way pill that sits in the header capsule and the mobile menu. */
+
+.lang {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+}
+.lang button {
+  min-width: 34px;
+  height: 28px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: rgb(246 240 219 / 0.72);
+  font: 700 12px/1 var(--font-sans);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, scale 0.2s var(--spring);
+}
+.lang button:hover { color: var(--cream); }
+.lang button:active { scale: 0.94; }
+.lang button:focus-visible { outline: 2px solid var(--sun); outline-offset: 1px; }
+.lang button[aria-pressed="true"] { background: var(--sun); color: #17140c; }
+
+/* In the capsule, after the CTA. */
+.lang.in-bar { margin-left: clamp(10px, 1.4vw, 20px); }
+
+/* In the mobile menu, centred above the footer line. */
+.lang.in-drawer { display: flex; width: max-content; margin: 16px auto 0; }
+.lang.in-drawer button { height: 34px; min-width: 44px; font-size: 13px; }

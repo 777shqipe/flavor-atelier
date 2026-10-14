@@ -1,27 +1,31 @@
 import { useEffect, useRef, type CSSProperties } from "react";
-import { PROOF, STOPS } from "./supplierDeal";
+import { useT } from "./i18n";
+import { suppliersStrings } from "./i18n/strings/Suppliers";
+import { supplierDealStrings } from "./i18n/strings/SupplierDeal";
+import { STOPS } from "./supplierDeal";
 import { TruckScene } from "./TruckScene";
 import "./suppliers.css";
 
 /** When the truck reaches each stop; must match the @keyframes route-drive stops. */
 const ARRIVALS = [0, 1.2, 2.4, 3.68];
 
-const BUYS = ["Close-to-date", "Past best-before", "Surplus stock", "A few pallets", "A full truckload"];
-
 function Truck() {
+  // The bob is on the span, not the svg: Chrome runs it on the GPU there but keeps an <svg> on the main thread.
   return (
-    <svg viewBox="0 0 64 36" aria-hidden="true" focusable="false">
-      <g stroke="#1c1a17" strokeWidth="2" strokeLinejoin="round">
-        <rect x="2" y="5" width="36" height="21" rx="3" fill="#005842" />
-        <path d="M38 11h12l8 8v7H38z" fill="#f6b531" />
-        <path d="M41 14h8l5 5h-13z" fill="#cfe7f3" strokeWidth="1.6" />
-        <circle className="wheel" cx="14" cy="28" r="5" fill="#2a2a2a" />
-        <circle className="wheel" cx="48" cy="28" r="5" fill="#2a2a2a" />
-      </g>
-      <path d="M8 12h22M8 17h14" stroke="#f6f0db" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
-      <circle cx="14" cy="28" r="1.6" fill="#d7dbe0" />
-      <circle cx="48" cy="28" r="1.6" fill="#d7dbe0" />
-    </svg>
+    <span className="route-bob">
+      <svg viewBox="0 0 64 36" aria-hidden="true" focusable="false">
+        <g stroke="#1c1a17" strokeWidth="2" strokeLinejoin="round">
+          <rect x="2" y="5" width="36" height="21" rx="3" fill="#005842" />
+          <path d="M38 11h12l8 8v7H38z" fill="#f6b531" />
+          <path d="M41 14h8l5 5h-13z" fill="#cfe7f3" strokeWidth="1.6" />
+          <circle className="wheel" cx="14" cy="28" r="5" fill="#2a2a2a" />
+          <circle className="wheel" cx="48" cy="28" r="5" fill="#2a2a2a" />
+        </g>
+        <path d="M8 12h22M8 17h14" stroke="#f6f0db" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+        <circle cx="14" cy="28" r="1.6" fill="#d7dbe0" />
+        <circle cx="48" cy="28" r="1.6" fill="#d7dbe0" />
+      </svg>
+    </span>
   );
 }
 
@@ -30,6 +34,8 @@ function Truck() {
  * Each stop lights up as it arrives and shows the step plus what it gives the supplier.
  */
 function Deal({ onContact }: { onContact: () => void }) {
+  const s = useT(suppliersStrings);
+  const deal = useT(supplierDealStrings);
   const route = useRef<HTMLDivElement>(null);
 
   // Stacked layout: the vertical route stops at the last pin, so it needs the last stop's height below that pin.
@@ -46,12 +52,10 @@ function Deal({ onContact }: { onContact: () => void }) {
     <section className="deal" id="supply" data-surface="paper" aria-labelledby="deal-title">
       <header className="section-head split rv">
         <div>
-          <p className="eyebrow">Working with us</p>
-          <h2 id="deal-title">
-            A deal that works <em>for everyone.</em>
-          </h2>
+          <p className="eyebrow">{s.dealEyebrow}</p>
+          <h2 id="deal-title">{s.dealTitle}</h2>
         </div>
-        <p className="lead">Four steps from “we have too much” to “it’s gone, thank you”, and what each one does for you.</p>
+        <p className="lead">{s.dealLead}</p>
       </header>
 
       <div className="route rv" ref={route}>
@@ -62,26 +66,29 @@ function Deal({ onContact }: { onContact: () => void }) {
           </span>
         </div>
         <ol className="route-stops">
-          {STOPS.map((stop, index) => (
-            <li key={stop.title} className="stop" style={{ "--t": `${ARRIVALS[index] + 0.3}s` } as CSSProperties}>
-              <span className="stop-pin">0{index + 1}</span>
-              <div className="stop-card">
-                <span className="stop-tag">{stop.tag}</span>
-                <h3>{stop.title}</h3>
-                <p>{stop.text}</p>
-                <p className="stop-gain">
-                  <b>For you</b>
-                  {stop.gain}
-                </p>
-              </div>
-            </li>
-          ))}
+          {STOPS.map((id, index) => {
+            const stop = deal.stops[id];
+            return (
+              <li key={id} className="stop" style={{ "--t": `${ARRIVALS[index] + 0.3}s` } as CSSProperties}>
+                <span className="stop-pin">0{index + 1}</span>
+                <div className="stop-card">
+                  <span className="stop-tag">{stop.tag}</span>
+                  <h3>{stop.title}</h3>
+                  <p>{stop.text}</p>
+                  <p className="stop-gain">
+                    <b>{s.forYou}</b>
+                    {stop.gain}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
         </ol>
       </div>
 
       <div className="deal-proof rv">
         <ul>
-          {PROOF.map(([big, small]) => (
+          {deal.proof.map(([big, small]) => (
             <li key={small}>
               <strong>{big}</strong>
               <span>{small}</span>
@@ -89,7 +96,7 @@ function Deal({ onContact }: { onContact: () => void }) {
           ))}
         </ul>
         <button className="button cream" type="button" onClick={onContact}>
-          Get a quote
+          {s.quote}
         </button>
       </div>
     </section>
@@ -98,28 +105,29 @@ function Deal({ onContact }: { onContact: () => void }) {
 
 /** The supplier half of About: the pitch, what we buy, then the deal route. */
 export function Suppliers({ onContact }: { onContact: () => void }) {
+  const s = useT(suppliersStrings);
   return (
     <>
       <section className="page-hero sp-hero" id="suppliers" data-surface="green" aria-labelledby="suppliers-title">
         <div className="aurora" aria-hidden="true" />
         <div className="page-hero-inner">
           <header className="page-head">
-            <p className="eyebrow light">For suppliers</p>
+            <p className="eyebrow light">{s.eyebrow}</p>
             <h2 id="suppliers-title">
-              Surplus stock?
+              {s.heroTitle}
               <br />
-              Let’s make it useful.
+              {s.heroTitleLine2}
             </h2>
-            <p className="lead">Fast decisions, flexible volumes and a better outcome for good food.</p>
+            <p className="lead">{s.heroLead}</p>
             <div className="hero-actions">
               <button className="button cream" type="button" onClick={onContact}>
-                Get a quote
+                {s.quote}
               </button>
               <a className="text-link" href="#supply" onClick={(event) => {
                 event.preventDefault();
                 document.getElementById("supply")?.scrollIntoView({ behavior: "smooth" });
               }}>
-                How it works <span>↓</span>
+                {s.howItWorks} <span>↓</span>
               </a>
             </div>
           </header>
@@ -127,12 +135,12 @@ export function Suppliers({ onContact }: { onContact: () => void }) {
         </div>
       </section>
 
-      <div className="marquee" data-surface="cream" aria-label="What we buy">
+      <div className="marquee" data-surface="cream" aria-label={s.buysLabel}>
         <div className="marquee-track" aria-hidden="true">
           {[0, 1].map((copy) => (
             <div key={copy}>
-              {BUYS.map((item) => (
-                <span key={item}>
+              {s.buys.map((item, index) => (
+                <span key={index}>
                   {item}
                   <i>✦</i>
                 </span>

@@ -1,3 +1,7 @@
+import type { Lang } from "./i18n";
+import { pick } from "./i18n";
+import { storeStrings } from "./i18n/strings/Stores";
+
 export type Glyph = "bridge" | "horseshoe" | "cup" | "tram";
 
 export type Store = {
@@ -108,29 +112,32 @@ const OPEN: Array<[number, number]> = [
 ];
 const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const clock = (hour: number) => `${hour > 12 ? hour - 12 : hour}${hour >= 12 ? "pm" : "am"}`;
-
 export type OpenStatus = { open: boolean; label: string; short: string };
 
-export function openStatus(now = new Date()): OpenStatus {
-  const parts = new Intl.DateTimeFormat("en-AU", {
+// Building an Intl.DateTimeFormat with a time zone is slow (it loads the zone data), so it is built once.
+let melbourneClock: Intl.DateTimeFormat | undefined;
+
+export function openStatus(now = new Date(), lang: Lang = "en"): OpenStatus {
+  melbourneClock ??= new Intl.DateTimeFormat("en-AU", {
     timeZone: "Australia/Melbourne",
     weekday: "short",
     hour: "numeric",
     minute: "numeric",
     hourCycle: "h23",
-  }).formatToParts(now);
+  });
+  const parts = melbourneClock.formatToParts(now);
   const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
   const day = Math.max(0, DAY.indexOf(get("weekday")));
   const minutes = Number(get("hour")) * 60 + Number(get("minute"));
   const [opens, closes] = OPEN[day];
+  const { status } = pick(storeStrings, lang);
 
   if (minutes >= opens * 60 && minutes < closes * 60) {
-    return { open: true, label: `Open now · closes ${clock(closes)}`, short: "Open now" };
+    return { open: true, label: status.openNow(closes), short: status.openShort };
   }
   if (minutes < opens * 60) {
-    return { open: false, label: `Closed · opens ${clock(opens)} today`, short: "Closed" };
+    return { open: false, label: status.closedToday(opens), short: status.closedShort };
   }
   const next = (day + 1) % 7;
-  return { open: false, label: `Closed · opens ${clock(OPEN[next][0])} ${DAY[next] === "Sun" ? "Sunday" : "tomorrow"}`, short: "Closed" };
+  return { open: false, label: status.closedNext(OPEN[next][0], DAY[next] === "Sun"), short: status.closedShort };
 }

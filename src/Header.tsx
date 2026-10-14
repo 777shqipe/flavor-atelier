@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { headerStrings } from "./i18n/strings/Header";
+import { useT } from "./i18n";
+import { LangSwitch } from "./LangSwitch";
 import { Logo } from "./Logo";
 import "./header.css";
 
 export type Page = "home" | "stores" | "about";
 
 /** Each link's price-gun label lands at its own slight angle, as if stuck on by hand. */
-const LINKS: Array<[Page, string, number]> = [
-  ["home", "Home", -2],
-  ["stores", "Stores", 1.5],
-  ["about", "About us", -1.5],
+const LINKS: Array<[Page, number]> = [
+  ["home", -2],
+  ["stores", 1.5],
+  ["about", -1.5],
 ];
 
 /** Label whose letters roll up one after another on hover. */
@@ -50,6 +53,7 @@ export function Header({
   onNavigate: (page: Page) => void;
   onContact: () => void;
 }) {
+  const s = useT(headerStrings);
   const [stuck, setStuck] = useState(false);
   const [open, setOpen] = useState(false);
   // Touch screens wide enough for the full nav cannot hover the compact bar open, so they tap to peek.
@@ -118,12 +122,12 @@ export function Header({
           {/* Scrolled down, this folds away and the bar is just the logo and the name. */}
           <div className="bar-more">
             <div className="bar-more-in">
-              <nav className="nav" aria-label="Main navigation">
-                {LINKS.map(([id, label, tilt]) => (
+              <nav className="nav" aria-label={s.mainNav}>
+                {LINKS.map(([id, tilt]) => (
                   <button
                     key={id}
                     type="button"
-                    aria-label={label}
+                    aria-label={s.nav[id]}
                     aria-current={page === id ? "page" : undefined}
                     style={{ "--tilt": `${tilt}deg` } as CSSProperties}
                     onClick={() => go(id)}
@@ -131,7 +135,7 @@ export function Header({
                     <span className="gun" aria-hidden="true">
                       <span className="gun-paper" />
                     </span>
-                    <Roll text={label} />
+                    <Roll text={s.nav[id]} />
                   </button>
                 ))}
               </nav>
@@ -139,11 +143,11 @@ export function Header({
               {/* "Take a number": a deli-counter ticket dispenser whose display says it is
                   your turn; the ticket sticking out of the slot is the way in. */}
               <button className="cta" type="button" data-torn={torn || undefined} onClick={takeNumber}>
-                <span className="sr-only">Contact us</span>
+                <span className="sr-only">{s.contact}</span>
                 <span className="cta-box" aria-hidden="true">
-                  <small>Now serving</small>
+                  <small>{s.nowServing}</small>
                   <span className="cta-led">
-                    <b>You</b>
+                    <b>{s.you}</b>
                   </span>
                 </span>
                 {/* Stub and ticket are the same drawing cut along a ragged tear line at
@@ -158,19 +162,20 @@ export function Header({
                     <span className="cta-slide">
                       <TicketArt />
                       <span className="cta-copy">
-                        <span className="cta-word">Contact us</span>
+                        <span className="cta-word">{s.contact}</span>
                       </span>
                     </span>
                   </span>
                 </span>
               </button>
+              <LangSwitch className="in-bar" />
             </div>
           </div>
 
           <button
             className="peek-btn"
             type="button"
-            aria-label={peek ? "Hide navigation" : "Show navigation"}
+            aria-label={peek ? s.hideNav : s.showNav}
             aria-expanded={peek}
             onClick={() => setPeek((value) => !value)}
           >
@@ -185,7 +190,7 @@ export function Header({
             aria-controls="mobile-menu"
             onClick={() => setOpen((value) => !value)}
           >
-            <span className="menu-word">{open ? "Close" : "Menu"}</span>
+            <span className="menu-word">{open ? s.close : s.menu}</span>
             <span className="burger" aria-hidden="true">
               <i />
               <i />
@@ -195,8 +200,8 @@ export function Header({
 
         <div className="drawer" id="mobile-menu" aria-hidden={!open}>
           <div className="drawer-in">
-            <nav aria-label="Mobile navigation">
-              {LINKS.map(([id, label], index) => (
+            <nav aria-label={s.mobileNav}>
+              {LINKS.map(([id], index) => (
                 <button
                   key={id}
                   type="button"
@@ -206,8 +211,8 @@ export function Header({
                   onClick={() => go(id)}
                 >
                   <small>0{index + 1}</small>
-                  <span>{label}</span>
-                  {page === id && <em>You’re here</em>}
+                  <span>{s.nav[id]}</span>
+                  {page === id && <em>{s.here}</em>}
                 </button>
               ))}
             </nav>
@@ -221,13 +226,14 @@ export function Header({
                 onContact();
               }}
             >
-              Contact us
+              {s.contact}
               <svg viewBox="0 0 16 16" aria-hidden="true">
                 <path d="M3 8h10M9 4l4 4-4 4" />
               </svg>
             </button>
+            <LangSwitch className="in-drawer" tabIndex={open ? 0 : -1} />
             <p className="drawer-foot" style={{ "--i": LINKS.length + 1 } as CSSProperties}>
-              Four stores across inner Melbourne
+              {s.foot}
             </p>
           </div>
         </div>

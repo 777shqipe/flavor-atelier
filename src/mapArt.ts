@@ -211,8 +211,8 @@ export const LANDMARKS: Landmark[] = [
   { id: "park", name: "Royal Park", lat: -37.7925, lon: 144.9468, w: 44, box: [50, 40], svg: trees, minor: true },
 ];
 
-export const landmarkHtml = (lm: Landmark) => `
+export const landmarkHtml = (lm: Landmark, caption = lm.name) => `
   <div class="lm lm-${lm.id}"${lm.minor ? " data-minor" : ""} style="--w:${lm.w}px;--ar:${lm.box[0] / lm.box[1]}">
     <span class="lm-art"><svg viewBox="0 0 ${lm.box[0]} ${lm.box[1]}" aria-hidden="true" focusable="false">${lm.svg}</svg></span>
-    <span class="lm-cap">${lm.name}</span>
+    <span class="lm-cap">${caption}</span>
   </div>`;

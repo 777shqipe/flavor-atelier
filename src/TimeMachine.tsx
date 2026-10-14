@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
+import { useT } from "./i18n";
+import { timeMachineStrings } from "./i18n/strings/TimeMachine";
 import { CART_SVG } from "./mapArt";
 import "./timemachine.css";
 
@@ -13,57 +15,39 @@ import "./timemachine.css";
 
 const NOW = new Date().getFullYear();
 
+type EraId = keyof typeof timeMachineStrings.en.eras;
+
 type Era = {
+  id: EraId;
   year: number;
-  short: string;
-  title: string;
-  text: string;
-  chips: string[];
   src: string;
   accent: string;
-  meanwhile: string;
 };
 
 const ERAS: Era[] = [
   {
+    id: "first",
     year: 1995,
-    short: "The first shop",
-    title: "The first shop",
-    text: "A small shop, a few shelves and a lot of jam. One clear idea from day one: perfectly good food should never be wasted.",
-    chips: ["One small shop", "One clear idea"],
     src: "/media/about-1995.jpg",
     accent: "#ff6a4d",
-    meanwhile: "Australia’s first food bank had opened in Sydney only three years earlier. Rescuing surplus food was still a fringe idea.",
   },
   {
+    id: "growing",
     year: 2005,
-    short: "A growing community",
-    title: "A growing community",
-    text: "More people discover the thrill of an unexpected bargain, and the business grows into new neighbourhoods.",
-    chips: ["New neighbourhoods", "More bargain hunters"],
     src: "/media/about-basket.jpg",
     accent: "#f6b531",
-    meanwhile: "OzHarvest (2004) and SecondBite (2005) start collecting surplus food for people who need it.",
   },
   {
+    id: "more",
     year: 2015,
-    short: "More stores, less waste",
-    title: "More stores, less waste",
-    text: "The network spreads across Melbourne, giving suppliers a better place for surplus stock than the skip.",
-    chips: ["Across Melbourne", "Surplus finds a home"],
     src: "/media/about-aisle.jpg",
     accent: "#b6d36a",
-    meanwhile: "Supermarkets start selling “ugly” fruit and veg (2014), and Australia commits to halving food waste by 2030 (2017).",
   },
   {
+    id: "today",
     year: NOW,
-    short: "Today",
-    title: "Still fighting food waste",
-    text: "Four stores, millions of products rescued, and the same purpose that started it all: one bargain at a time.",
-    chips: ["Four stores", "Millions of products rescued"],
     src: "/media/about-shelf.jpg",
     accent: "#6fd3b0",
-    meanwhile: "Australia still wastes around 7.6 million tonnes of food a year. Plenty left to rescue.",
   },
 ];
 
@@ -105,6 +89,7 @@ const AUTO_MS = 7000;
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function TimeMachine() {
+  const s = useT(timeMachineStrings);
   const [index, setIndex] = useState(0);
   const [shown, setShown] = useState(ERAS[0].year);
   const [warp, setWarp] = useState(0);
@@ -115,6 +100,7 @@ export function TimeMachine() {
   const rail = useRef<HTMLDivElement>(null);
   const spin = useRef(0);
   const era = ERAS[index];
+  const copy = s.eras[era.id];
   const last = ERAS.length - 1;
 
   const travel = (next: number) => {
@@ -193,26 +179,24 @@ export function TimeMachine() {
       <div className="tm-grid">
         <div className="tm-console">
           <header className="tm-head">
-            <p className="eyebrow">Thirty years, four stops</p>
-            <h2 id="tm-title">
-              Our story, <em>at full speed.</em>
-            </h2>
+            <p className="eyebrow">{s.eyebrow}</p>
+            <h2 id="tm-title">{s.heading}</h2>
           </header>
 
           <div className="tm-screen">
-            <p className="tm-plate">Destination time</p>
+            <p className="tm-plate">{s.plate}</p>
             <div className="tm-display" data-go={shown !== era.year || undefined}>
               <Led value={String(shown)} />
             </div>
             <p className="tm-row">
               <span>
-                Present time <b>{NOW}</b>
+                {s.present} <b>{NOW}</b>
               </span>
               <span className="tm-led" aria-hidden="true" />
             </p>
           </div>
 
-          <div className="tm-rail" ref={rail} role="tablist" aria-label="Our history" onKeyDown={onKey}>
+          <div className="tm-rail" ref={rail} role="tablist" aria-label={s.historyLabel} onKeyDown={onKey}>
             <span className="tm-track" aria-hidden="true">
               <i />
             </span>
@@ -231,20 +215,20 @@ export function TimeMachine() {
                 onClick={() => pick(i)}
               >
                 <i className="tm-stop" aria-hidden="true" />
-                <b>{i === last ? "Today" : item.year}</b>
-                <small>{item.short}</small>
+                <b>{i === last ? s.today : item.year}</b>
+                <small>{s.eras[item.id].short}</small>
               </button>
             ))}
           </div>
 
           <aside className="tm-meanwhile" key={`mw-${era.year}`}>
-            <b>Meanwhile in Australia</b>
-            <p>{era.meanwhile}</p>
+            <b>{s.meanwhileLabel}</b>
+            <p>{copy.meanwhile}</p>
           </aside>
 
           <button className="tm-auto" type="button" aria-pressed={auto} onClick={() => setAuto((on) => !on)}>
             <span className="tm-auto-ring" key={`ring-${index}-${auto}`} aria-hidden="true" />
-            {auto ? "Pause the trip" : "Travel on its own"}
+            {auto ? s.pause : s.travel}
           </button>
         </div>
 
@@ -254,24 +238,24 @@ export function TimeMachine() {
               <img
                 key={item.year}
                 src={item.src}
-                alt={i === index ? `${item.title}, ${i === last ? "today" : item.year}` : ""}
+                alt={i === index ? s.photoAlt(s.eras[item.id].title, i === last ? s.todayLower : String(item.year)) : ""}
                 aria-hidden={i !== index || undefined}
                 data-on={i === index || undefined}
                 draggable={false}
               />
             ))}
             <figcaption key={era.year}>
-              <b className="tm-year">{index === last ? "Today" : era.year}</b>
+              <b className="tm-year">{index === last ? s.today : era.year}</b>
               <ul className="tm-stickers">
-                {era.chips.map((chip, i) => (
+                {copy.chips.map((chip, i) => (
                   <li key={chip} style={{ "--k": i } as CSSProperties}>
                     {chip}
                   </li>
                 ))}
               </ul>
               <div className="tm-copy" aria-live="polite">
-                <h3>{era.title}</h3>
-                <p>{era.text}</p>
+                <h3>{copy.title}</h3>
+                <p>{copy.text}</p>
               </div>
             </figcaption>
           </figure>

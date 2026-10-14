@@ -1,4 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { useT } from "./i18n";
+import { logoStrings } from "./i18n/strings/Logo";
 
 /** Cart-in-a-circle mark, as on the shop signs in the illustrations. */
 export function LogoMark({ className = "" }: { className?: string }) {
@@ -39,6 +41,7 @@ const WORDS: Array<[string, ReactNode]> = [
  * e-paper refresh on every page change and then every 5–10s on its own.
  */
 export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey?: unknown }) {
+  const s = useT(logoStrings);
   const label = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -77,7 +80,7 @@ export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey
   }, []);
 
   return (
-    <button className="logo" type="button" onClick={onClick} aria-label="Cheaper Buy Miles, home">
+    <button className="logo" type="button" onClick={onClick} aria-label={s.home}>
       <span className="esl" ref={label} aria-hidden="true">
         <span className="esl-screen">
           <span className="logo-word">

@@ -57,6 +57,9 @@
 /* Paused means a frozen frame, ambient loops included. Not before the first play, so the opening titles show. */
 .film-screen[data-state="paused"]:not([data-beat="standby"]) *,
 .film-screen[data-state="paused"]::after { animation-play-state: paused !important; }
+/* Standby is before the first play, and the film may be nowhere near the screen. The tower's wave (an SVG path, so it
+   runs on the main thread) is out of sight there; it must not keep the page awake. */
+.film-screen[data-state="paused"] .fw-wave { animation-play-state: paused; }
 
 /* The section title, small, with a recording dot that only blinks while it plays. */
 .film-title {

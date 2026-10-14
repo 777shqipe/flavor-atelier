@@ -1,0 +1,40 @@
+/* Per-language type. The Latin brand fonts stay wherever they have the glyphs;
+   the faces they lack (Vietnamese in DM Sans, Libre Caslon, Bagel Fat One and
+   Gochi Hand; all of Chinese) are swapped for families that carry them, so a
+   word never mixes two fonts. The families load from index.tsx on demand. */
+
+html:lang(vi) {
+  --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-fun: "Baloo 2", "Be Vietnam Pro", sans-serif;
+  --font-kid: "Patrick Hand", "Be Vietnam Pro", cursive;
+}
+
+html:lang(zh) {
+  --cjk: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-sans: "DM Sans", var(--cjk);
+  --font-serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-mark: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-display: "Anton", var(--cjk);
+  --font-fun: "Bagel Fat One", var(--cjk);
+  --font-cond: "Barlow Condensed", var(--cjk);
+  --font-kid: "Gochi Hand", var(--cjk);
+}
+
+/* Chinese has no letter-spaced capitals or italics; keep the tracking light. */
+html:lang(zh) body { letter-spacing: 0; word-break: normal; line-break: strict; }
+
+/* ---------- fit ---------------------------------------------------------
+   Layout fixes for text that runs longer than the English it was drawn for. */
+
+/* Till display and About headline: let them take the longer Vietnamese and the wrap-anywhere Chinese. */
+html:lang(vi) .till-lcd { font-size: calc(var(--tw) * 0.04); }
+html:lang(vi) .ah-mark { white-space: normal; }
+@media (min-width: 1000px) {
+  /* Wide enough to keep the underlined phrase on one line if the headline is a little smaller. */
+  html:lang(vi) .about-hero .page-head h1 { font-size: clamp(48px, 6vw, 98px); }
+  html:lang(vi) .ah-mark { white-space: nowrap; }
+}
+/* Chinese headlines are measured in characters, not in the Latin "ch" the layouts were drawn in. */
+html:lang(zh) .about-hero .page-head h1 { max-width: none; font-size: clamp(44px, 5.4vw, 84px); }
+html:lang(zh) .sh-head h1 { font-size: clamp(44px, 4.6vw, 76px); text-wrap: balance; }

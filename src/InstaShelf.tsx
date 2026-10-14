@@ -1,4 +1,6 @@
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
+import { useLang, useT } from "./i18n";
+import { instaShelfStrings } from "./i18n/strings/InstaShelf";
 import { CutLine } from "./Flyer";
 import { LogoMark } from "./Logo";
 import { RingBadge } from "./RingBadge";
@@ -10,40 +12,26 @@ const slotStyle = (i: number, scale = 1) => ({ "--i": i, "--tilt": `${(TILTS[i %
 
 const PROFILE = "https://www.instagram.com/cheaperbuymiles/";
 
-/** Issue number is the week of the year, dated from this week's Monday. Same count the flyer uses. */
-const TODAY = new Date();
-const MONDAY = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - ((TODAY.getDay() + 6) % 7));
-const ISSUE = Math.ceil(((+MONDAY - +new Date(MONDAY.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
-const WEEK = MONDAY.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
+type HeroId = keyof typeof instaShelfStrings.en.heroes;
+type TicketId = keyof typeof instaShelfStrings.en.tickets;
 
 type Hero = {
-  id: string;
+  id: HeroId;
   href: string;
   img: string;
-  alt: string;
-  when: string;
-  aisle: string;
-  where: string;
-  name: string;
-  /** One-liner in the same voice as the flyer cards. */
-  quip: string;
-  price: string;
+  /** Posting day as an ISO date, shown in the reader's own date style. */
+  date: string;
   size: string;
 };
 
 type Ticket = {
-  id: string;
+  id: TicketId;
   href: string;
   img: string;
-  alt: string;
-  name: string;
-  meta: string;
-  quip: string;
-  price: string;
-  /** Spoken price when the printed one is a phrase, not a single figure. */
-  priceLabel?: string;
-  /** Two or three words on the round sticker over the photo. */
-  tag: string;
+  /** Posting day as an ISO date, shown in the reader's own date style. */
+  date: string;
+  /** Pack size; units stay Latin in every language. */
+  size: string;
 };
 
 const HEROES: Hero[] = [
@@ -51,26 +39,14 @@ const HEROES: Hero[] = [
     id: "lasagne",
     href: "https://www.instagram.com/p/DeLjrMMmlVI",
     img: "/media/ig/lasagne.jpg",
-    alt: "Ready Chef pork and beef lasagne, a 2 kilogram family bake priced at $8",
-    when: "7 Oct",
-    aisle: "Frozen",
-    where: "Selected stores",
-    name: "Pork & beef lasagne",
-    quip: "Feeds six. Or just you, by Wednesday.",
-    price: "$8",
+    date: "2026-10-07",
     size: "2kg",
   },
   {
     id: "icecream",
     href: "https://www.instagram.com/p/DeQtNqlGlu6",
     img: "/media/ig/icecream.jpg",
-    alt: "Bulla Speculoos Biscuit ice cream, a 5 litre tub priced at $12",
-    when: "9 Oct",
-    aisle: "Frozen",
-    where: "Four stores",
-    name: "Speculoos ice cream",
-    quip: "It’s not a tub. It’s a commitment.",
-    price: "$12",
+    date: "2026-10-09",
     size: "5L",
   },
 ];
@@ -80,68 +56,43 @@ const TICKETS: Ticket[] = [
     id: "tempeh",
     href: "https://www.instagram.com/p/DeJAYIEGtn8",
     img: "/media/ig/tempeh.jpg",
-    alt: "Murni authentic Indonesian tempeh, 200 grams, three for $5",
-    name: "Murni tempeh",
-    meta: "6 Oct · 200g",
-    quip: "Tofu’s cooler cousin. Three for a fiver.",
-    price: "3 for $5",
-    priceLabel: "3 for $5",
-    tag: "New in",
+    date: "2026-10-06",
+    size: "200g",
   },
   {
     id: "mikeike",
     href: "https://www.instagram.com/p/DeQsJFAGspS",
     img: "/media/ig/mikeike.jpg",
-    alt: "Mike and Ike sour blue raspberry chews, 120 grams, priced at $2",
-    name: "Mike and Ike",
-    meta: "9 Oct · 120g",
-    quip: "Sour enough to make your face do the thing.",
-    price: "$2",
-    tag: "Sour",
+    date: "2026-10-09",
+    size: "120g",
   },
   {
     id: "water",
     href: "https://www.instagram.com/p/DeNzpaOGk3Z",
     img: "/media/ig/water.jpg",
-    alt: "Melbourne Springs natural spring water, 1 litre, priced at $1",
-    name: "Spring water",
-    meta: "8 Oct · 1L",
-    quip: "A buck. Melbourne’s four seasons not included.",
-    price: "$1",
-    tag: "Chill",
+    date: "2026-10-08",
+    size: "1L",
   },
   {
     id: "almond",
     href: "https://www.instagram.com/p/DeLrKMPmnE8",
     img: "/media/ig/almond.jpg",
-    alt: "Nuttelex barista almond milk, 1 litre, priced at $2",
-    name: "Almond milk",
-    meta: "7 Oct · 1L",
-    quip: "Froths like it owns a man bun.",
-    price: "$2",
-    tag: "Barista",
+    date: "2026-10-07",
+    size: "1L",
   },
   {
     id: "nuttelex",
     href: "https://www.instagram.com/p/DeQTZ7sk0o_",
     img: "/media/ig/nuttelex.jpg",
-    alt: "Nuttelex Buttery spread, 500 grams, priced at $3",
-    name: "Nuttelex Buttery",
-    meta: "9 Oct · 500g",
-    quip: "Spreads straight from the fridge. Witchcraft.",
-    price: "$3",
-    tag: "Plant",
+    date: "2026-10-09",
+    size: "500g",
   },
   {
     id: "bleach",
     href: "https://www.instagram.com/p/DeI2lwNGqJ0",
     img: "/media/ig/bleach.jpg",
-    alt: "White King premium lavender bleach, 1.25 litres, priced at $3",
-    name: "White King bleach",
-    meta: "6 Oct · 1.25L",
-    quip: "Smells like a spa. Cleans like your mum’s visiting.",
-    price: "$3",
-    tag: "Shine",
+    date: "2026-10-06",
+    size: "1.25L",
   },
 ];
 
@@ -177,9 +128,10 @@ function StoryLink() {
 }
 
 function CommentLink({ href }: { href: string }) {
+  const s = useT(instaShelfStrings);
   return (
     <a className="ig-comment" href={href} target="_blank" rel="noopener noreferrer">
-      <span>Leave a comment</span>
+      <span>{s.comment}</span>
     </a>
   );
 }
@@ -196,101 +148,118 @@ function Price({ value }: { value: string }) {
 }
 
 export function InstaShelf() {
+  const s = useT(instaShelfStrings);
+  const { locale } = useLang();
+  const shortDay = (date: Date) => date.toLocaleDateString(locale, { day: "numeric", month: "short" });
+  // Read at noon, so no time zone can slip a post onto the day before.
+  const postDay = (iso: string) => shortDay(new Date(`${iso}T12:00`));
+
+  // Issue number is the week of the year, dated from this week's Monday. Same count the flyer uses.
+  const [today] = useState(() => new Date());
+  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
+  const issue = Math.ceil(((+monday - +new Date(monday.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
+
   return (
     <section className="ig-shelf" id="instagram" data-surface="cream" aria-labelledby="ig-title">
       <CutLine />
       <header className="ig-head rv">
         <p className="ig-mast" aria-hidden="true">
-          <span>No. {ISSUE}</span>
-          <span>Week of {WEEK}</span>
+          <span>{s.issue(issue)}</span>
+          <span>{s.week(shortDay(monday))}</span>
           <span>@cheaperbuymiles</span>
         </p>
         <div className="ig-headline">
           <h2 id="ig-title" className="ig-title">
-            The weekly <em>feed.</em>
+            {s.title}
           </h2>
-          <RingBadge className="ig-ring" text="FOLLOW ALONG • @CHEAPERBUYMILES • " center="@" label="Follow @cheaperbuymiles on Instagram" />
+          <RingBadge className="ig-ring" text={s.ringText} center="@" label={s.ringLabel} />
         </div>
         <div className="ig-dek-row">
           <p className="ig-dek">
-            The same finds, the way we post them. Prices are from the posts. Stock moves, and once it’s gone, it’s gone.
+            {s.dek}
           </p>
           <a className="button outline" href={PROFILE} target="_blank" rel="noopener noreferrer">
-            Follow on Instagram
+            {s.follow}
           </a>
         </div>
       </header>
 
       <div className="ig-feature">
-        {HEROES.map((post, i) => (
+        {HEROES.map((post, i) => {
+          const copy = s.heroes[post.id];
+          return (
           <div key={post.id} className="ig-slot rv" style={slotStyle(i, 0.45)}>
           <article className="ig-card ig-hero">
             <StoryLink />
             <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
             <figure>
-              <img src={post.img} alt={post.alt} width={1080} height={1440} />
+              <img src={post.img} alt={copy.alt} width={1080} height={1440} loading="lazy" decoding="async" />
               <span className="ig-sticker" aria-hidden="true">{post.size}</span>
-              <p className="ig-quip">{post.quip}</p>
+              <p className="ig-quip">{copy.quip}</p>
               <Fx id={post.id} />
             </figure>
             <div className="ig-body">
               <p className="ig-kicker">
-                <span>{post.when}</span>
-                <span>{post.aisle}</span>
+                <span>{postDay(post.date)}</span>
+                <span>{copy.aisle}</span>
               </p>
-              <h3>{post.name}</h3>
+              <h3>{copy.name}</h3>
               <dl className="ig-cells">
                 <div>
-                  <dt>Size</dt>
+                  <dt>{s.sizeLabel}</dt>
                   <dd>{post.size}</dd>
                 </div>
                 <div>
-                  <dt>Where</dt>
-                  <dd>{post.where}</dd>
+                  <dt>{s.whereLabel}</dt>
+                  <dd>{copy.where}</dd>
                 </div>
                 <div>
-                  <dt>From</dt>
+                  <dt>{s.fromLabel}</dt>
                   <dd>Instagram</dd>
                 </div>
               </dl>
               <div className="ig-bar">
-                <span>See the post</span>
-                <Price value={post.price} />
+                <span>{s.seePost}</span>
+                <Price value={copy.price} />
               </div>
             </div>
             </a>
             <CommentLink href={post.href} />
           </article>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <ul className="ig-grid">
-        {TICKETS.map((post, i) => (
+        {TICKETS.map((post, i) => {
+          const copy = s.tickets[post.id];
+          return (
           <li key={post.id} className="ig-slot rv" style={slotStyle(i + 2)}>
             <article className="ig-card ig-ticket">
               <StoryLink />
               <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
                 <figure>
-                  <img src={post.img} alt={post.alt} width={1080} height={1440} />
-                  <span className="ig-sticker" aria-hidden="true">{post.tag}</span>
-                  <p className="ig-quip">{post.quip}</p>
+                  <img src={post.img} alt={copy.alt} width={1080} height={1440} loading="lazy" decoding="async" />
+                  <span className="ig-sticker" aria-hidden="true">{copy.tag}</span>
+                  <p className="ig-quip">{copy.quip}</p>
                   <Fx id={post.id} />
                 </figure>
                 <div className="ig-label">
-                  <Price value={post.price} />
+                  <Price value={copy.price} />
                   <span className="ig-label-meta">
-                    <b>{post.name}</b>
-                    {post.meta}
+                    <b>{copy.name}</b>
+                    {`${postDay(post.date)} · ${post.size}`}
                   </span>
                   <span className="ig-code" aria-hidden="true" />
                 </div>
-                <span className="sr-only">{post.priceLabel ? `${post.priceLabel}. ` : ""}Opens the Instagram post.</span>
+                <span className="sr-only">{copy.spoken ? `${copy.spoken}. ` : ""}{s.opens}</span>
               </a>
               <CommentLink href={post.href} />
             </article>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

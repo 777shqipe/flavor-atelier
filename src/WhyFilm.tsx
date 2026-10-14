@@ -4,6 +4,8 @@ import { Odometer } from "./Odometer";
 import { CerealBox, MilkCarton } from "./FilmPacks";
 import { ITEMS } from "./products";
 import { Stamp } from "./Stamp";
+import { useLang, useT, type Lang } from "./i18n";
+import { whyFilmStrings } from "./i18n/strings/WhyFilm";
 import "./receipt.css";
 import "./whyfilm.css";
 
@@ -30,11 +32,8 @@ const SOURCES = {
   },
 };
 
-const CHAPTERS = [
-  { label: "The numbers", lead: "Good food, binned by the", hl: "tonne.", mark: "line" },
-  { label: "The label", lead: "Best before isn’t a", hl: "bin day.", mark: "line" },
-  { label: "The receipt", lead: "Every receipt is a", hl: "rescue.", mark: "ring" },
-] as const;
+/** The highlight mark each chapter gets; the chapter copy itself lives in the strings file. */
+const CHAPTERS = [{ mark: "line" }, { mark: "line" }, { mark: "ring" }] as const;
 
 /** The corn flakes from the shelf scene ring up first, at their last markdown. */
 const RRP_FLAKES = 5.5;
@@ -61,40 +60,31 @@ const KG = LINES.reduce((sum, line) => sum + line.kg, 0);
 
 const money = (value: number) => value.toFixed(2);
 const PRINTED = new Date();
+/** Printed on the pack, so it keeps the pack's Australian format in every language (product art). */
 const BB_DATE = PRINTED.toLocaleDateString("en-AU", { day: "2-digit", month: "short" }).toUpperCase();
 
 type Fine = { text: string; href?: string };
 type Copy = { num: string; unit: string; line: string; fine?: Fine };
 
-const SAFETY: Fine = { text: "Best before is about quality. Use by is about safety." };
-const SAMPLE: Fine = { text: "A sample basket. Prices are placeholders." };
-const cite = (source: { name: string; href: string }): Fine => ({ text: `Source: ${source.name}`, href: source.href });
+type Source = (typeof SOURCES)[keyof typeof SOURCES];
+type WhyText = typeof whyFilmStrings.en;
 
-/** Every beat of the film: which chapter it belongs to, how long it holds, and its one number and one line. */
-const BEATS: Array<{ id: string; ch: 0 | 1 | 2; ms: number; copy: Copy }> = [
-  { id: "bags", ch: 0, ms: 3600, copy: { num: "1/5", unit: "bags", line: "of groceries end up in the bin.", fine: cite(SOURCES.bags) } },
-  { id: "tower", ch: 0, ms: 3800, copy: { num: "250,000", unit: "tonnes", line: "a year from Victorian homes. A whole Eureka Tower.", fine: cite(SOURCES.vic) } },
-  { id: "sky", ch: 0, ms: 3600, copy: { num: "7.6", unit: "million tonnes", line: "across Australia, every year. Thirty towers.", fine: cite(SOURCES.fial) } },
-  { id: "good", ch: 0, ms: 3400, copy: { num: "70", unit: "%", line: "of it was still good to eat.", fine: cite(SOURCES.edible) } },
-  { id: "d0", ch: 1, ms: 3000, copy: { num: "+00", unit: "days", line: "Same date on both. Different rules.", fine: SAFETY } },
-  { id: "d7", ch: 1, ms: 3000, copy: { num: "+07", unit: "days", line: "Use by passed: the milk goes. The flakes stay, at $4.", fine: SAFETY } },
-  { id: "d30", ch: 1, ms: 2400, copy: { num: "+30", unit: "days", line: "Still good. Now $3.", fine: SAFETY } },
-  { id: "d60", ch: 1, ms: 2800, copy: { num: "+60", unit: "days", line: "Still good. Now $2.", fine: SAFETY } },
-  { id: "scan", ch: 2, ms: 1800, copy: { num: "$00.00", unit: "saved", line: "Beep. Into the basket.", fine: SAMPLE } },
-  ...LINES.map((line, i) => ({
-    id: `l${i + 1}`,
-    ch: 2 as const,
-    ms: 1100,
-    copy: {
-      num: `$${money(LINES.slice(0, i + 1).reduce((sum, l) => sum + l.was - l.price, 0)).padStart(5, "0")}`,
-      unit: "saved",
-      line: `${line.name}.`,
-      fine: SAMPLE,
-    },
-  })),
-  { id: "done", ch: 2, ms: 4000, copy: { num: `$${money(SAVED)}`, unit: "saved", line: `And ${KG.toFixed(1)} kg of good food rescued.`, fine: SAMPLE } },
-  { id: "rewind", ch: 2, ms: 1300, copy: { num: "$00.00", unit: "saved", line: "" } },
+/** Every beat of the film: which chapter it belongs to, how long it holds, where its fine print points, and which item it is. */
+const BEATS: Array<{ id: string; ch: 0 | 1 | 2; ms: number; fine: Source | "safety" | "sample" | null; item?: number }> = [
+  { id: "bags", ch: 0, ms: 3600, fine: SOURCES.bags },
+  { id: "tower", ch: 0, ms: 3800, fine: SOURCES.vic },
+  { id: "sky", ch: 0, ms: 3600, fine: SOURCES.fial },
+  { id: "good", ch: 0, ms: 3400, fine: SOURCES.edible },
+  { id: "d0", ch: 1, ms: 3000, fine: "safety" },
+  { id: "d7", ch: 1, ms: 3000, fine: "safety" },
+  { id: "d30", ch: 1, ms: 2400, fine: "safety" },
+  { id: "d60", ch: 1, ms: 2800, fine: "safety" },
+  { id: "scan", ch: 2, ms: 1800, fine: "sample" },
+  ...LINES.map((_, i) => ({ id: `l${i + 1}`, ch: 2 as const, ms: 1100, fine: "sample" as const, item: i })),
+  { id: "done", ch: 2, ms: 4000, fine: "sample" },
+  { id: "rewind", ch: 2, ms: 1300, fine: null },
 ];
+type Beat = (typeof BEATS)[number];
 
 const IDX = Object.fromEntries(BEATS.map((beat, i) => [beat.id, i])) as Record<string, number>;
 const START = BEATS.map((_, i) => BEATS.slice(0, i).reduce((sum, beat) => sum + beat.ms, 0));
@@ -111,6 +101,35 @@ const beatAt = (t: number) => {
   while (i < BEATS.length - 1 && t >= START[i + 1]) i += 1;
   return i;
 };
+
+/** The copy under the numbers for one beat, in the language on screen. */
+function copyOf(s: WhyText, beat: Beat, locale: string): Copy {
+  const fine: Fine | undefined =
+    beat.fine === null
+      ? undefined
+      : typeof beat.fine === "object"
+        ? { text: s.source(beat.fine.name), href: beat.fine.href }
+        : { text: s[beat.fine] };
+  if (beat.item !== undefined) {
+    const total = LINES.slice(0, beat.item + 1).reduce((sum, line) => sum + line.was - line.price, 0);
+    return { num: `$${money(total).padStart(5, "0")}`, unit: s.saved, line: s.item(LINES[beat.item].name), fine };
+  }
+  if (beat.id === "done") {
+    const kg = KG.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    return { num: `$${money(SAVED)}`, unit: s.saved, line: s.done(kg), fine };
+  }
+  return { ...s.beats[beat.id as keyof WhyText["beats"]], fine };
+}
+
+/**
+ * The pieces a line rises in, one after another. Latin and Vietnamese split on spaces; Chinese has none,
+ * so it splits into words, or rises as one piece where Intl.Segmenter is missing.
+ */
+function riseParts(text: string, lang: Lang, locale: string): string[] {
+  if (lang !== "zh") return text.split(" ");
+  if (typeof Intl.Segmenter !== "function") return [text];
+  return Array.from(new Intl.Segmenter(locale, { granularity: "word" }).segment(text), (part) => part.segment);
+}
 
 /* ---------- the numbers: one SVG world ----------------------------------- */
 
@@ -232,6 +251,8 @@ function World({ on, step }: { on: boolean; step: number }) {
 /* ---------- the film ------------------------------------------------------- */
 
 export function WhyFilm() {
+  const s = useT(whyFilmStrings);
+  const { lang, locale } = useLang();
   const [reduce] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   // -1 is the standby frame before the film first comes into view.
   const [beat, setBeat] = useState(() => (reduce ? LAST[0] : -1));
@@ -372,8 +393,9 @@ export function WhyFilm() {
   // Scene states hold their last frame while the next chapter fades in, and reset during the rewind.
   const step = rewind ? -1 : beat;
   const reached = (id: string) => step >= IDX[id];
-  const copy = standby ? { ...current.copy, num: current.copy.num.replace(/\d/g, "0") } : current.copy;
-  const head = CHAPTERS[ch];
+  const copyNow = copyOf(s, current, locale);
+  const copy = standby ? { ...copyNow, num: copyNow.num.replace(/\d/g, "0") } : copyNow;
+  const head = { ...CHAPTERS[ch], ...s.chapters[ch] };
 
   // The label scene: one box, one price sticker that gets slapped again at every markdown.
   const days = reached("d60") ? 60 : reached("d30") ? 30 : reached("d7") ? 7 : 0;
@@ -391,18 +413,19 @@ export function WhyFilm() {
   const shift = feedTo < 0 ? full + 12 : full - (feed[feedTo] ?? 0);
   const phase = reached("done") ? "done" : reached("scan") ? "printing" : "idle";
   const latest = printed ? LINES[printed - 1] : null;
-  const lcd: [string, string] = rewind
-    ? ["REWINDING", "PLEASE WAIT"]
+  const lcd = rewind
+    ? s.lcd.rewinding
     : phase === "done"
-      ? ["THANK YOU", `SAVED $${money(SAVED)}`]
+      ? s.lcd.thanks(`$${money(SAVED)}`)
       : latest
-        ? [latest.name, `${money(latest.price)}  WAS ${money(latest.was)}`]
+        ? { top: latest.name, bottom: s.lcd.priced(money(latest.price), money(latest.was)) }
         : phase === "printing"
-          ? ["SCANNING", "CORN FLAKES"]
-          : ["READY", "SCAN A BASKET"];
+          ? s.lcd.scanning
+          : s.lcd.ready;
 
   const state = rewind ? "rewind" : running ? "rec" : "paused";
-  const words = head.lead.split(" ");
+  const words = riseParts(head.lead, lang, locale);
+  const spaced = lang !== "zh";
 
   return (
     <section className="film" id="why" ref={root} data-surface="cream" aria-labelledby="why-title">
@@ -415,7 +438,7 @@ export function WhyFilm() {
         data-state={state}
       >
         <h2 id="why-title" className="film-title">
-          Why it costs less
+          {s.title}
         </h2>
 
         <div
@@ -428,7 +451,8 @@ export function WhyFilm() {
           <h3 className="fc-head" key={`h${ch}`}>
             {words.map((word, i) => (
               <span className="fc-w" key={i} style={{ "--w": i } as CSSProperties}>
-                {word}{" "}
+                {word}
+                {spaced ? " " : null}
               </span>
             ))}
             <span
@@ -482,7 +506,7 @@ export function WhyFilm() {
             <div className="fmilk" data-at={milk}>
               <MilkCarton />
               <span className="pk-date">USE BY {BB_DATE}</span>
-              {milk === "pulled" && <span className="fmilk-tag">Not for sale</span>}
+              {milk === "pulled" && <span className="fmilk-tag">{s.notForSale}</span>}
             </div>
 
             {/* the box of corn flakes, the one actor who crosses from the shelf to the till */}
@@ -515,10 +539,10 @@ export function WhyFilm() {
                     ))}
                     <hr />
                     <p className="r-row r-total">
-                      <span>You saved</span>
+                      <span>{s.youSaved}</span>
                       <span>${money(SAVED)}</span>
                     </p>
-                    <Stamp on={reached("done")} text="Rescued" className="r-stamp" />
+                    <Stamp on={reached("done")} text={s.stamp} className="r-stamp" />
                   </div>
                 </div>
               </div>
@@ -535,8 +559,8 @@ export function WhyFilm() {
                     <i />
                   </span>
                   <span className="reg-lcd">
-                    <span key={`a-${lcd[0]}`}>{lcd[0]}</span>
-                    <span key={`b-${lcd[1]}`}>{lcd[1]}</span>
+                    <span key={`a-${lcd.top}`}>{lcd.top}</span>
+                    <span key={`b-${lcd.bottom}`}>{lcd.bottom}</span>
                   </span>
                   <span className="reg-pad">
                     {Array.from({ length: 9 }, (_, i) => (
@@ -546,7 +570,7 @@ export function WhyFilm() {
                 </div>
                 <div className="reg-foot">
                   <LogoMark className="reg-logo" />
-                  <span>CBM · till 02</span>
+                  <span>{s.till}</span>
                   <i className="reg-led" />
                 </div>
               </div>
@@ -559,22 +583,22 @@ export function WhyFilm() {
             className="film-play"
             type="button"
             onClick={() => setPlaying((p) => !p)}
-            aria-label={playing ? "Pause the film" : "Play the film"}
+            aria-label={playing ? s.pause : s.play}
             aria-pressed={!playing}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               {playing ? <path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" /> : <path d="M8 5.5v13l10.5-6.5z" />}
             </svg>
           </button>
-          <div className="film-prog" role="group" aria-label="Chapters">
-            {CHAPTERS.map((chapter, i) => (
+          <div className="film-prog" role="group" aria-label={s.chapterNav}>
+            {s.chapters.map((chapter, i) => (
               <button
                 key={chapter.label}
                 ref={(el) => {
                   segs.current[i] = el;
                 }}
                 type="button"
-                aria-label={`Chapter ${i + 1}: ${chapter.label}`}
+                aria-label={s.chapterLabel(i + 1, chapter.label)}
                 aria-current={!rewind && i === ch ? "step" : undefined}
                 onClick={() => seek(i)}
               />

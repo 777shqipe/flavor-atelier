@@ -9,8 +9,10 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
+import { contactPanelStrings } from "./i18n/strings/ContactPanel";
+import { supplierDealStrings } from "./i18n/strings/SupplierDeal";
+import { useT } from "./i18n";
 import { STORES } from "./stores";
-import { PROOF } from "./supplierDeal";
 import { useOpenStatus } from "./useOpenStatus";
 import "./contact.css";
 
@@ -23,58 +25,12 @@ import "./contact.css";
 
 export type Topic = "stock" | "shop" | "other";
 
-type TopicMeta = {
-  id: Topic;
-  label: string;
-  sub: string;
-  desk: string;
-  ask: string;
-  hint: string;
-  placeholder: string;
-  suggestions: string[];
-};
+/** The ids are the structure; every visible word for them lives in `contactPanelStrings`. */
+const TOPICS: Array<{ id: Topic }> = [{ id: "stock" }, { id: "shop" }, { id: "other" }];
 
-const TOPICS: TopicMeta[] = [
-  {
-    id: "stock",
-    label: "I have stock to sell",
-    sub: "Suppliers · Buying team",
-    desk: "Buying team",
-    ask: "Tell us about the stock",
-    hint: "Overstock or short-dated food? We pay upfront and collect fast.",
-    placeholder: "Example: 20 boxes of pasta, best before June, in Footscray…",
-    suggestions: ["Short-dated food", "Too much stock", "Need fast pickup"],
-  },
-  {
-    id: "shop",
-    label: "Question about a store",
-    sub: "Shoppers · Store team",
-    desk: "Store team",
-    ask: "What’s your question?",
-    hint: "Looking for a product, opening hours, or feedback on a visit?",
-    placeholder: "Example: is the $2 rice still in Brunswick?…",
-    suggestions: ["Is it still in stock?", "Opening hours", "Feedback on a visit"],
-  },
-  {
-    id: "other",
-    label: "Something else",
-    sub: "General · Head office",
-    desk: "Head office",
-    ask: "What’s on your mind?",
-    hint: "Partnerships, press, jobs, or just saying hello.",
-    placeholder: "Example: I'd like to partner with you on…",
-    suggestions: ["Partnership", "Press", "Jobs"],
-  },
-];
+const VOLUMES = [{ id: "small" }, { id: "medium" }, { id: "large" }, { id: "unsure" }] as const;
 
-const VOLUMES = [
-  { id: "small", label: "A few boxes" },
-  { id: "medium", label: "Some pallets" },
-  { id: "large", label: "A truckload" },
-  { id: "unsure", label: "Not sure" },
-];
-
-const STEPS = ["Your need", "Details", "Reply to", "Review"];
+const STEPS = ["need", "details", "reply", "review"] as const;
 
 const INK = "#141414";
 const CREAM = "#fff6e6";
@@ -234,7 +190,8 @@ type Fields = {
   store: string;
 };
 
-type Errors = Partial<Record<"name" | "email" | "message", string>>;
+/** A flag per field; the wording is looked up in the current language when it renders. */
+type Errors = Partial<Record<"name" | "email" | "message", boolean>>;
 
 const EMPTY: Fields = { name: "", email: "", phone: "", message: "", volume: "", store: "" };
 
@@ -243,10 +200,10 @@ const emailOk = (value: string) => /^\S+@\S+\.\S+$/.test(value);
 /** What blocks leaving a step; only details (message) and reply-to (name, email) have rules. */
 function check(step: number, values: Fields): Errors {
   const errors: Errors = {};
-  if (step === 1 && values.message.trim().length < 3) errors.message = "Write a few words so we know how to help.";
+  if (step === 1 && values.message.trim().length < 3) errors.message = true;
   if (step === 2) {
-    if (!values.name.trim()) errors.name = "Tell us your name.";
-    if (!emailOk(values.email.trim())) errors.email = "Enter a valid email so we can reply.";
+    if (!values.name.trim()) errors.name = true;
+    if (!emailOk(values.email.trim())) errors.email = true;
   }
   return errors;
 }
@@ -323,15 +280,12 @@ function TopicIcon({ id }: { id: Topic }) {
   );
 }
 
-const STICKERS = [
-  { look: "sun", kicker: "No minimum", big: "0", line: "A few boxes or a full truckload.", under: "One pallet? We’ll still take it." },
-  { look: "lilac", kicker: "Answers & pick-ups", big: "Same day", line: "Fast decisions, so stock never sits.", under: "A clear offer from our buying team, same day." },
-  { look: "star", kicker: "Paid upfront", big: "100%", line: "No invoices to chase", under: "Paid before it leaves your dock." },
-  { look: "tomato", kicker: "We collect", big: "Door to door", line: "Your surplus gets a second life.", under: "We bring the truck. Every pallet tracked." },
-] as const;
+const STICKERS = [{ look: "sun" }, { look: "lilac" }, { look: "star" }, { look: "tomato" }] as const;
 
 /** One supplier perk as a foil sticker: the shine follows the pointer, a click peels it back to show a note. */
 function Sticker({ item, index }: { item: (typeof STICKERS)[number]; index: number }) {
+  const s = useT(contactPanelStrings);
+  const text = s.stickers[item.look];
   const [peeled, setPeeled] = useState(false);
 
   const shine = (event: ReactPointerEvent<HTMLLIElement>) => {
@@ -353,8 +307,8 @@ function Sticker({ item, index }: { item: (typeof STICKERS)[number]; index: numb
       onPointerLeave={rest}
     >
       <p className="ct-reveal" aria-hidden={!peeled}>
-        <small>Psst</small>
-        {item.under}
+        <small>{s.psst}</small>
+        {text.under}
       </p>
       <button className="ct-peel" type="button" aria-pressed={peeled} onClick={() => setPeeled((p) => !p)}>
         <span className="ct-face">
@@ -365,27 +319,25 @@ function Sticker({ item, index }: { item: (typeof STICKERS)[number]; index: numb
                 <path id="ct-arc-bottom" d="M21.5 54a28.5 28.5 0 0 0 57 0" fill="none" />
                 <text className="ct-holo-arc" textAnchor="middle">
                   <textPath href="#ct-arc-top" startOffset="50%">
-                    ★ {item.kicker} ★
+                    ★ {text.kicker} ★
                   </textPath>
                 </text>
                 <text className="ct-holo-arc" textAnchor="middle">
                   <textPath href="#ct-arc-bottom" startOffset="50%">
-                    {item.line}
+                    {text.line}
                   </textPath>
                 </text>
                 <text className="ct-holo-big" x="50" y="62" textAnchor="middle">
-                  {item.big}
+                  {text.big}
                 </text>
               </svg>
-              <span className="sr-only">
-                {item.kicker}: {item.big}. {item.line}.
-              </span>
+              <span className="sr-only">{s.stickerSay(text.kicker, text.big, text.line)}</span>
             </span>
           ) : (
             <>
-              <small>{item.kicker}</small>
-              <strong>{item.big}</strong>
-              <span className="ct-face-line">{item.line}</span>
+              <small>{text.kicker}</small>
+              <strong>{text.big}</strong>
+              <span className="ct-face-line">{text.line}</span>
             </>
           )}
         </span>
@@ -426,7 +378,10 @@ export function ContactPanel({
   const [docketNo] = useState(() => String(1995 + Math.floor(Math.random() * 7900)).padStart(4, "0"));
   const status = useOpenStatus();
 
-  const current = TOPICS.find((item) => item.id === topic) ?? TOPICS[0];
+  const s = useT(contactPanelStrings);
+  // The proof points are the same ones Suppliers shows, so both pages say them the same way.
+  const proof = useT(supplierDealStrings).proof;
+  const current = s.topics[topic];
 
   // Opened from another button with a different topic: start again from step 1 so the change is visible.
   if (topic !== seenTopic) {
@@ -580,9 +535,10 @@ export function ContactPanel({
   };
 
   const first = values.name.trim().split(/\s+/)[0];
-  const volume = VOLUMES.find((item) => item.id === values.volume)?.label;
+  const volumeId = VOLUMES.find((item) => item.id === values.volume)?.id;
+  const volume = volumeId && s.volumes[volumeId];
   const store = STORES.find((item) => item.id === values.store);
-  const nextLabel = step < LAST ? `Next: ${STEPS[step + 1]}` : "Send message";
+  const nextLabel = step < LAST ? s.nextStep(s.steps[STEPS[step + 1]]) : s.send;
 
   return (
     <div className="ct" data-open={open || undefined}>
@@ -597,21 +553,21 @@ export function ContactPanel({
         onClick={(event) => event.target === event.currentTarget && onClose()}
       >
         <span className="ct-ghost" aria-hidden="true">
-          Why us
+          {s.ghost}
         </span>
 
         <header className="ct-head">
-          <p className="ct-eyebrow">Contact us</p>
-          <h2 id="ct-title">How can we help?</h2>
-          <p className="ct-lede">One short note, straight to the right desk.</p>
+          <p className="ct-eyebrow">{s.eyebrow}</p>
+          <h2 id="ct-title">{s.title}</h2>
+          <p className="ct-lede">{s.lede}</p>
           {topic !== "stock" && (
             <button className="ct-switch" type="button" onClick={sellStock}>
-              Got stock to sell? <span aria-hidden="true">→</span>
+              {s.sellStock} <span aria-hidden="true">→</span>
             </button>
           )}
         </header>
 
-        <button className="ct-close" type="button" onClick={onClose} aria-label="Close">
+        <button className="ct-close" type="button" onClick={onClose} aria-label={s.close}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
@@ -634,12 +590,14 @@ export function ContactPanel({
               </svg>
               <div className="ct-docket-bar">
                 <div className="ct-docket-id">
-                  <b>DISPATCH DOCKET</b>
-                  <small>Nº {docketNo}</small>
+                  <b>{s.docket}</b>
+                  <small>
+                    {s.docketNo} {docketNo}
+                  </small>
                 </div>
                 <div className="ct-docket-to">
-                  <span>TO</span>
-                  <strong className="ct-crayon" key={current.id}>
+                  <span>{s.docketTo}</span>
+                  <strong className="ct-crayon" key={topic}>
                     <span className="sr-only">{current.desk}</span>
                     <svg className="ct-crayon-fill" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true">
                       <path
@@ -661,7 +619,7 @@ export function ContactPanel({
               {sent ? (
                 <>
                   <span className="ct-stamp" aria-hidden="true">
-                    Received
+                    {s.stamp}
                   </span>
                   <div className="ct-done">
                     <span className="ct-check" aria-hidden="true">
@@ -670,27 +628,25 @@ export function ContactPanel({
                       </svg>
                     </span>
                     <h3 ref={thanks} tabIndex={-1}>
-                      Thanks{first ? `, ${first}` : ""}!
+                      {s.thanks(first)}
                     </h3>
-                    <p>
-                      Your note is with the {current.desk.toLowerCase()}. We’ll reply to <b>{values.email.trim()}</b>.
-                    </p>
+                    <p>{s.sentNote(current.desk.toLowerCase(), <b>{values.email.trim()}</b>)}</p>
                     <div className="ct-done-actions">
                       <button className="ct-send" type="button" onClick={again}>
-                        Send another message
+                        {s.sendAnother}
                       </button>
                       <button className="ct-text" type="button" onClick={onClose}>
-                        Close
+                        {s.close}
                       </button>
                     </div>
                   </div>
                 </>
               ) : (
                 <form className="ct-form" onSubmit={submit} noValidate>
-                  <nav className="ct-steps" aria-label="Form steps" style={{ "--p": step / LAST } as CSSProperties}>
+                  <nav className="ct-steps" aria-label={s.formSteps} style={{ "--p": step / LAST } as CSSProperties}>
                     <ol>
-                      {STEPS.map((label, index) => (
-                        <li key={label} data-state={index < step ? "done" : index === step ? "now" : "todo"}>
+                      {STEPS.map((id, index) => (
+                        <li key={id} data-state={index < step ? "done" : index === step ? "now" : "todo"}>
                           <button
                             type="button"
                             onClick={() => goTo(index)}
@@ -698,7 +654,7 @@ export function ContactPanel({
                             aria-current={index === step ? "step" : undefined}
                           >
                             <StepSticker art={STEP_STICKERS[index]} id={`ct-st${index}`} />
-                            <span className="ct-steps-label">{label}</span>
+                            <span className="ct-steps-label">{s.steps[id]}</span>
                           </button>
                         </li>
                       ))}
@@ -710,19 +666,20 @@ export function ContactPanel({
                       <fieldset className="ct-group">
                         <legend>
                           <h3 ref={stepHead} tabIndex={-1}>
-                            What do you need?
+                            {s.whatNeed}
                           </h3>
                         </legend>
-                        <p className="ct-hint">Pick one and we’ll route your note to the right desk.</p>
+                        <p className="ct-hint">{s.pickOne}</p>
                         <div
                           className="ct-topics"
                           role="radiogroup"
-                          aria-label="What do you need?"
+                          aria-label={s.whatNeed}
                           onKeyDown={onTopicKey}
                           style={{ "--sel": TOPICS.findIndex((item) => item.id === topic) } as CSSProperties}
                         >
                           {TOPICS.map((item) => {
                             const checked = item.id === topic;
+                            const text = s.topics[item.id];
                             return (
                               <button
                                 key={item.id}
@@ -737,16 +694,16 @@ export function ContactPanel({
                                   <TopicIcon id={item.id} />
                                 </span>
                                 <span className="ct-topic-text">
-                                  <b>{item.label}</b>
-                                  <small>{item.sub}</small>
+                                  <b>{text.label}</b>
+                                  <small>{text.sub}</small>
                                 </span>
                               </button>
                             );
                           })}
                         </div>
                         {topic === "stock" && (
-                          <ul className="ct-proof-mini" aria-label="Why suppliers pick us">
-                            {PROOF.map(([big, small]) => (
+                          <ul className="ct-proof-mini" aria-label={s.suppliersWhy}>
+                            {proof.map(([big, small]) => (
                               <li key={small}>
                                 <b>{big}</b> {small}
                               </li>
@@ -768,7 +725,7 @@ export function ContactPanel({
                         {topic === "stock" && (
                           <div className="ct-sub">
                             <p className="ct-q" id="ct-volume-q">
-                              How much is it? <small>(optional)</small>
+                              {s.howMuch} <small>{s.optional}</small>
                             </p>
                             <div className="ct-pills" role="group" aria-labelledby="ct-volume-q">
                               {VOLUMES.map((item) => (
@@ -779,7 +736,7 @@ export function ContactPanel({
                                   aria-pressed={values.volume === item.id}
                                   onClick={() => setValues((v) => ({ ...v, volume: v.volume === item.id ? "" : item.id }))}
                                 >
-                                  {item.label}
+                                  {s.volumes[item.id]}
                                 </button>
                               ))}
                             </div>
@@ -789,10 +746,10 @@ export function ContactPanel({
                         {topic === "shop" && (
                           <label className="ct-field">
                             <span>
-                              Which store? <small>(optional)</small>
+                              {s.whichStore} <small>{s.optional}</small>
                             </span>
                             <select name="store" value={values.store} onChange={set("store")}>
-                              <option value="">Any store is fine</option>
+                              <option value="">{s.anyStore}</option>
                               {STORES.map((item) => (
                                 <option key={item.id} value={item.id}>
                                   {item.name} — {item.address.split(",")[0]}
@@ -804,9 +761,9 @@ export function ContactPanel({
 
                         <div className="ct-sub">
                           <p className="ct-q" id="ct-msg-q">
-                            Your message
+                            {s.yourMessage}
                           </p>
-                          <div className="ct-suggest" aria-label="Ideas for your message">
+                          <div className="ct-suggest" aria-label={s.ideas}>
                             {current.suggestions.map((text) => (
                               <button key={text} type="button" className="ct-chip" onClick={() => addSuggestion(text)}>
                                 + {text}
@@ -814,7 +771,7 @@ export function ContactPanel({
                             ))}
                           </div>
                           <label className="ct-field">
-                            <span className="sr-only">Your message</span>
+                            <span className="sr-only">{s.yourMessage}</span>
                             <textarea
                               ref={messageInput}
                               name="message"
@@ -827,7 +784,7 @@ export function ContactPanel({
                             />
                             {errors.message && (
                               <em id="ct-err-message" className="ct-err">
-                                {errors.message}
+                                {s.errors.message}
                               </em>
                             )}
                           </label>
@@ -839,13 +796,13 @@ export function ContactPanel({
                       <div className="ct-group">
                         <div className="ct-step-head">
                           <h3 ref={stepHead} tabIndex={-1}>
-                            Where do we reply?
+                            {s.whereReply}
                           </h3>
-                          <p className="ct-hint">Just a name and an email. We only use them to answer you.</p>
+                          <p className="ct-hint">{s.replyHint}</p>
                         </div>
                         <div className="ct-who">
                           <label className="ct-field">
-                            <span>Your name</span>
+                            <span>{s.yourName}</span>
                             <input
                               ref={nameInput}
                               type="text"
@@ -853,18 +810,18 @@ export function ContactPanel({
                               value={values.name}
                               onChange={set("name")}
                               autoComplete="name"
-                              placeholder="e.g. Alex"
+                              placeholder={s.nameExample}
                               aria-invalid={!!errors.name}
                               aria-describedby={errors.name ? "ct-err-name" : undefined}
                             />
                             {errors.name && (
                               <em id="ct-err-name" className="ct-err">
-                                {errors.name}
+                                {s.errors.name}
                               </em>
                             )}
                           </label>
                           <label className="ct-field">
-                            <span>Email</span>
+                            <span>{s.email}</span>
                             <input
                               ref={emailInput}
                               type="email"
@@ -879,13 +836,13 @@ export function ContactPanel({
                             />
                             {errors.email && (
                               <em id="ct-err-email" className="ct-err">
-                                {errors.email}
+                                {s.errors.email}
                               </em>
                             )}
                           </label>
                           <label className="ct-field ct-field-wide">
                             <span>
-                              Phone <small>(optional)</small>
+                              {s.phone} <small>{s.optional}</small>
                             </span>
                             <input
                               type="tel"
@@ -894,7 +851,7 @@ export function ContactPanel({
                               onChange={set("phone")}
                               autoComplete="tel"
                               inputMode="tel"
-                              placeholder="Only if you prefer a call"
+                              placeholder={s.phoneHint}
                             />
                           </label>
                         </div>
@@ -905,38 +862,38 @@ export function ContactPanel({
                       <div className="ct-group">
                         <div className="ct-step-head">
                           <h3 ref={stepHead} tabIndex={-1}>
-                            All good?
+                            {s.allGood}
                           </h3>
-                          <p className="ct-hint">A last look before it goes to the {current.desk.toLowerCase()}.</p>
+                          <p className="ct-hint">{s.lastLook(current.desk.toLowerCase())}</p>
                         </div>
                         <dl className="ct-review">
                           <div>
-                            <dt>Need</dt>
+                            <dt>{s.review.need}</dt>
                             <dd>
                               {current.label}
                               {volume && <small>{volume}</small>}
-                              {topic === "shop" && <small>{store ? store.name : "Any store"}</small>}
+                              {topic === "shop" && <small>{store ? store.name : s.review.anyStore}</small>}
                             </dd>
-                            <button type="button" className="ct-edit" onClick={() => goTo(0)} aria-label="Edit your need">
-                              Edit
+                            <button type="button" className="ct-edit" onClick={() => goTo(0)} aria-label={s.review.editNeed}>
+                              {s.review.edit}
                             </button>
                           </div>
                           <div>
-                            <dt>Message</dt>
+                            <dt>{s.review.message}</dt>
                             <dd className="ct-review-msg">“{values.message.trim()}”</dd>
-                            <button type="button" className="ct-edit" onClick={() => goTo(1)} aria-label="Edit your message">
-                              Edit
+                            <button type="button" className="ct-edit" onClick={() => goTo(1)} aria-label={s.review.editMessage}>
+                              {s.review.edit}
                             </button>
                           </div>
                           <div>
-                            <dt>Reply to</dt>
+                            <dt>{s.review.replyTo}</dt>
                             <dd>
                               {values.name.trim()}
                               <small>{values.email.trim()}</small>
                               {values.phone.trim() && <small>{values.phone.trim()}</small>}
                             </dd>
-                            <button type="button" className="ct-edit" onClick={() => goTo(2)} aria-label="Edit your contact details">
-                              Edit
+                            <button type="button" className="ct-edit" onClick={() => goTo(2)} aria-label={s.review.editContact}>
+                              {s.review.edit}
                             </button>
                           </div>
                         </dl>
@@ -947,14 +904,14 @@ export function ContactPanel({
                   <div className="ct-nav">
                     {step > 0 && (
                       <button className="ct-back" type="button" onClick={() => goTo(step - 1)}>
-                        <span aria-hidden="true">←</span> Back
+                        <span aria-hidden="true">←</span> {s.back}
                       </button>
                     )}
                     <button className="ct-send" type="submit" data-last={step === LAST || undefined}>
                       {nextLabel} <span aria-hidden="true">{step === LAST ? "✓" : "→"}</span>
                     </button>
                   </div>
-                  {step === LAST && <p className="ct-note">We only use this to reply to you.</p>}
+                  {step === LAST && <p className="ct-note">{s.note}</p>}
                 </form>
               )}
             </div>
@@ -963,7 +920,7 @@ export function ContactPanel({
 
         <section className="ct-stores" aria-labelledby="ct-stores-title">
           <div className="ct-stores-head">
-            <p id="ct-stores-title">Call a store</p>
+            <p id="ct-stores-title">{s.callStore}</p>
             <span className={`ct-stores-status${status.open ? " open" : ""}`}>
               <i /> {status.short}
             </span>
@@ -984,17 +941,17 @@ export function ContactPanel({
           </ul>
         </section>
 
-        <ul className="ct-stickers" aria-label="Why suppliers pick us">
+        <ul className="ct-stickers" aria-label={s.suppliersWhy}>
           {STICKERS.map((item, index) => (
-            <Sticker key={item.big} item={item} index={index} />
+            <Sticker key={item.look} item={item} index={index} />
           ))}
         </ul>
         <p className="ct-peel-hint" aria-hidden="true">
-          Psst, peel a sticker
+          {s.peelHint}
         </p>
 
         <p className="sr-only" role="status">
-          {sent ? "Message noted. Thanks." : `Step ${step + 1} of ${STEPS.length}: ${STEPS[step]}`}
+          {sent ? s.sentStatus : s.stepOf(step + 1, STEPS.length, s.steps[STEPS[step]])}
         </p>
       </div>
     </div>

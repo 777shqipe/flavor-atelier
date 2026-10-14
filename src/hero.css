@@ -13,7 +13,9 @@
   padding: clamp(100px, 8.4vw, 118px) var(--pad) clamp(22px, 2.4vw, 34px);
 }
 .hero::before { content: ""; position: absolute; left: -260px; bottom: -330px; z-index: -1; width: 520px; height: 520px; border-radius: 50%; border: 1px solid rgb(246 240 219 / 0.16); box-shadow: inset 0 0 0 40px rgb(246 240 219 / 0.03); }
-.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grain) 0 0 / 180px 180px; opacity: 0.11; mix-blend-mode: overlay; pointer-events: none; }
+/* The grain is black, and over the hero's dark greens a plain alpha blend gives the same pixels as overlay (they only
+   differ on channels above 50%). A blend mode would make Chrome redraw the whole hero on every frame of every loop in it. */
+.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grain) 0 0 / 180px 180px; opacity: 0.11; pointer-events: none; }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.78fr); align-items: center; gap: clamp(24px, 4vw, 64px); }
 .spark { position: absolute; z-index: -1; color: var(--sun); font-size: 22px; opacity: 0.8; animation: twinkle 3.4s ease-in-out infinite alternate; pointer-events: none; }
 .spark.s1 { left: 47%; top: 17%; }
@@ -101,7 +103,8 @@
 .disc::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(rgb(255 255 255 / 0.55) 1.2px, transparent 1.6px) 0 0 / 2cqw 2cqw; -webkit-mask-image: radial-gradient(circle at 26% 78%, #000, transparent 46%); mask-image: radial-gradient(circle at 26% 78%, #000, transparent 46%); }
 .disc-rays { position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(rgb(255 250 228 / 0.2) 0 5deg, transparent 5deg 15deg); -webkit-mask-image: radial-gradient(circle, transparent 30%, #000 72%); mask-image: radial-gradient(circle, transparent 30%, #000 72%); animation: spin 120s linear infinite; }
 .disc-ring { position: absolute; inset: 5cqw; border-radius: 50%; border: 1px dashed rgb(150 90 0 / 0.35); }
-.ring-art { position: absolute; left: 5cqw; top: 8cqw; z-index: 2; width: 90cqw; height: 90cqw; overflow: visible; fill: none; stroke: rgb(246 240 219 / 0.36); stroke-width: 0.35; stroke-dasharray: 0.8 2.4; stroke-linecap: round; animation: spin 80s linear infinite; pointer-events: none; }
+.ring-art { position: absolute; left: 5cqw; top: 8cqw; z-index: 2; width: 90cqw; height: 90cqw; fill: none; stroke: rgb(246 240 219 / 0.36); stroke-width: 0.35; stroke-dasharray: 0.8 2.4; stroke-linecap: round; animation: spin 80s linear infinite; pointer-events: none; }
+.ring-art svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .ring-art .orbit-dot { fill: var(--cream); stroke: none; }
 
 .stk { position: absolute; z-index: 3; padding: 0; border: 0; background: none; cursor: pointer; translate: calc(var(--mx, 0) * var(--d) * 1px) calc(var(--my, 0) * var(--d) * 1px); }
@@ -113,9 +116,12 @@
   transition: translate 1.15s var(--bounce) var(--e), scale 1.15s var(--bounce) var(--e), opacity 0.5s ease var(--e);
 }
 .hero:not([data-ready]) .stk-in { opacity: 0; translate: 0 -30cqw; scale: 0.6; }
-.stk svg { display: block; width: 100%; height: auto; animation: hero-float 6s ease-in-out infinite alternate; animation-delay: var(--f, 0s); transition: scale 0.5s var(--spring), rotate 0.5s var(--spring); }
+.stk-bob { display: block; animation: hero-float 6s ease-in-out infinite alternate; animation-delay: var(--f, 0s); }
+.stk svg { display: block; width: 100%; height: auto; transition: scale 0.5s var(--spring), rotate 0.5s var(--spring); }
 .stk:hover { z-index: 9; }
-.stk:hover svg { scale: 1.1; rotate: 3deg; animation-play-state: paused; }
+/* The float stops under the pointer. (The old rotate: 3deg here never showed: the paused float's own rotate overrode it.) */
+.stk:hover .stk-bob { animation-play-state: paused; }
+.stk:hover svg { scale: 1.1; }
 .stk:hover .stk-in { filter: drop-shadow(0 0.8cqw 0.8cqw rgb(0 30 22 / 0.2)) drop-shadow(0 4cqw 3cqw rgb(0 30 22 / 0.38)); }
 @keyframes hero-float { from { translate: 0 -0.7cqw; rotate: -1deg; } to { translate: 0 0.7cqw; rotate: 1deg; } }
 /* back row: oil, ramen; middle: milk, soda, gelato; front: jam, choc */
@@ -196,7 +202,7 @@
   .spark.s1 { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spark, .hero-ghost, .stk svg, .hb-peel, .ring-art, .disc::before, .disc-rays { animation: none; }
+  .spark, .hero-ghost, .stk-bob, .hb-peel, .ring-art, .disc::before, .disc-rays { animation: none; }
   .squiggle path { stroke-dashoffset: 0; }
   .marker::before { scale: 1 1; }
   .marker { color: var(--green-900); }

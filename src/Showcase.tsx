@@ -1,23 +1,24 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode, type RefObject } from "react";
 import type { Page } from "./Header";
+import { useT } from "./i18n";
+import { showcaseStrings } from "./i18n/strings/Showcase";
 import { Pack as PackArt } from "./Pack";
 import type { Shape } from "./products";
 import "./showcase.css";
 
 type Scene = "crav" | "bucks" | "cookie";
+type ProductId = "fizz" | "ramen" | "choc";
 
 type Product = {
-  id: string;
+  id: ProductId;
   scene: Scene;
   tone: "dark" | "light";
-  brand: string;
+  /** Product name: stays English, like the pack label (product art). */
   name: string;
   price: number;
   /** Sample RRP (same placeholder status as products.ts); drives the struck "was" and the save sticker. */
   was?: number;
-  unit: string;
   pack: { shape: Shape; color: string; label: [string, string?] };
-  alt: string;
 };
 
 const PRODUCTS: Product[] = [
@@ -25,37 +26,28 @@ const PRODUCTS: Product[] = [
     id: "fizz",
     scene: "crav",
     tone: "light",
-    brand: "Blood orange",
     name: "Citrus fizz",
     price: 4,
     was: 7.5,
-    unit: "4 × 330ml",
     pack: { shape: "cans", color: "#e8542f", label: ["BLOOD", "ORANGE"] },
-    alt: "Four cans of blood orange fizz",
   },
   {
     id: "ramen",
     scene: "bucks",
     tone: "dark",
-    brand: "Instant noodles",
     name: "Spicy ramen",
     price: 4,
     was: 6.95,
-    unit: "4 pack",
     pack: { shape: "bag", color: "#c0290f", label: ["SPICY", "RAMEN"] },
-    alt: "Bag of spicy instant ramen",
   },
   {
     id: "choc",
     scene: "cookie",
     tone: "light",
-    brand: "Choc-biscuit",
     name: "Choc-biscuit bar",
     price: 2,
     was: 3.5,
-    unit: "Limited",
     pack: { shape: "box", color: "#7a4ce0", label: ["CHOC", "BISCUIT"] },
-    alt: "Chocolate biscuit bar",
   },
 ];
 
@@ -80,7 +72,8 @@ function Price({ value, className = "" }: { value: number; className?: string })
 
 /** Struck-through RRP, only when the product has one. */
 function Rrp({ p }: { p: Product }) {
-  return p.was ? <s className="rrp">was {money(p.was)}</s> : null;
+  const s = useT(showcaseStrings);
+  return p.was ? <s className="rrp">{s.was(money(p.was))}</s> : null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -216,6 +209,8 @@ function Pot() {
 /* ------------------------------------------------------------------ */
 
 function Crav({ p, index }: { p: Product; index: number }) {
+  const s = useT(showcaseStrings);
+  const copy = s.products[p.id];
   return (
     <>
       <div className="a-card" />
@@ -232,7 +227,7 @@ function Crav({ p, index }: { p: Product; index: number }) {
       </Layer>
       <Layer className="a-pills-ly" from="right" delay={160}>
         <div className="a-pills">
-          <span className="pill red">{p.brand}</span>
+          <span className="pill red">{copy.brand}</span>
           <span className="pill ghost">
             <Counter index={index} />
           </span>
@@ -266,33 +261,34 @@ function Crav({ p, index }: { p: Product; index: number }) {
       </Layer>
       <Layer className="a-st2-ly" depth={3.4} delay={720} from="pop" float={4.8} phase={-1.4}>
         <span className="outlined a-sticker s2">
-          <b>FIZZ</b>
-          <b>ALERT</b>
+          {s.crav.sticker.map((line) => (
+            <b key={line}>{line}</b>
+          ))}
         </span>
       </Layer>
 
       <Layer className="a-burst-ly" depth={2.6} delay={820} from="pop" float={5} phase={-2}>
         <div className="burst">
           <Price value={p.price} />
-          <span>{p.unit}</span>
+          <span>{copy.unit}</span>
           <Rrp p={p} />
-          {p.was && <em className="save-tag">save {money(p.was - p.price)}</em>}
+          {p.was && <em className="save-tag">{s.save(money(p.was - p.price))}</em>}
         </div>
       </Layer>
 
       <Layer className="a-cap-ly left" delay={560} from="up">
-        <p className="cap">
-          Four cans of Italian sunshine for four bucks. That’s a dollar a can — do the maths.
-        </p>
+        <p className="cap">{s.crav.caption}</p>
       </Layer>
       <Layer className="a-cap-ly right" delay={640} from="up">
-        <p className="cap">Made with Italian oranges and bottled with zero apologies since 1932.</p>
+        <p className="cap">{s.crav.origin}</p>
       </Layer>
     </>
   );
 }
 
 function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate: (page: Page) => void }) {
+  const s = useT(showcaseStrings);
+  const copy = s.products[p.id];
   return (
     <>
       <div className="b-left">
@@ -301,7 +297,7 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
           <span className="b-mark">CBM</span>
         </Layer>
         <Layer className="b-prod-ly" depth={1.6} delay={200} from="drop" float={7}>
-          <div className="b-prod b-pack" role="img" aria-label={p.alt}>
+          <div className="b-prod b-pack" role="img" aria-label={copy.alt}>
             <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} lit />
           </div>
         </Layer>
@@ -315,14 +311,14 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
           <Chili />
         </Layer>
         <Layer className="b-chip-ly" delay={700} from="up">
-          <span className="b-chip">Gourmet spicy</span>
+          <span className="b-chip">{s.bucks.chip}</span>
         </Layer>
       </div>
 
       <div className="b-right">
         <Layer className="b-top-ly" delay={100} from="down">
           <div className="b-top">
-            <span>{p.brand}</span>
+            <span>{copy.brand}</span>
             <span className="pill ghost">
               <Counter index={index} />
             </span>
@@ -340,26 +336,22 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
           <Chili className="b-mascot" />
         </Layer>
         <Layer className="b-sub-ly" delay={420} from="up">
-          <p className="b-sub">Meet the noodles that make Tuesday less sad.</p>
+          <p className="b-sub">{s.bucks.sub}</p>
         </Layer>
 
         <Layer className="b-cards-ly" delay={500} from="up">
           <div className="b-cards">
             <section className="b-card">
-              <h4>Taste profile</h4>
+              <h4>{s.bucks.tasteTitle}</h4>
               <ul>
-                <li>Rich, savoury broth leads</li>
-                <li>Chilli heat creeps up slowly</li>
-                <li>Springy noodles, serious comfort</li>
-                <li>Gourmet spicy, not scary</li>
+                {s.bucks.taste.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
               </ul>
             </section>
             <section className="b-card">
-              <h4>Pairs with</h4>
-              <p>
-                Soft-boiled egg, spring onion, kimchi, a slice of cheese (trust us), leftover roast chicken, crispy
-                shallots and a very long weekend.
-              </p>
+              <h4>{s.bucks.pairsTitle}</h4>
+              <p>{s.bucks.pairs}</p>
             </section>
           </div>
         </Layer>
@@ -369,27 +361,27 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
             <ul className="b-icons">
               <li>
                 <Flame />
-                <span>Gourmet spicy</span>
+                <span>{s.bucks.flame}</span>
               </li>
               <li>
                 <Medal />
-                <span>Premium</span>
+                <span>{s.bucks.medal}</span>
               </li>
               <li>
                 <Pack />
-                <span>4 pack</span>
+                <span>{s.bucks.pack}</span>
               </li>
               <li>
                 <Pot />
-                <span>One pot</span>
+                <span>{s.bucks.pot}</span>
               </li>
             </ul>
             <button className="b-cta" type="button" onClick={() => onNavigate("stores")}>
-              <span>Find it in store</span>
+              <span>{s.bucks.find}</span>
               <span className="b-cta-price">
                 <Rrp p={p} />
                 <Price value={p.price} />
-                <small>a dollar a bowl</small>
+                <small>{s.bucks.bowl}</small>
               </span>
             </button>
           </div>
@@ -400,14 +392,16 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
 }
 
 function Cookie({ p, index, onNavigate }: { p: Product; index: number; onNavigate: (page: Page) => void }) {
+  const s = useT(showcaseStrings);
+  const copy = s.products[p.id];
   return (
     <>
       <div className="c-floor" />
 
       <Layer className="c-top-ly" delay={80} from="down">
         <div className="c-top">
-          <span>{p.brand}</span>
-          <strong>#ChocMeetsBiscuit</strong>
+          <span>{copy.brand}</span>
+          <strong>{s.cookie.hashtag}</strong>
           <span className="pill ghost">
             <Counter index={index} />
           </span>
@@ -429,7 +423,7 @@ function Cookie({ p, index, onNavigate }: { p: Product; index: number; onNavigat
       </Layer>
 
       <Layer className="c-bar-ly" depth={1.6} delay={340} from="drop" float={6.2}>
-        <div className="c-bar c-pack" role="img" aria-label={p.alt}>
+        <div className="c-bar c-pack" role="img" aria-label={copy.alt}>
           <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} lit />
         </div>
       </Layer>
@@ -451,38 +445,35 @@ function Cookie({ p, index, onNavigate }: { p: Product; index: number; onNavigat
       </Layer>
 
       <Layer className="c-rb1-ly" depth={3.2} delay={560} from="pop" float={5} phase={-1}>
-        <Ribbon tone="blue" lines={["BISCUIT", "INSIDE"]} />
+        <Ribbon tone="blue" lines={s.cookie.inside} />
       </Layer>
       <Layer className="c-rb2-ly" depth={3.8} delay={640} from="pop" float={5.6} phase={-2.5}>
-        <Ribbon tone="pink" lines={["LIMITED", "RUN"]} />
+        <Ribbon tone="pink" lines={s.cookie.limited} />
       </Layer>
       <Layer className="c-rb3-ly" depth={3.4} delay={720} from="pop" float={4.6} phase={-0.4}>
         <div className="rb-wrap">
-          <Ribbon tone="orange" className="price" lines={["ONLY", money(p.price)]} />
+          <Ribbon tone="orange" className="price" lines={[s.cookie.only, money(p.price)]} />
           {p.was && (
             <span className="save-dot">
               <s>{money(p.was)}</s>
-              <b>save {money(p.was - p.price)}</b>
+              <b>{s.save(money(p.was - p.price))}</b>
             </span>
           )}
         </div>
       </Layer>
       <Layer className="c-rb4-ly" depth={4.2} delay={800} from="pop" float={5.2} phase={-3.2}>
-        <Ribbon tone="teal" lines={["SHARING", "OPTIONAL"]} />
+        <Ribbon tone="teal" lines={s.cookie.sharing} />
       </Layer>
 
       <Layer className="c-foot-ly left" delay={500} from="up">
-        <p className="c-def">
-          <b>/bis·koff/</b> (noun)
-          <br />a biscuit with chocolate ambitions.
-        </p>
+        <p className="c-def">{s.cookie.def}</p>
       </Layer>
       <Layer className="c-foot-ly mid" delay={560} from="up">
-        <p className="c-blurb">Chocolate met a biscuit. It was serious. Grab one before they’re gone.</p>
+        <p className="c-blurb">{s.cookie.blurb}</p>
       </Layer>
       <Layer className="c-foot-ly right" delay={620} from="up">
         <button className="c-link" type="button" onClick={() => onNavigate("stores")}>
-          Find a store <span aria-hidden="true">↓</span>
+          {s.cookie.find} <span aria-hidden="true">↓</span>
         </button>
       </Layer>
     </>
@@ -594,29 +585,33 @@ function useStack(root: RefObject<HTMLDivElement | null>) {
 }
 
 export function Showcase({ onNavigate }: { onNavigate: (page: Page) => void }) {
+  const s = useT(showcaseStrings);
   const root = useRef<HTMLDivElement>(null);
   useStack(root);
 
   return (
     <div className="stack" ref={root}>
-      {PRODUCTS.map((p, index) => (
-        <div
-          className="stack-item"
-          key={p.id}
-          data-tone={p.tone}
-          style={{ "--n": index } as CSSProperties}
-        >
-          <article className="poster" data-scene={p.scene} aria-labelledby={`poster-${p.id}`}>
-            <h3 className="sr-only" id={`poster-${p.id}`}>
-              {p.brand} {p.name}, {money(p.price)} — {p.unit}
-            </h3>
-            {p.scene === "crav" && <Crav p={p} index={index} />}
-            {p.scene === "bucks" && <Bucks p={p} index={index} onNavigate={onNavigate} />}
-            {p.scene === "cookie" && <Cookie p={p} index={index} onNavigate={onNavigate} />}
-            <div className="poster-dim" />
-          </article>
-        </div>
-      ))}
+      {PRODUCTS.map((p, index) => {
+        const copy = s.products[p.id];
+        return (
+          <div
+            className="stack-item"
+            key={p.id}
+            data-tone={p.tone}
+            style={{ "--n": index } as CSSProperties}
+          >
+            <article className="poster" data-scene={p.scene} aria-labelledby={`poster-${p.id}`}>
+              <h3 className="sr-only" id={`poster-${p.id}`}>
+                {s.heading(copy.brand, p.name, money(p.price), copy.unit)}
+              </h3>
+              {p.scene === "crav" && <Crav p={p} index={index} />}
+              {p.scene === "bucks" && <Bucks p={p} index={index} onNavigate={onNavigate} />}
+              {p.scene === "cookie" && <Cookie p={p} index={index} onNavigate={onNavigate} />}
+              <div className="poster-dim" />
+            </article>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -3,6 +3,9 @@ import { RingBadge } from "./RingBadge";
 import { StoreMap } from "./StoreMap";
 import { STORES, directionsLink, distanceKm, formatKm } from "./stores";
 import { useOpenStatus } from "./useOpenStatus";
+import { useT } from "./i18n";
+import { storeStrings } from "./i18n/strings/Stores";
+import { storesPageStrings } from "./i18n/strings/StoresPage";
 import "./stores.css";
 
 const arrow = (direction: "left" | "right") => (
@@ -19,6 +22,8 @@ const Icon = ({ d, circle }: { d: string; circle?: boolean }) => (
 );
 
 export function StoresPage({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
+  const s = useT(storesPageStrings);
+  const shared = useT(storeStrings);
   const status = useOpenStatus();
   const frame = useRef<HTMLDivElement>(null);
   // Remember the previous photo so the new one can wipe in over it.
@@ -68,8 +73,8 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
         <div className="sh">
           <header className="sh-head">
             <div className="sh-title">
-              <h1 id="stores-title">Our stores</h1>
-              <RingBadge className="sh-badge" text="OPEN 7 DAYS • FIGHT FOOD WASTE •" center="7" label="Open seven days a week" />
+              <h1 id="stores-title">{s.title}</h1>
+              <RingBadge className="sh-badge" text={s.ring} center="7" label={s.ringLabel} />
             </div>
           </header>
 
@@ -82,7 +87,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
               ))}
             </h2>
             <p className="sh-line" key={`line-${store.id}`}>
-              {store.line}
+              {shared.lines[store.id]}
             </p>
             <ul className="sh-info" key={`info-${store.id}`}>
               <li>
@@ -92,7 +97,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
               <li className="hours">
                 <Icon d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5V12l3 2" />
                 <span>
-                  {store.hours.split(" · ").map((part) => (
+                  {shared.hours.split(" · ").map((part) => (
                     <span key={part}>{part}</span>
                   ))}
                 </span>
@@ -104,14 +109,14 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
             </ul>
             <div className="sh-actions">
               <a className="go" href={directionsLink(store)} target="_blank" rel="noreferrer">
-                Directions
+                {s.directions}
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M7 17L17 7M8 7h9v9" />
                 </svg>
               </a>
             </div>
             <p className="sh-near" key={`near-${store.id}`}>
-              Next closest: <b>{nearest.other.name}</b> · {formatKm(nearest.km)} away
+              {s.nextClosest(nearest.other.name, formatKm(nearest.km))}
             </p>
           </article>
 
@@ -131,7 +136,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                       key={item.id}
                       className={index === active ? "active" : index === pair.before ? "before" : undefined}
                       src={item.src}
-                      alt={index === active ? `${item.name} storefront` : ""}
+                      alt={index === active ? s.storefront(item.name) : ""}
                       style={{ objectPosition: item.pos }}
                       draggable={false}
                     />
@@ -142,7 +147,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                   <span className="sh-awning" key={`aw-${store.id}`} aria-hidden="true" />
                   {/* open or closed, as the card a shop hangs on its door */}
                   <p className={`sh-sign${status.open ? " open" : ""}`} title={status.label}>
-                    <b>{status.open ? "Open" : "Closed"}</b>
+                    <b>{status.open ? s.sign.open : s.sign.closed}</b>
                     <small>{status.label.split(" · ")[1]}</small>
                   </p>
                 </div>
@@ -154,10 +159,10 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                     <small>{store.address.split(",")[0]}</small>
                   </span>
                   <span className="sc-nav">
-                    <button type="button" onClick={() => go(-1)} aria-label="Previous store">
+                    <button type="button" onClick={() => go(-1)} aria-label={s.previous}>
                       {arrow("left")}
                     </button>
-                    <button type="button" onClick={() => go(1)} aria-label="Next store">
+                    <button type="button" onClick={() => go(1)} aria-label={s.next}>
                       {arrow("right")}
                     </button>
                   </span>
@@ -166,7 +171,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
             </StoreMap>
           </div>
 
-          <div className="sh-picks" role="tablist" aria-label="Choose a store" style={{ "--i": active } as CSSProperties}>
+          <div className="sh-picks" role="tablist" aria-label={s.choose} style={{ "--i": active } as CSSProperties}>
             <span className="pick-lens" aria-hidden="true" />
             {STORES.map((item, index) => (
               <button

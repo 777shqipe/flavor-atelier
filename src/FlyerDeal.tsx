@@ -1,7 +1,10 @@
 import type { CSSProperties, ReactNode } from "react";
+import { useT } from "./i18n";
+import { flyerDealStrings } from "./i18n/strings/FlyerDeal";
+import { productStrings } from "./i18n/strings/Products";
 import { Pack } from "./Pack";
 import { pickLook, type Look } from "./flyerLooks";
-import { CATEGORIES, type Item } from "./products";
+import type { Item } from "./products";
 
 /**
  * One flyer card, in one of eight looks borrowed from real packaging and shop
@@ -11,13 +14,14 @@ import { CATEGORIES, type Item } from "./products";
  * the grid reads like a laid-out catalogue rather than a wall of tiles.
  */
 
-const CAT = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label])) as Record<Item["cat"], string>;
+type Reason = "newLine" | "caseLot" | "limitedRun" | "overstock" | "everyday";
+
 const money = (value: number) => `$${value % 1 ? value.toFixed(2) : value}`;
 const offOf = (item: Item) => (item.was ? Math.round((1 - item.price / item.was) * 100) : 0);
 
-/** Why it is on the flyer at all. Placeholder reasons, like the rest of the range. */
-const why = (item: Item, given?: string) =>
-  given ?? (item.tag === "New" ? "New line" : item.tag === "Bulk" ? "Case lot" : item.tag === "Limited" ? "Limited run" : item.was ? "Overstock" : "Everyday low");
+/** Why it is on the flyer at all, when the range does not give a note. Placeholder reasons, like the rest of the range. */
+const reasonOf = (item: Item): Reason =>
+  item.tag === "New" ? "newLine" : item.tag === "Bulk" ? "caseLot" : item.tag === "Limited" ? "limitedRun" : item.was ? "overstock" : "everyday";
 
 function Price({ value, className = "dl-now" }: { value: number; className?: string }) {
   const whole = Math.floor(value);
@@ -51,12 +55,14 @@ function Art({ item, className = "dl-art" }: { item: Item; className?: string })
   );
 }
 
-const Tag = ({ item }: { item: Item }) =>
-  item.tag ? (
+const Tag = ({ item }: { item: Item }) => {
+  const p = useT(productStrings);
+  return item.tag ? (
     <span className="dl-tag" data-tag={item.tag}>
-      {item.tag}
+      {p.tags[item.tag]}
     </span>
   ) : null;
+};
 
 function Card({
   item,
@@ -71,22 +77,29 @@ function Card({
   style?: CSSProperties;
   tone?: number;
 }) {
+  const s = useT(flyerDealStrings);
+  const p = useT(productStrings);
   return (
     <article className="deal" data-look={look} data-tone={tone} style={style}>
       {/* hover runs a till scanner down the card, then the price beeps */}
       <span className="deal-scan" aria-hidden="true" />
       {children}
       <span className="sr-only">
-        {item.name}, {money(item.price)}
-        {item.was ? `, was ${money(item.was)}` : ""}, {item.unit}.
+        {s.label(item.name, money(item.price), item.was ? money(item.was) : undefined, p.units[item.id] ?? item.unit)}
       </span>
     </article>
   );
 }
 
 export function Deal({ item, index }: { item: Item; index: number }) {
-  const [look, , given] = pickLook(item);
+  const [look, , note] = pickLook(item);
   const off = offOf(item);
+  const s = useT(flyerDealStrings);
+  const p = useT(productStrings);
+  const cat = p.cats[item.cat];
+  const line = p.lines[item.id] ?? item.line;
+  const unit = p.units[item.id] ?? item.unit;
+  const why = s.notes[note ?? reasonOf(item)];
 
   switch (look) {
     /* Dark label beside a sun panel, huge cream name, spec cells, price bar (Bucks-style). */
@@ -99,26 +112,26 @@ export function Deal({ item, index }: { item: Item; index: number }) {
           </div>
           <div className="dl-split-body" aria-hidden="true">
             <p className="dl-kicker">
-              {CAT[item.cat]} · No.{String(index + 1).padStart(2, "0")}
+              {cat} · {s.no(String(index + 1).padStart(2, "0"))}
             </p>
             <h4 className="dl-split-name">{item.name}</h4>
-            <p className="dl-split-line">{item.line}</p>
+            <p className="dl-split-line">{line}</p>
             <dl className="dl-cells">
               <div>
-                <dt>Size</dt>
-                <dd>{item.unit}</dd>
+                <dt>{s.size}</dt>
+                <dd>{unit}</dd>
               </div>
               <div>
-                <dt>RRP</dt>
+                <dt>{s.rrp}</dt>
                 <dd>{item.was ? money(item.was) : "—"}</dd>
               </div>
               <div>
-                <dt>Why cheap</dt>
-                <dd>{why(item, given)}</dd>
+                <dt>{s.whyCheap}</dt>
+                <dd>{why}</dd>
               </div>
             </dl>
             <div className="dl-bar">
-              <span>{off ? `Save ${off}%` : "In store now"}</span>
+              <span>{off ? s.save(`${off}%`) : s.inStore}</span>
               <Price value={item.price} />
             </div>
           </div>
@@ -135,15 +148,15 @@ export function Deal({ item, index }: { item: Item; index: number }) {
           </b>
           <Art item={item} />
           <span className="dl-sticker one" aria-hidden="true">
-            {off ? `${off}% off` : (item.tag ?? "New in")}
+            {off ? s.percentOff(off) : item.tag ? p.tags[item.tag] : s.newIn}
           </span>
           <span className="dl-sticker two" aria-hidden="true">
-            {item.unit}
+            {unit}
           </span>
           <div className="dl-foot" aria-hidden="true">
             <div>
               <h4 className="dl-name">{item.name}</h4>
-              <p className="dl-line">{item.line}</p>
+              <p className="dl-line">{line}</p>
             </div>
             <div className="dl-pricebox">
               {item.was && <s>{money(item.was)}</s>}
@@ -160,9 +173,9 @@ export function Deal({ item, index }: { item: Item; index: number }) {
       return (
         <Card item={item} look={look}>
           <div className="dl-top" aria-hidden="true">
-            <span>{CAT[item.cat]}</span>
-            <span>{item.unit}</span>
-            <span>{off ? `Save ${money((item.was ?? 0) - item.price)}` : why(item, given)}</span>
+            <span>{cat}</span>
+            <span>{unit}</span>
+            <span>{off ? s.save(money((item.was ?? 0) - item.price)) : why}</span>
           </div>
           <div className="dl-row" aria-hidden="true">
             <b className="dl-word">{left}</b>
@@ -172,7 +185,7 @@ export function Deal({ item, index }: { item: Item; index: number }) {
             <b className="dl-word">{right}</b>
           </div>
           <div className="dl-foot" aria-hidden="true">
-            <p className="dl-line">{item.line}</p>
+            <p className="dl-line">{line}</p>
             <span className="dl-serif-price">
               {money(item.price)}
               {item.was && <s>{money(item.was)}</s>}
@@ -185,9 +198,9 @@ export function Deal({ item, index }: { item: Item; index: number }) {
     /* Floating product wrapped in offset ribbons of tape (cookie-style). */
     case "ribbon": {
       const tapes = [
-        item.tag ? `${item.tag} · rescued` : "Rescued stock",
+        item.tag ? s.rescuedTape(p.tags[item.tag]) : s.rescued,
         item.name,
-        `${money(item.price)}${item.was ? ` · was ${money(item.was)}` : ""}`,
+        `${money(item.price)}${item.was ? ` · ${s.wasPrice(money(item.was))}` : ""}`,
       ];
       return (
         <Card item={item} look={look}>
@@ -202,7 +215,7 @@ export function Deal({ item, index }: { item: Item; index: number }) {
             ))}
           </div>
           <p className="dl-line" aria-hidden="true">
-            {item.line}
+            {line}
           </p>
         </Card>
       );
@@ -220,14 +233,14 @@ export function Deal({ item, index }: { item: Item; index: number }) {
           <div className="dl-label" aria-hidden="true">
             <Price value={item.price} />
             <span className="dl-label-meta">
-              <b>{item.unit}</b>
-              <span>{item.was ? `was ${money(item.was)}` : "Every day"}</span>
+              <b>{unit}</b>
+              <span>{item.was ? s.wasPrice(money(item.was)) : s.everyDay}</span>
             </span>
             <i className="dl-code" />
           </div>
           {off > 0 && (
             <span className="dl-clear" aria-hidden="true">
-              <b>−{off}%</b> Reduced to clear
+              <b>−{off}%</b> {s.reducedToClear}
             </span>
           )}
         </Card>
@@ -241,31 +254,31 @@ export function Deal({ item, index }: { item: Item; index: number }) {
             <Art item={item} />
             <div>
               <h4 className="dl-name">{item.name}</h4>
-              <p className="dl-line">{item.line}</p>
+              <p className="dl-line">{line}</p>
             </div>
           </div>
           <table className="dl-table" aria-hidden="true">
-            <caption>Savings information</caption>
+            <caption>{s.savings}</caption>
             <tbody>
               <tr>
-                <th>Pack size</th>
-                <td>{item.unit}</td>
+                <th>{s.packSize}</th>
+                <td>{unit}</td>
               </tr>
               <tr>
-                <th>Usual price</th>
+                <th>{s.usualPrice}</th>
                 <td>{item.was ? money(item.was) : "—"}</td>
               </tr>
               <tr>
-                <th>Our price</th>
+                <th>{s.ourPrice}</th>
                 <td>{money(item.price)}</td>
               </tr>
               <tr className="dl-save-row">
-                <th>You save</th>
+                <th>{s.youSave}</th>
                 <td>{item.was ? `${money(item.was - item.price)} (${off}%)` : "—"}</td>
               </tr>
               <tr>
-                <th>Why it’s here</th>
-                <td>{why(item, given)}</td>
+                <th>{s.whyHere}</th>
+                <td>{why}</td>
               </tr>
             </tbody>
           </table>
@@ -276,15 +289,15 @@ export function Deal({ item, index }: { item: Item; index: number }) {
     case "case":
       return (
         <Card item={item} look={look}>
-          <div className="dl-tray" aria-hidden="true">
+          <div className="dl-tray" aria-hidden="true" data-tray={s.tray}>
             {Array.from({ length: 6 }, (_, i) => (
               <Art key={i} item={item} className="dl-unit" />
             ))}
           </div>
           <div className="dl-case-body" aria-hidden="true">
-            <p className="dl-stencil">{item.unit}</p>
+            <p className="dl-stencil">{unit}</p>
             <h4 className="dl-name">{item.name}</h4>
-            <p className="dl-line">{item.line}</p>
+            <p className="dl-line">{line}</p>
             <div className="dl-case-price">
               <Price value={item.price} />
               {item.was && <s>{money(item.was)}</s>}
@@ -298,17 +311,17 @@ export function Deal({ item, index }: { item: Item; index: number }) {
       return (
         <Card item={item} look={look} tone={index % 3}>
           <p className="dl-kicker" aria-hidden="true">
-            {CAT[item.cat]}
+            {cat}
           </p>
           <b className="dl-big-word" aria-hidden="true">
-            {given ?? item.name.toLowerCase()}.
+            {s.bigWord(note ? s.notes[note] : item.name.toLowerCase())}
           </b>
           <p className="dl-line" aria-hidden="true">
-            {item.line}
+            {line}
           </p>
           <div className="dl-foot" aria-hidden="true">
             <Price value={item.price} />
-            <span className="dl-unit-chip">{item.unit}</span>
+            <span className="dl-unit-chip">{unit}</span>
           </div>
           <Art item={item} className="dl-peek" />
         </Card>

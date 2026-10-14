@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
+import { useLang, useT } from "./i18n";
+import { flyerStrings } from "./i18n/strings/Flyer";
+import { productStrings } from "./i18n/strings/Products";
 import { Deal } from "./FlyerDeal";
 import { pickLook } from "./flyerLooks";
 import { RingBadge } from "./RingBadge";
@@ -9,13 +12,9 @@ import "./flyer.css";
 type Sort = "featured" | "price" | "saving";
 type CatFilter = CatId | "all";
 
-const saving = (item: Item) => (item.was ? 1 - item.price / item.was : 0);
+const SORTS: Sort[] = ["featured", "price", "saving"];
 
-/** Masthead: issue number is the week of the year, dated from this week's Monday. */
-const TODAY = new Date();
-const MONDAY = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - ((TODAY.getDay() + 6) % 7));
-const ISSUE = Math.ceil(((+MONDAY - +new Date(MONDAY.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
-const WEEK = MONDAY.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
+const saving = (item: Item) => (item.was ? 1 - item.price / item.was : 0);
 
 /** Animates the grid between two states with the View Transitions API where it exists. */
 function morph(update: () => void) {
@@ -61,6 +60,7 @@ function CatIcon({ id }: { id: CatFilter }) {
  * dotted line as the section scrolls up into view.
  */
 export function CutLine() {
+  const s = useT(flyerStrings);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export function CutLine() {
   return (
     <div className="cut" ref={ref} aria-hidden="true">
       <span className="cut-slit" />
-      <span className="cut-label">Cut along the line. Keep the savings.</span>
+      <span className="cut-label">{s.cut}</span>
       <svg className="scissors" viewBox="0 0 66 40">
         <g className="blade up">
           <path d="M28 15.5Q48 15 64 19.4L28 21.5Z" fill="#e4e8eb" stroke="#0f2a22" strokeWidth="1.8" strokeLinejoin="round" />
@@ -115,26 +115,35 @@ export function CutLine() {
   );
 }
 
-const SORTS: Array<[Sort, string]> = [
-  ["featured", "Featured"],
-  ["price", "Price ↑"],
-  ["saving", "Best saving"],
-];
-
 export function Flyer() {
+  const s = useT(flyerStrings);
+  const p = useT(productStrings);
+  const { locale } = useLang();
   const [cat, setCat] = useState<CatFilter>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("featured");
   const [special, setSpecial] = useState(false);
+
+  // Masthead: issue number is the week of the year, dated from this week's Monday.
+  const [monday] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
+  });
+  const issue = Math.ceil(((+monday - +new Date(monday.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
+  const week = monday.toLocaleDateString(locale, { day: "numeric", month: "short" });
 
   const q = query.trim().toLowerCase();
   const base = useMemo(
     () =>
       ITEMS.filter(
         (item) =>
-          (!special || item.was) && (!q || item.name.toLowerCase().includes(q) || item.line.toLowerCase().includes(q)),
+          (!special || item.was) &&
+          (!q ||
+            item.name.toLowerCase().includes(q) ||
+            item.line.toLowerCase().includes(q) ||
+            (p.lines[item.id] ?? item.line).toLowerCase().includes(q)),
       ),
-    [special, q],
+    [special, q, p],
   );
   const counts = useMemo(() => {
     const map: Record<string, number> = { all: base.length };
@@ -162,20 +171,17 @@ export function Flyer() {
       <CutLine />
       <header className="flyer-head rv">
         <p className="flyer-mast" aria-hidden="true">
-          <span>No. {ISSUE}</span>
-          <span>Week of {WEEK}</span>
-          <span>Four stores · Melbourne</span>
+          <span>{s.issue(issue)}</span>
+          <span>{s.week(week)}</span>
+          <span>{s.stores}</span>
         </p>
         <div className="flyer-headline">
           <h2 id="flyer-title" className="flyer-title">
-            The weekly <em>flyer.</em>
+            {s.title}
           </h2>
-          <RingBadge className="flyer-ring" text="WHILE STOCK LASTS • NEW FINDS WEEKLY •" center="$" label="While stock lasts" />
+          <RingBadge className="flyer-ring" text={s.ring} center="$" label={s.ringLabel} />
         </div>
-        <p className="flyer-dek">
-          Overstock, pack changes and short dates from brands you know. It lands, we price it low, and once it’s gone,
-          it’s gone.
-        </p>
+        <p className="flyer-dek">{s.dek}</p>
       </header>
 
       <div className="flyer-tools" role="search">
@@ -186,10 +192,10 @@ export function Flyer() {
           </svg>
           <input
             type="search"
-            placeholder="Search the aisles"
+            placeholder={s.searchPlaceholder}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            aria-label="Search the flyer"
+            aria-label={s.searchLabel}
           />
         </label>
         <button
@@ -198,20 +204,23 @@ export function Flyer() {
           aria-pressed={special}
           onClick={() => morph(() => setSpecial((value) => !value))}
         >
-          On special
+          {s.onSpecial}
         </button>
-        <div className="sorts" role="group" aria-label="Sort">
-          {SORTS.map(([id, label]) => (
+        <div className="sorts" role="group" aria-label={s.sortLabel}>
+          {SORTS.map((id) => (
             <button key={id} type="button" aria-pressed={sort === id} onClick={() => morph(() => setSort(id))}>
-              {label}
+              {s.sorts[id]}
             </button>
           ))}
         </div>
       </div>
 
       <div className="flyer-bar">
-        <div className="chips" role="group" aria-label="Filter by aisle">
-          {[{ id: "all" as const, label: "All aisles", color: "#f6b531" }, ...CATEGORIES].map((c) => (
+        <div className="chips" role="group" aria-label={s.filterLabel}>
+          {[
+            { id: "all" as const, label: s.allAisles, color: "#f6b531" },
+            ...CATEGORIES.map((c) => ({ ...c, label: p.cats[c.id] })),
+          ].map((c) => (
             <button
               key={c.id}
               type="button"
@@ -229,14 +238,14 @@ export function Flyer() {
       </div>
 
       <p className="flyer-meta" aria-live="polite">
-        <strong>{visible.length}</strong> {visible.length === 1 ? "find" : "finds"}
-        {cat !== "all" && <> in {CATEGORIES.find((c) => c.id === cat)?.label}</>}
+        <strong>{visible.length}</strong> {s.finds(visible.length)}
+        {cat !== "all" && <>{s.inAisle(p.cats[cat])}</>}
         {filtered && (
           <button type="button" onClick={reset}>
-            Clear all
+            {s.clearAll}
           </button>
         )}
-        <span className="flyer-foot">Preview range · names and prices are placeholders</span>
+        <span className="flyer-foot">{s.preview}</span>
       </p>
 
       {visible.length > 0 ? (
@@ -249,10 +258,10 @@ export function Flyer() {
         </ul>
       ) : (
         <div className="flyer-empty">
-          <strong>Nothing on this shelf.</strong>
-          <p>Stock moves fast. Try another aisle or clear the filters.</p>
+          <strong>{s.emptyTitle}</strong>
+          <p>{s.emptyBody}</p>
           <button className="button dark" type="button" onClick={reset}>
-            Show everything
+            {s.showAll}
           </button>
         </div>
       )}

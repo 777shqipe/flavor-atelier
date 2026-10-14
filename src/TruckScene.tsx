@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { useT } from "./i18n";
+import { truckSceneStrings } from "./i18n/strings/TruckScene";
 import "./truckscene.css";
 
 /*
@@ -107,6 +109,7 @@ function Cloud({ x, y, w, opacity, dur, delay }: (typeof CLOUDS)[number]) {
 
 /** Everything that never moves: hills, warehouse, yard, conveyor and road. */
 function Land() {
+  const s = useT(truckSceneStrings);
   return (
     <Art box={[0, 0, W, H]} className="ts-land">
       {/* hills and trees */}
@@ -145,7 +148,7 @@ function Land() {
         CHEAPER BUY MILES
       </text>
       <text x="326" y="143.8" textAnchor="end" fill={C.sage} fontFamily={COND} fontWeight="600" fontSize="8.5" letterSpacing="1.6">
-        DISTRIBUTION CENTRE
+        {s.distribution}
       </text>
       {/* clerestory windows */}
       {range(34, 286, 42).map((x) => (
@@ -408,6 +411,7 @@ function Body() {
 }
 
 export function TruckScene() {
+  const s = useT(truckSceneStrings);
   const ref = useRef<HTMLDivElement>(null);
 
   // Hold the loop wherever it is while the scene is off screen.
@@ -423,7 +427,7 @@ export function TruckScene() {
   }, []);
 
   return (
-    <div ref={ref} className="truck-scene" role="img" aria-label="A Cheaper Buy Miles truck backs up to the warehouse, is loaded with stock and drives off">
+    <div ref={ref} className="truck-scene" role="img" aria-label={s.label}>
       {/* sky */}
       <Layer box={around(566, 74, 64)} className="ts-halo" />
       <Moving box={around(566, 74, 50)} className="ts-rays">

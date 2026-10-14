@@ -1114,6 +1114,10 @@ html.ct-lock { overflow: hidden; }
     mix-blend-mode: overlay;
     animation: ct-sweep 3.2s ease-in-out infinite;
   }
+  /* Panel closed: it is hidden, but these two loops (background-position, so never on the GPU) would still wake the
+     main thread on every frame of every page. They run while it is open, as before. */
+  .ct:not([data-open]) .ct-holo,
+  .ct:not([data-open]) .ct-holo::before { animation-play-state: paused !important; }
   .ct-holo::after {
     background:
       radial-gradient(circle at calc(var(--mx) * 100%) calc(var(--my) * 100%), rgb(255 255 255 / 0.65), transparent 45%),

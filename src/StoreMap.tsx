@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import L from "leaflet";
+import type * as L from "leaflet";
+import { loadLeaflet, type Lib } from "./leaflet";
 import { LANDMARKS, landmarkHtml, shopPinSvg } from "./mapArt";
 import { STORES, distanceKm, formatKm, type Store } from "./stores";
+import { useT } from "./i18n";
+import { storeMapStrings } from "./i18n/strings/StoreMap";
 import "./storemap.css";
 
 /**
@@ -10,8 +13,6 @@ import "./storemap.css";
  * store glides the map over to it. Whatever is passed as children floats over
  * the map, above the tiles and below nothing.
  */
-
-const CBD = L.latLng(-37.8136, 144.9631);
 
 /** Name tags hang to the right of the shop, except where a landmark already sits there. */
 const TAG_LEFT = new Set(["flemington"]);
@@ -56,11 +57,15 @@ const cssPx = (map: L.Map, name: string) => parseFloat(getComputedStyle(map.getC
 
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+type StoreMapText = typeof storeMapStrings.en;
+/** A landmark's caption in the given strings; `id` is the landmark's key in them. */
+const caption = (text: StoreMapText, id: string) => text.landmarks[id as keyof StoreMapText["landmarks"]];
+
 type Near =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "ok"; index: number; km: number }
-  | { status: "error"; message: string };
+  | { status: "error"; reason: keyof StoreMapText["locateError"] };
 
 export function StoreMap({
   active,
@@ -81,17 +86,29 @@ export function StoreMap({
   const fromMe = useRef<L.LatLng | null>(null);
   const previous = useRef<number | null>(null);
   const onSelectRef = useRef(onSelect);
+  const lib = useRef<Lib | null>(null);
+  // Leaflet arrives after the page does; the effects that need it run again once it has.
+  const [ready, setReady] = useState(false);
   const [near, setNear] = useState<Near>({ status: "idle" });
+  const s = useT(storeMapStrings);
+  // The map build and the geolocation callback run outside render, so they read the language from here.
+  const text = useRef(s);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
   }, [onSelect]);
 
-  // Build the map once.
+  // Leaflet writes its own markup, so the labels in it are updated in place when the language changes.
   useEffect(() => {
-    const el = node.current;
-    const box = wrap.current;
-    if (!el || !box || mapRef.current) return;
+    text.current = s;
+    markers.current.forEach((marker, index) => marker.getElement()?.setAttribute("title", s.pinTitle(STORES[index].name)));
+    LANDMARKS.forEach((lm) => node.current?.querySelector(`.lm-${lm.id} .lm-cap`)?.replaceChildren(caption(s, lm.id)));
+    node.current?.querySelector(".me-pin span")?.replaceChildren(s.you);
+  }, [s]);
+
+  // Build the map (once Leaflet is here). Returns what takes it down again.
+  const build = (L: Lib, el: HTMLDivElement, box: HTMLDivElement) => {
+    const CBD = L.latLng(-37.8136, 144.9631);
     const touch = L.Browser.mobile;
     const map = L.map(el, {
       zoomControl: false,
@@ -124,7 +141,7 @@ export function StoreMap({
     // ---- landmarks, then the pins on top -----------------------------------------
     LANDMARKS.forEach((lm) =>
       L.marker([lm.lat, lm.lon], {
-        icon: L.divIcon({ className: "sm-lm", html: landmarkHtml(lm), iconSize: [0, 0] }),
+        icon: L.divIcon({ className: "sm-lm", html: landmarkHtml(lm, caption(text.current, lm.id)), iconSize: [0, 0] }),
         interactive: false,
         keyboard: false,
         zIndexOffset: -1000,
@@ -134,8 +151,8 @@ export function StoreMap({
     markers.current = STORES.map((store, index) => {
       const marker = L.marker(points[index], {
         icon: L.divIcon({ className: "sm-marker", html: pinHtml(store), iconSize: [0, 0] }),
-        title: `${store.name} store`,
-        alt: `${store.name} store`,
+        title: text.current.pinTitle(store.name),
+        alt: text.current.pinTitle(store.name),
         riseOnHover: true,
       }).addTo(map);
       marker.on("click", () => onSelectRef.current(index));
@@ -175,12 +192,32 @@ export function StoreMap({
       markers.current = [];
       overviewRef.current = null;
     };
+  };
+
+  useEffect(() => {
+    const el = node.current;
+    const box = wrap.current;
+    if (!el || !box || mapRef.current) return;
+    let disposed = false;
+    let teardown = () => {};
+    loadLeaflet().then((leaflet) => {
+      if (disposed) return;
+      lib.current = leaflet;
+      teardown = build(leaflet, el, box);
+      setReady(true);
+    });
+    return () => {
+      disposed = true;
+      teardown();
+    };
+    // build only uses refs, so it never needs to run again.
   }, []);
 
   // Follow the selection: light the pin and glide over to it (to it and you, after "Find my nearest").
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    const L = lib.current;
+    if (!map || !L) return;
     markers.current.forEach((marker, index) => {
       marker.getElement()?.classList.toggle("active", index === active);
       marker.setZIndexOffset(index === active ? 1000 : 0);
@@ -210,11 +247,11 @@ export function StoreMap({
     const shift = L.point((wideMap ? -150 : 0) + (right - left) / 2, Math.max(0, room / 2 - 45));
     const centre = map.unproject(map.project(target, 14.75).add(shift), 14.75);
     map.flyTo(centre, 14.75, { animate: !reduced(), duration: 1 });
-  }, [active]);
+  }, [active, ready]);
 
   const locate = () => {
     if (!navigator.geolocation) {
-      setNear({ status: "error", message: "Location isn’t available in this browser." });
+      setNear({ status: "error", reason: "unsupported" });
       return;
     }
     setNear({ status: "loading" });
@@ -230,12 +267,13 @@ export function StoreMap({
           }
         });
         const map = mapRef.current;
-        const here = L.latLng(coords.latitude, coords.longitude);
+        const L = lib.current;
         me.current?.remove();
         meLine.current?.remove();
-        if (map && bestKm < 40) {
+        if (map && L && bestKm < 40) {
+          const here = L.latLng(coords.latitude, coords.longitude);
           me.current = L.marker(here, {
-            icon: L.divIcon({ className: "sm-me", html: '<div class="me-pin"><i></i><span>You</span></div>', iconSize: [0, 0] }),
+            icon: L.divIcon({ className: "sm-me", html: `<div class="me-pin"><i></i><span>${text.current.you}</span></div>`, iconSize: [0, 0] }),
             interactive: false,
             keyboard: false,
             zIndexOffset: 2500,
@@ -256,7 +294,7 @@ export function StoreMap({
       (error) =>
         setNear({
           status: "error",
-          message: error.code === 1 ? "Location permission was declined." : "Couldn’t work out where you are.",
+          reason: error.code === 1 ? "denied" : "failed",
         }),
       { timeout: 8000 },
     );
@@ -279,13 +317,13 @@ export function StoreMap({
           ref={node}
           className="finder-map"
           role="region"
-          aria-label="Map of the four Cheaper Buy Miles stores in inner Melbourne"
+          aria-label={s.mapLabel}
         />
         <svg className="finder-compass" viewBox="0 0 44 44" aria-hidden="true">
           <circle cx="22" cy="22" r="20" />
           <path d="M22 9l4.5 13h-9z" />
           <path d="M22 35l-4.5-13h9z" />
-          <text x="22" y="7.6">N</text>
+          <text x="22" y="7.6">{s.north}</text>
         </svg>
 
         <div className="finder-top left">
@@ -294,25 +332,21 @@ export function StoreMap({
               <circle cx="12" cy="12" r="3.5" />
               <path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" />
             </svg>
-            {near.status === "loading" ? "Locating…" : "Find my nearest"}
+            {near.status === "loading" ? s.locating : s.findNearest}
           </button>
-          {near.status === "error" && <p className="finder-note">{near.message}</p>}
-          {near.status === "ok" && (
-            <p className="finder-note ok">
-              Nearest: <b>{STORES[near.index].name}</b> · {formatKm(near.km)} away
-            </p>
-          )}
+          {near.status === "error" && <p className="finder-note">{s.locateError[near.reason]}</p>}
+          {near.status === "ok" && <p className="finder-note ok">{s.nearest(STORES[near.index].name, formatKm(near.km))}</p>}
         </div>
         <div className="finder-top right">
           <div className="zoom">
-            <button type="button" aria-label="Zoom in" onClick={() => mapRef.current?.zoomIn()}>
+            <button type="button" aria-label={s.zoomIn} onClick={() => mapRef.current?.zoomIn()}>
               +
             </button>
-            <button type="button" aria-label="Zoom out" onClick={() => mapRef.current?.zoomOut()}>
+            <button type="button" aria-label={s.zoomOut} onClick={() => mapRef.current?.zoomOut()}>
               −
             </button>
-            <button type="button" className="all" aria-label="Show all stores" onClick={() => overviewRef.current?.()}>
-              All
+            <button type="button" className="all" aria-label={s.showAll} onClick={() => overviewRef.current?.()}>
+              {s.all}
             </button>
           </div>
         </div>

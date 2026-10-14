@@ -445,7 +445,7 @@
 .dl-unit:nth-child(-n + 3) { z-index: 0; filter: brightness(0.78); }
 .dl-unit:nth-child(n + 4) { z-index: 1; margin-top: -24cqh; }
 .dl-tray::after {
-  content: "CBM · case lot";
+  content: attr(data-tray);
   position: absolute;
   z-index: 2;
   left: 5%;

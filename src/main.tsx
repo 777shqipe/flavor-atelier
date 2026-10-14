@@ -3,10 +3,13 @@ import { createRoot } from "react-dom/client";
 import "./tokens.css";
 import "leaflet/dist/leaflet.css";
 import App from "./App";
+import { LangProvider } from "./i18n/LangProvider";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <LangProvider>
+      <App />
+    </LangProvider>
   </StrictMode>,
 );

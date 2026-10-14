@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { wasteNumbersStrings } from "./i18n/strings/WasteNumbers";
+import { useT } from "./i18n";
 import { Odometer } from "./Odometer";
 
 /**
@@ -17,11 +19,14 @@ const SOURCES = {
   },
 };
 
-const Cite = ({ source }: { source: { name: string; href: string } }) => (
-  <a className="wn-cite" href={source.href} target="_blank" rel="noreferrer">
-    Source: {source.name}
-  </a>
-);
+const Cite = ({ source }: { source: { name: string; href: string } }) => {
+  const s = useT(wasteNumbersStrings);
+  return (
+    <a className="wn-cite" href={source.href} target="_blank" rel="noreferrer">
+      {s.cite(source.name)}
+    </a>
+  );
+};
 
 /** Fires once when the element is a third of the way into view. */
 function useSeen<T extends HTMLElement>() {
@@ -46,6 +51,7 @@ function useSeen<T extends HTMLElement>() {
 
 /** Eureka Tower, 297 m, with its gold crown and red stripe. Fill is 0..1. */
 function Tower() {
+  const s = useT(wasteNumbersStrings);
   const ref = useRef<HTMLDivElement>(null);
 
   // The tower fills as the card travels up the screen.
@@ -119,7 +125,7 @@ function Tower() {
         <path d="M60 48V20" stroke="rgb(246 240 219 / 0.6)" strokeWidth="1.5" />
         <path d="M6 396H144" stroke="rgb(246 240 219 / 0.4)" strokeWidth="1.5" />
       </svg>
-      <span className="tower-full">Full.</span>
+      <span className="tower-full">{s.full}</span>
     </div>
   );
 }
@@ -148,19 +154,19 @@ function Bags({ go }: { go: boolean }) {
 }
 
 export function WasteNumbers() {
+  const s = useT(wasteNumbersStrings);
   const [grid, seen] = useSeen<HTMLDivElement>();
+  // Before the card is seen, each figure shows zeros of the same width, then the digits roll up.
+  const figure = (value: string) => (seen ? value : value.replace(/\d/g, "0"));
 
   return (
     <section className="waste" data-surface="green" aria-labelledby="waste-title">
       <header className="section-head split rv">
         <div>
-          <p className="eyebrow">Why it matters</p>
-          <h2 id="waste-title">Good food, binned by the tonne.</h2>
+          <p className="eyebrow">{s.eyebrow}</p>
+          <h2 id="waste-title">{s.title}</h2>
         </div>
-        <p className="lead">
-          Most of what Australia throws away was fine to eat. That is the gap we work in: surplus, overstock and short
-          dates, bought before they become a statistic.
-        </p>
+        <p className="lead">{s.lead}</p>
       </header>
 
       <div className="waste-grid" ref={grid}>
@@ -168,12 +174,10 @@ export function WasteNumbers() {
           <Tower />
           <div className="wn-copy">
             <p className="wn-num">
-              <Odometer value={seen ? "250,000" : "000,000"} />
-              <small>tonnes</small>
+              <Odometer value={figure(s.tower.num)} />
+              <small>{s.tower.unit}</small>
             </p>
-            <p className="wn-text">
-              Good food thrown out by Victorian households every year. <b>Enough to fill Eureka Tower.</b>
-            </p>
+            <p className="wn-text">{s.tower.text}</p>
             <Cite source={SOURCES.vic} />
           </div>
         </article>
@@ -182,30 +186,28 @@ export function WasteNumbers() {
           <Bags go={seen} />
           <p className="wn-num">
             <span>1</span>
-            <small>in</small>
+            <small>{s.bags.connector}</small>
             <span>5</span>
           </p>
-          <p className="wn-text">bags of groceries end up in the bin, roughly.</p>
+          <p className="wn-text">{s.bags.text}</p>
           <Cite source={SOURCES.bags} />
         </article>
 
         <article className="wn wn-big rv" style={{ "--rv": "180ms" } as CSSProperties}>
           <p className="wn-num">
-            <Odometer value={seen ? "7.6" : "0.0"} />
-            <small>million tonnes</small>
+            <Odometer value={figure(s.big.num)} />
+            <small>{s.big.unit}</small>
           </p>
-          <p className="wn-text">
-            of food wasted across Australia every year, farm to fork. Worth about <b>$36.6 billion</b>.
-          </p>
+          <p className="wn-text">{s.big.text}</p>
           <Cite source={SOURCES.fial} />
         </article>
 
         <article className="wn wn-edible rv" style={{ "--rv": "270ms" } as CSSProperties}>
           <p className="wn-num">
-            <Odometer value={seen ? "70" : "00"} />
+            <Odometer value={figure(s.edible.num)} />
             <small>%</small>
           </p>
-          <p className="wn-text">of it was still good to eat.</p>
+          <p className="wn-text">{s.edible.text}</p>
           <div className="wn-meter" aria-hidden="true">
             <i style={{ width: seen ? "70%" : "0%" }} />
           </div>

@@ -1,4 +1,6 @@
 import { useState, type CSSProperties } from "react";
+import { useLang, useT } from "./i18n";
+import { dateCheckStrings } from "./i18n/strings/DateCheck";
 import { Odometer } from "./Odometer";
 import { Pack } from "./Pack";
 import { Stamp } from "./Stamp";
@@ -11,9 +13,7 @@ import "./datecheck.css";
  */
 
 const DAY = 86_400_000;
-const PRINTED = new Date();
-const fmt = (date: Date) =>
-  date.toLocaleDateString("en-AU", { day: "2-digit", month: "short" }).toUpperCase();
+const fmt = (date: Date, locale: string) => date.toLocaleDateString(locale, { day: "2-digit", month: "short" }).toUpperCase();
 
 /** Placeholder markdown steps for the demo pack. */
 const MARKDOWNS = [
@@ -23,49 +23,48 @@ const MARKDOWNS = [
 ];
 const RRP = 5.5;
 
-const TICKS = [
-  [0, "The date"],
-  [30, "+1 month"],
-  [60, "+2 months"],
-  [90, "+3 months"],
-] as const;
+/** Where each tick sits on the dial, in days. The words are in the strings file. */
+const TICK_AT = [0, 30, 60, 90];
 
-function verdict(days: number) {
-  if (days === 0) return "On the date. Full price at the big chains.";
-  if (days < 7) return "Pulled from most shelves. Not from ours.";
-  if (days < 30) return "Still crunchy. Still perfectly good.";
-  if (days < 60) return "Maybe a touch less crunchy. Still safe.";
-  return "Quality may soften. Safety doesn’t change.";
+type Verdict = keyof typeof dateCheckStrings.en.verdict;
+
+function verdictKey(days: number): Verdict {
+  if (days === 0) return "atDate";
+  if (days < 7) return "pulled";
+  if (days < 30) return "crunchy";
+  if (days < 60) return "softer";
+  return "softened";
 }
 
 export function DateCheck() {
+  const s = useT(dateCheckStrings);
+  const { locale } = useLang();
+  // The packs are printed when the page loads.
+  const [printed] = useState(() => new Date());
   const [days, setDays] = useState(0);
   const price = MARKDOWNS.reduce((current, step) => (days >= step.at ? step.price : current), RRP);
-  const today = new Date(PRINTED.getTime() + days * DAY);
+  const today = new Date(printed.getTime() + days * DAY);
 
   return (
     <section className="dates" data-surface="cream" aria-labelledby="dates-title">
       <header className="section-head split rv">
         <div>
-          <p className="eyebrow">Read the label</p>
-          <h2 id="dates-title">Best before isn’t a bin day.</h2>
+          <p className="eyebrow">{s.eyebrow}</p>
+          <h2 id="dates-title">{s.title}</h2>
         </div>
-        <p className="lead">
-          <b>Best before</b> is about quality: after the date, food is still safe and can be sold as long as it’s in
-          good condition. <b>Use by</b> is about safety: we never sell anything past it. Drag the calendar and see.
-        </p>
+        <p className="lead">{s.lead}</p>
       </header>
 
       <div className="dc-grid rv" style={{ "--rv": "120ms" } as CSSProperties}>
         <article className="dc-card" data-kind="bb">
           <div className="dc-top">
-            <span className="dc-kind">Best before</span>
-            <span className="dc-ok">On sale</span>
+            <span className="dc-kind">{s.bestBefore}</span>
+            <span className="dc-ok">{s.onSale}</span>
           </div>
           <div className="dc-art">
             <div className="dc-pack" style={{ "--age": Math.min(1, days / 90) } as CSSProperties}>
               <Pack shape="box" color="#f3b62f" label={["CORN", "FLAKES"]} />
-              <span className="dc-date">BB {fmt(PRINTED)}</span>
+              <span className="dc-date">{s.bbDate(fmt(printed, locale))}</span>
             </div>
             {MARKDOWNS.map((step) => (
               <span
@@ -75,48 +74,48 @@ export function DateCheck() {
                 style={{ "--rot": `${step.rot}deg` } as CSSProperties}
                 aria-hidden="true"
               >
-                <small>Reduced</small>${step.price}
+                <small>{s.reduced}</small>${step.price}
               </span>
             ))}
-            <Stamp on={days > 0} text="Still good" sub="Best before ≠ bad after" tone="green" className="dc-stamp" />
+            <Stamp on={days > 0} text={s.stillGood} sub={s.bbNote} tone="green" className="dc-stamp" />
           </div>
           <div className="dc-price">
-            <span>Price</span>
+            <span>{s.price}</span>
             <Odometer value={`$${price.toFixed(2)}`} />
             {price < RRP && <s>${RRP.toFixed(2)}</s>}
           </div>
           <p className="dc-verdict" aria-live="polite">
-            {verdict(days)}
+            {s.verdict[verdictKey(days)]}
           </p>
         </article>
 
         <article className="dc-card" data-kind="ub" data-gone={days > 0 || undefined}>
           <div className="dc-top">
-            <span className="dc-kind">Use by</span>
-            <span className="dc-ok">{days > 0 ? "Off the shelf" : "On sale"}</span>
+            <span className="dc-kind">{s.useBy}</span>
+            <span className="dc-ok">{days > 0 ? s.offShelf : s.onSale}</span>
           </div>
           <div className="dc-art">
             <div className="dc-pack">
               <Pack shape="carton" color="#6bb8ff" label={["FRESH", "MILK"]} />
-              <span className="dc-date">USE BY {fmt(PRINTED)}</span>
+              <span className="dc-date">{s.ubDate(fmt(printed, locale))}</span>
             </div>
-            <Stamp on={days > 0} text="Not for sale" sub="Use by means use by" className="dc-stamp" />
+            <Stamp on={days > 0} text={s.notForSale} sub={s.ubNote} className="dc-stamp" />
           </div>
           <div className="dc-price">
-            <span>Price</span>
+            <span>{s.price}</span>
             <strong>{days > 0 ? "—" : "$2.00"}</strong>
           </div>
           <p className="dc-verdict" aria-live="polite">
-            {days > 0 ? "Past use by. We don’t sell it, ever." : "Good until the end of today."}
+            {days > 0 ? s.pastUseBy : s.goodToday}
           </p>
         </article>
       </div>
 
       <div className="dc-dial rv" style={{ "--rv": "200ms", "--p": days / 90 } as CSSProperties}>
         <label htmlFor="dc-days">
-          <span>Today is {fmt(today)}</span>
+          <span>{s.today(fmt(today, locale))}</span>
           <strong>
-            <Odometer value={`+${String(days).padStart(2, "0")}`} /> days
+            <Odometer value={`+${String(days).padStart(2, "0")}`} /> {s.days}
           </strong>
         </label>
         <input
@@ -127,12 +126,12 @@ export function DateCheck() {
           step={1}
           value={days}
           onChange={(event) => setDays(Number(event.target.value))}
-          aria-valuetext={`${days} days past the printed date`}
+          aria-valuetext={s.valueText(days)}
         />
         <ol className="dc-ticks" aria-hidden="true">
-          {TICKS.map(([at, text]) => (
+          {TICK_AT.map((at, i) => (
             <li key={at} style={{ "--at": at / 90 } as CSSProperties}>
-              {text}
+              {s.ticks[i]}
             </li>
           ))}
         </ol>
