@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
-import { glyphSvg } from "./glyphs";
 import { RingBadge } from "./RingBadge";
 import { StoreMap } from "./StoreMap";
 import { STORES, directionsLink, distanceKm, formatKm } from "./stores";
@@ -126,7 +125,6 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                 onPointerMove={look}
                 onPointerLeave={rest}
               >
-                <span className="sh-awning" key={`aw-${store.id}`} aria-hidden="true" />
                 <div className="sh-photo">
                   {STORES.map((item, index) => (
                     <img
@@ -141,10 +139,15 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                   <span className="sh-blind" aria-hidden="true">
                     <i className="sh-pull" />
                   </span>
+                  <span className="sh-awning" key={`aw-${store.id}`} aria-hidden="true" />
+                  {/* open or closed, as the card a shop hangs on its door */}
+                  <p className={`sh-sign${status.open ? " open" : ""}`} title={status.label}>
+                    <b>{status.open ? "Open" : "Closed"}</b>
+                    <small>{status.label.split(" · ")[1]}</small>
+                  </p>
                 </div>
-                {/* the print's caption: who, where, open or not, and the way to the next one */}
+                {/* the print's caption: who, where, and the way to the next one */}
                 <div className="sh-caption">
-                  <span className="sc-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
                   <span className="sc-text" key={`cap-${store.id}`}>
                     <b>{store.name}</b>
                     {/* street only: the suburb is already the name */}
@@ -158,9 +161,6 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                       {arrow("right")}
                     </button>
                   </span>
-                  <p className={`status${status.open ? " open" : ""}`}>
-                    <i /> {status.label}
-                  </p>
                 </div>
               </div>
             </StoreMap>
@@ -183,7 +183,6 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                   <small>0{index + 1}</small>
                   <b>{item.name}</b>
                 </span>
-                <span className="pick-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(item.glyph) }} />
               </button>
             ))}
           </div>

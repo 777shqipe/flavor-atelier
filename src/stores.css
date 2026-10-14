@@ -120,10 +120,12 @@
 .sh-visual .finder-map { height: clamp(600px, calc(100svh - 180px), 800px); }
 
 /* The shop as a photo print laid on the bottom corner of the map, hanging just
-   past its faded edge: its awning on top, a caption underneath. */
+   past its faded edge: its awning across the top, a caption underneath. */
 .sh-window {
   --px: 0;
   --py: 0;
+  /* odd, so the awning and the blind start and end on the shop's colour */
+  --stripes: 13;
   position: absolute;
   left: calc(var(--inset-l) + clamp(8px, 2%, 28px));
   bottom: calc(var(--above) * -0.7);
@@ -134,20 +136,6 @@
   background: #fffdf6;
   box-shadow: 0 0 0 1px rgb(60 60 20 / 0.08), 0 1px 2px rgb(40 50 20 / 0.12), 0 24px 38px -26px rgb(30 45 20 / 0.5);
 }
-/* The shop's own awning, in its colour, rolls down each time the pick changes. */
-.sh-awning {
-  position: absolute;
-  inset: -11px 7px auto;
-  z-index: 6;
-  height: 24px;
-  background: repeating-linear-gradient(90deg, var(--c) 0 22px, #fffaf0 22px 44px);
-  -webkit-mask: radial-gradient(11px at 11px 13px, #000 97%, #0000) 0 2px / 22px 24px repeat-x, linear-gradient(#000 0 0) top / 100% 13px no-repeat;
-  mask: radial-gradient(11px at 11px 13px, #000 97%, #0000) 0 2px / 22px 24px repeat-x, linear-gradient(#000 0 0) top / 100% 13px no-repeat;
-  filter: drop-shadow(0 3px 2px rgb(30 45 20 / 0.28));
-  transform-origin: 50% 0;
-  animation: aw-roll 0.8s var(--bounce) both;
-}
-@keyframes aw-roll { from { scale: 1 0; } }
 .sh-photo {
   position: relative;
   overflow: hidden;
@@ -172,7 +160,25 @@
 .sh-photo img.active { z-index: 2; clip-path: inset(0); scale: 1.03; }
 .sh-photo img.before { z-index: 1; clip-path: inset(0); }
 /* the awning's shade on the top of the print */
-.sh-photo::after { content: ""; position: absolute; inset: 0; z-index: 4; background: linear-gradient(180deg, rgb(0 30 22 / 0.24), transparent 26%); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06); border-radius: inherit; pointer-events: none; }
+.sh-photo::after { content: ""; position: absolute; inset: 0; z-index: 4; background: linear-gradient(180deg, rgb(0 30 22 / 0.24), transparent 30%); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06); border-radius: inherit; pointer-events: none; }
+
+/* The shop's own awning, in its colour, edge to edge inside the white border.
+   Rolls down each time the pick changes. */
+.sh-awning {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 5;
+  height: 26px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.14), transparent 45%, rgb(0 30 22 / 0.12)),
+    linear-gradient(90deg, var(--c) 50%, #fffaf0 0) 0 0 / calc(200% / var(--stripes)) 100%;
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% 15px no-repeat, radial-gradient(closest-side, #000 96%, #0000) 0 5px / calc(100% / var(--stripes)) 21px repeat-x;
+  mask: linear-gradient(#000 0 0) top / 100% 15px no-repeat, radial-gradient(closest-side, #000 96%, #0000) 0 5px / calc(100% / var(--stripes)) 21px repeat-x;
+  transform-origin: 50% 0;
+  animation: aw-roll 0.8s var(--bounce) both;
+}
+@keyframes aw-roll { from { scale: 1 0; } }
+
 /* Closed: the roller blind is down, in the awning's stripes. Hovering rolls it all
    the way up into the awning; leaving lets it drop back with a little bounce. */
 .sh-blind {
@@ -185,16 +191,16 @@
 }
 .sh-window[data-closed] .sh-blind { translate: 0 0; transition: translate 0.75s var(--spring); }
 .sh-window[data-closed]:hover .sh-blind { translate: 0 -104%; transition: translate 0.6s cubic-bezier(0.65, 0, 0.25, 1); }
-/* the cloth: stripes with sewn seams, a soft pleat on each, fine weave and the awning's shade */
+/* the cloth: stripes in line with the awning's, a soft pleat on each, fine weave and the awning's shade */
 .sh-blind::before {
   content: "";
   position: absolute;
   inset: 0 0 12px;
   background:
-    linear-gradient(180deg, rgb(0 30 22 / 0.3), rgb(0 30 22 / 0.06) 24%, rgb(255 255 255 / 0.1) 58%, transparent 82%, rgb(0 30 22 / 0.12)),
+    linear-gradient(180deg, rgb(0 30 22 / 0.3), rgb(0 30 22 / 0.06) 28%, rgb(255 255 255 / 0.1) 60%, transparent 82%, rgb(0 30 22 / 0.12)),
     repeating-linear-gradient(180deg, rgb(255 255 255 / 0.07) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.14) 0 2px, transparent 2px 19px, rgb(0 30 22 / 0.1) 21px 22px),
-    repeating-linear-gradient(90deg, var(--c) 0 22px, #fffaf0 22px 44px);
+    linear-gradient(90deg, rgb(255 255 255 / 0.14) 0 9%, transparent 9% 90%, rgb(0 30 22 / 0.1) 90%) 0 0 / calc(100% / var(--stripes)) 100%,
+    linear-gradient(90deg, var(--c) 50%, #fffaf0 0) 0 0 / calc(200% / var(--stripes)) 100%;
 }
 /* the weighted hem bar */
 .sh-blind::after {
@@ -211,20 +217,55 @@
 /* and its brass pull ring */
 .sh-pull { position: absolute; left: 50%; bottom: 0; width: 9px; height: 9px; border: 2px solid #c9a04a; border-radius: 50%; translate: -50% 0; box-shadow: 0 1px 2px rgb(0 0 0 / 0.35); }
 
+/* Open or closed, on a card hung from a hook under the awning, like the one on a shop door. */
+.sh-sign {
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 9px 13px 8px;
+  border-radius: 5px;
+  background:
+    radial-gradient(circle at 22% 5px, #2b2116 1.4px, #0000 2px),
+    radial-gradient(circle at 78% 5px, #2b2116 1.4px, #0000 2px),
+    #fffdf6;
+  box-shadow: inset 0 0 0 1.5px var(--green-900), inset 0 0 0 3.5px #fffdf6, inset 0 0 0 4.5px rgb(0 56 42 / 0.25), 0 6px 10px -4px rgb(0 0 0 / 0.45);
+  translate: -50% 0;
+  pointer-events: none;
+}
+.sh-sign b { color: #b4452f; font: 400 17px / 1 var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; }
+.sh-sign.open b { color: #157a4f; }
+.sh-sign small { color: var(--green-900); font: 700 8.5px / 1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+/* the cord, from the two eyelets up to the hook */
+.sh-sign::before {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: calc(100% - 5px);
+  height: 18px;
+  background:
+    linear-gradient(to top left, #0000 calc(50% - 0.8px), #2b2116 calc(50% - 0.8px) calc(50% + 0.8px), #0000 calc(50% + 0.8px)) left / 50% 100% no-repeat,
+    linear-gradient(to top right, #0000 calc(50% - 0.8px), #2b2116 calc(50% - 0.8px) calc(50% + 0.8px), #0000 calc(50% + 0.8px)) right / 50% 100% no-repeat;
+}
+.sh-sign::after { content: ""; position: absolute; left: 50%; bottom: calc(100% + 10px); width: 6px; height: 6px; border-radius: 50%; background: #c9a04a; translate: -50% 0; box-shadow: 0 1px 1px rgb(0 0 0 / 0.4); }
+
+/* caption: who, where, and the way to the next one */
 .sh-caption {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
-  grid-template-areas: "glyph text nav" "status status status";
-  column-gap: 11px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
   align-items: center;
-  padding: 12px 5px 10px;
+  padding: 12px 6px;
 }
-.sc-glyph { grid-area: glyph; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--c); color: var(--green-900); box-shadow: inset 0 0 0 1.5px rgb(0 56 42 / 0.16); }
-.sc-glyph svg { width: 19px; height: 19px; }
-.sc-text { grid-area: text; display: grid; gap: 5px; min-width: 0; animation: fade-up 0.5s var(--ease-out) both; }
+.sc-text { display: grid; gap: 5px; min-width: 0; animation: fade-up 0.5s var(--ease-out) both; }
 .sc-text b { color: var(--green-900); font: 400 22px / 1 var(--font-serif); letter-spacing: -0.01em; }
 .sc-text small { overflow: hidden; color: var(--ink-soft); font: 500 12.5px / 1.2 var(--font-sans); text-overflow: ellipsis; white-space: nowrap; }
-.sc-nav { grid-area: nav; display: flex; gap: 6px; }
+.sc-nav { display: flex; gap: 6px; }
 .sc-nav button {
   display: grid;
   place-items: center;
@@ -242,23 +283,6 @@
 .sc-nav button:active { scale: 0.92; }
 .sc-nav button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .sc-nav svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.status {
-  grid-area: status;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 12px 0 0;
-  padding-top: 11px;
-  border-top: 1px dashed var(--rule);
-  color: #b4452f;
-  font: 700 10px / 1 var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.status i { position: relative; flex: none; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.status.open { color: #157a4f; }
-.status.open i::after { content: ""; position: absolute; inset: -3px; border: 1.5px solid currentColor; border-radius: 50%; animation: status-ring 1.6s ease-out infinite; }
-@keyframes status-ring { from { scale: 0.6; opacity: 0.9; } to { scale: 2.4; opacity: 0; } }
 
 /* ---------- picks ----------------------------------------------------- */
 .sh-picks {
@@ -285,7 +309,7 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr) auto;
+  grid-template-columns: 84px minmax(0, 1fr);
   gap: 16px;
   align-items: center;
   min-width: 0;
@@ -311,16 +335,11 @@
 .sh-picks button[aria-selected="true"] img { filter: none; }
 .pick-text small { display: block; margin-bottom: 6px; font: 700 10px / 1 var(--font-sans); letter-spacing: 0.14em; opacity: 0.6; }
 .pick-text b { display: block; font: 400 26px / 1 var(--font-serif); letter-spacing: -0.01em; }
-.pick-glyph { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--c); color: var(--green-900); opacity: 0; scale: 0.5; rotate: -30deg; transition: opacity 0.3s, scale 0.55s var(--bounce), rotate 0.55s var(--bounce); }
-.pick-glyph svg { width: 21px; height: 21px; }
-.sh-picks button:hover .pick-glyph,
-.sh-picks button[aria-selected="true"] .pick-glyph { opacity: 1; scale: 1; rotate: 0deg; }
 
 @media (max-width: 1180px) {
   .sh-picks button { grid-template-columns: 60px minmax(0, 1fr); gap: 14px; padding-right: 12px; }
   .sh-picks img { width: 60px; height: 50px; }
   .pick-text b { font-size: 23px; }
-  .pick-glyph { display: none; }
 }
 @media (max-width: 980px) {
   .stores-hero { padding-top: 112px; }
@@ -359,6 +378,6 @@
   .pick-text b { font-size: 21px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sc-text, .sh-awning, .sh-near, .status.open i::after, .sh-picks button, .sh-name span, .sh-line, .sh-info li { animation: none; }
+  .sc-text, .sh-awning, .sh-near, .sh-picks button, .sh-name span, .sh-line, .sh-info li { animation: none; }
   .sh-window:hover .sh-photo img.active { scale: 1.03; }
 }
