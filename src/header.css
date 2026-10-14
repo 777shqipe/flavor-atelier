@@ -40,7 +40,7 @@
     0 2px 6px rgb(0 0 0 / 0.22);
 }
 .hd[data-open] .bar { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09), inset 0 1px 0 rgb(255 255 255 / 0.14), 0 40px 70px -24px rgb(0 0 0 / 0.85), 0 4px 10px rgb(0 0 0 / 0.25); }
-.bar-row { display: flex; align-items: center; height: 64px; padding: 0 8px; transition: height 0.55s var(--ease-out), padding 0.55s var(--ease-out); }
+.bar-row { display: flex; align-items: center; height: 68px; padding: 0 8px; transition: height 0.55s var(--ease-out), padding 0.55s var(--ease-out); }
 
 /* Nav + CTA fold into the logo once the page scrolls. The extra left padding keeps
    the price tag's string from being clipped while the column is open. */
@@ -83,7 +83,7 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  height: 48px;
+  height: 56px;
   margin-right: 10px;
   padding: 0 16px 0 0;
   border: 0;
@@ -97,9 +97,9 @@
 .esl {
   position: relative;
   display: block;
-  height: 44px;
-  padding: 4px 6px 7px 4px;
-  border-radius: 7px;
+  height: 52px;
+  padding: 5px 7px 8px 5px;
+  border-radius: 8px;
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0) 30%),
     linear-gradient(180deg, #f1f3f3, #dadedf 62%, #c8cdce);
@@ -137,19 +137,19 @@
   flex: none;
   place-items: center;
   align-self: stretch;
-  width: 30px;
+  width: 36px;
   background: linear-gradient(180deg, #da3329, #c4241b);
   box-shadow: inset -1px 0 0 rgb(90 10 6 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.18);
   color: #fff3ee;
 }
-.esl-flag svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0.5px 0 rgb(90 10 6 / 0.4)); }
+.esl-flag svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0.5px 0 rgb(90 10 6 / 0.4)); }
 .esl-flag circle { fill: currentColor; stroke: none; }
 .esl-code {
   position: absolute;
-  right: 8px;
-  bottom: 2.5px;
-  left: 40px;
-  height: 3px;
+  right: 9px;
+  bottom: 3px;
+  left: 47px;
+  height: 3.5px;
   background: repeating-linear-gradient(90deg, #1b1b1b 0 1px, transparent 1px 2px, #1b1b1b 2px 2.6px, transparent 2.6px 3.6px, #1b1b1b 3.6px 5.4px, transparent 5.4px 6.4px, #1b1b1b 6.4px 7px, transparent 7px 9px);
   opacity: 0.45;
 }
@@ -159,9 +159,9 @@
 /* Wordmark: "CHEAPER BUY MILES" in a bold Didone, printed in e-paper black; the
    letters after each initial fold away on scroll so it reads CBM in the same face. */
 .logo-word {
-  padding: 0 12px 3px 11px;
+  padding: 0 14px 4px 13px;
   color: #17140c;
-  font: 700 20px / 1 var(--font-mark);
+  font: 700 24px / 1 var(--font-mark);
   letter-spacing: -0.005em;
   white-space: nowrap;
   transition: font-size 0.5s var(--ease-out), letter-spacing 0.5s var(--ease-out), padding 0.5s var(--ease-out);
@@ -210,10 +210,10 @@
 }
 
 /* Compact: a smaller label with only the initials. */
-.hd[data-stuck] .bar-row { height: 54px; padding: 0 6px; }
+.hd[data-stuck] .bar-row { height: 60px; padding: 0 6px; }
 .hd[data-stuck] .logo { margin-right: 0; padding-right: 8px; border-right-color: transparent; }
-.hd[data-stuck] .esl { height: 40px; }
-.hd[data-stuck] .logo-word { padding-right: 13px; font-size: 21px; letter-spacing: 0.04em; }
+.hd[data-stuck] .esl { height: 48px; }
+.hd[data-stuck] .logo-word { padding-right: 15px; font-size: 25px; letter-spacing: 0.04em; }
 .hd[data-stuck] .logo-rest { max-width: 0; padding-right: 0 !important; opacity: 0; }
 @media (hover: hover) {
   .hd[data-stuck] .bar:hover .logo,
@@ -221,10 +221,10 @@
 }
 .hd[data-stuck][data-peek] .logo { margin-right: 10px; padding-right: 16px; border-right-color: rgb(246 240 219 / 0.12); }
 
-/* ---------- nav: a grocery item behind each link ----------------------- */
-/* Off, the item is only a soft blurred shadow behind the word; hovering brings
-   it into focus, and the current page's item switches on in full colour with a
-   flicker, a glow and a warm pool of light on the bar. */
+/* ---------- nav: price-gun labels --------------------------------------- */
+/* Hovering a link runs a checkout scanner's red laser across it. The current
+   page wears a yellow price-gun label; clicking another link fires a new label
+   onto it while the old one peels off and flies away. */
 .nav { display: flex; align-items: center; gap: 2px; height: 48px; }
 .nav button {
   position: relative;
@@ -233,6 +233,7 @@
   place-items: center;
   height: 48px;
   padding: 0 21px;
+  overflow: visible;
   border: 0;
   background: transparent;
   color: rgb(246 240 219 / 0.74);
@@ -240,57 +241,85 @@
   letter-spacing: -0.005em;
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.25s, scale 0.3s var(--spring);
+  transition: color 0.2s, scale 0.3s var(--spring);
 }
 .nav button > * { grid-area: 1 / 1; }
-.nav button::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  border-radius: 12px;
-  background: radial-gradient(56% 64% at 50% 52%, color-mix(in srgb, var(--glow) 30%, transparent), transparent 78%);
-  opacity: 0;
-  transition: opacity 0.5s var(--ease-out);
-}
 .nav button:hover { color: var(--cream); }
 .nav button:active { scale: 0.94; transition-duration: 0.1s; }
-.nav button:focus-visible { outline: 2px solid var(--sun); outline-offset: -4px; border-radius: 12px; }
-.food {
+.nav button:focus-visible { outline: 2px solid var(--sun); outline-offset: -4px; border-radius: 10px; }
+.nav button[aria-current="page"] { color: #17140c; transition: color 0.15s 0.12s, scale 0.3s var(--spring); }
+
+/* Scanner laser: a red line with a soft fan of light, swept once per hover. */
+.nav button::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 12px;
+  z-index: 2;
+  width: 2px;
+  border-radius: 1px;
+  background: #ff3b2a;
+  box-shadow: 0 0 6px 1px rgb(255 50 30 / 0.85), 0 0 18px 4px rgb(255 50 30 / 0.35);
+  opacity: 0;
+  pointer-events: none;
+}
+.nav button:hover::after { animation: laser 0.6s var(--ease-soft); }
+@keyframes laser {
+  0% { left: 12px; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { left: calc(100% - 14px); opacity: 0; }
+}
+
+/* The label: fluoro yellow stock with die-cut scalloped ends, two red guide
+   lines and paper grain. The wrapper carries the shadow so the mask doesn't clip it. */
+.gun {
   z-index: -1;
-  width: 42px;
-  height: 42px;
-  fill: none;
-  stroke: #00382a;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.2;
-  filter: brightness(0) invert(1) blur(3px) drop-shadow(0 0 0 transparent);
-  scale: 0.9;
-  rotate: -10deg;
-  transition: opacity 0.45s, filter 0.45s, scale 0.55s var(--spring), rotate 0.6s var(--spring);
+  align-self: center;
+  justify-self: stretch;
+  height: 32px;
+  margin: 0 -11px;
+  filter: drop-shadow(0 1px 0.5px rgb(0 0 0 / 0.35)) drop-shadow(0 7px 7px rgb(0 0 0 / 0.45));
+  opacity: 0;
+  translate: 6px -16px;
+  rotate: calc(var(--tilt) + 18deg);
+  scale: 1.08;
+  transform-origin: 85% 15%;
+  pointer-events: none;
+  transition: opacity 0.3s 0.08s, translate 0.4s var(--ease-soft), rotate 0.4s var(--ease-soft), scale 0.4s var(--ease-soft);
 }
-.nav button:hover .food { opacity: 0.38; filter: brightness(0) invert(1) blur(1.2px) drop-shadow(0 0 0 transparent); scale: 1; rotate: -4deg; }
-.nav button[aria-current="page"] { color: var(--cream); }
-.nav button[aria-current="page"]::before { opacity: 1; }
-.nav button[aria-current="page"] .food {
+.gun-paper {
+  position: relative;
+  display: block;
+  height: 100%;
+  background:
+    linear-gradient(180deg, transparent 4px, #e3261b 4px 5px, transparent 5px calc(100% - 5px), #e3261b calc(100% - 5px) calc(100% - 4px), transparent calc(100% - 4px)),
+    linear-gradient(180deg, #ffd85a, #f6b531);
+  -webkit-mask:
+    radial-gradient(circle at 0 50%, #0000 2.2px, #000 2.7px) left / 51% 5.33px repeat-y,
+    radial-gradient(circle at 100% 50%, #0000 2.2px, #000 2.7px) right / 51% 5.33px repeat-y;
+  mask:
+    radial-gradient(circle at 0 50%, #0000 2.2px, #000 2.7px) left / 51% 5.33px repeat-y,
+    radial-gradient(circle at 100% 50%, #0000 2.2px, #000 2.7px) right / 51% 5.33px repeat-y;
+}
+.gun-paper::before { content: ""; position: absolute; inset: 0; background: var(--grain) 0 0 / 110px 110px; opacity: 0.16; mix-blend-mode: multiply; }
+/* Gloss, and a corner that lifts a little on hover, ready to peel. */
+.gun-paper::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.38) 44%, transparent 56%); }
+.nav button[aria-current="page"] .gun {
   opacity: 1;
-  filter: brightness(1) invert(0) blur(0) drop-shadow(0 0 7px var(--glow));
-  scale: 1.06;
-  rotate: 0deg;
-  animation: food-on 0.9s steps(1);
+  translate: 0 0;
+  rotate: var(--tilt);
+  scale: 1;
+  animation: gun-slap 0.5s var(--ease-out);
 }
-/* The label keeps a dark halo so it reads over the lit item. */
-.nav button[aria-current="page"] .roll { text-shadow: 0 0 2px #0e1f18, 0 0 5px #0e1f18, 0 1px 1px #0e1f18; }
-/* Switching on like a shop light: a couple of stutters, then steady. */
-@keyframes food-on {
-  0% { opacity: 0.2; }
-  10% { opacity: 0.95; }
-  16% { opacity: 0.3; }
-  26% { opacity: 1; }
-  32% { opacity: 0.55; }
-  44% { opacity: 1; }
+.nav button[aria-current="page"]:hover .gun { rotate: calc(var(--tilt) * 0.4); scale: 1.04; transition: rotate 0.4s var(--spring), scale 0.4s var(--spring); }
+/* Fired from the gun: big and loose, smacked flat, a small rebound. */
+@keyframes gun-slap {
+  0% { opacity: 0; scale: 1.55; rotate: calc(var(--tilt) - 14deg); translate: 0 -8px; filter: drop-shadow(0 18px 14px rgb(0 0 0 / 0.5)); }
+  45% { opacity: 1; scale: 0.93; rotate: calc(var(--tilt) + 1deg); translate: 0 0; filter: drop-shadow(0 1px 0.5px rgb(0 0 0 / 0.35)) drop-shadow(0 3px 3px rgb(0 0 0 / 0.45)); }
+  70% { scale: 1.03; }
+  100% { scale: 1; rotate: var(--tilt); }
 }
 
 /* Rolling letters: each glyph has a twin underneath that slides up on hover. */
@@ -339,11 +368,10 @@
 .cta-box small { padding-right: 5px; color: #ffe9e2; font: 700 8px / 1 var(--font-cond); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
 /* The ticket slot down the right edge. */
 .cta-box::after { content: ""; position: absolute; top: 7px; right: 3px; bottom: 7px; width: 3px; border-radius: 2px; background: #3a0805; box-shadow: inset 1px 0 1px #000, 1px 0 0 rgb(255 255 255 / 0.18); }
-.cta-led { display: block; width: 40px; height: 20px; margin-right: 5px; overflow: hidden; border-radius: 4px; background: #170705; box-shadow: inset 0 1px 3px #000, 0 1px 0 rgb(255 255 255 / 0.25); }
-.cta-led-roll { display: grid; transition: translate 0.45s var(--spring); }
-.cta-led b { display: grid; place-items: center; height: 20px; color: #ff5233; font: 700 15px / 1 var(--font-mono); letter-spacing: 0.08em; text-indent: 0.08em; text-shadow: 0 0 6px rgb(255 70 40 / 0.85); }
+.cta-led { display: grid; place-items: center; width: 40px; height: 20px; margin-right: 5px; overflow: hidden; border-radius: 4px; background: #170705; box-shadow: inset 0 1px 3px #000, 0 1px 0 rgb(255 255 255 / 0.25); }
+.cta-led b { color: #ff5233; font: 700 13px / 1 var(--font-mono); letter-spacing: 0.06em; text-indent: 0.06em; text-transform: uppercase; text-shadow: 0 0 6px rgb(255 70 40 / 0.85); }
 
-/* The ticket: cream paper with a scalloped tear edge and a perforation before the number. */
+/* The ticket: cream paper with a scalloped tear edge. */
 .cta-ticket {
   position: relative;
   z-index: 1;
@@ -358,9 +386,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 11px;
   height: 36px;
-  padding: 0 15px 0 17px;
+  padding: 0 17px 0 18px;
   background: linear-gradient(180deg, #fffbf1, #f2e9cf);
   color: var(--green-900);
   -webkit-mask: radial-gradient(circle at 100% 50%, #0000 2.4px, #000 2.9px) 0 0 / 100% 6px repeat-y;
@@ -368,21 +395,8 @@
 }
 .cta-paper::before { content: ""; position: absolute; inset: 0; background: var(--grain) 0 0 / 120px 120px; opacity: 0.12; mix-blend-mode: multiply; pointer-events: none; }
 .cta-word { font: 700 14.5px / 1 var(--font-sans); letter-spacing: -0.005em; white-space: nowrap; }
-.cta-no {
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-  padding-left: 10px;
-  border-left: 1.5px dashed rgb(0 56 42 / 0.3);
-  color: var(--tomato);
-  font: 400 21px / 1 var(--font-display);
-  letter-spacing: 0.02em;
-}
-.cta-no small { color: rgb(0 56 42 / 0.55); font: 700 8px / 1 var(--font-mono); }
-
 .cta:hover .cta-ticket { translate: 5px 0; rotate: 2deg; }
-.cta:hover .cta-led-roll { translate: 0 -20px; }
-.cta:hover .cta-led b:last-child { animation: led-call 0.9s steps(1) 0.2s 2; }
+.cta:hover .cta-led b { animation: led-call 0.9s steps(1) 0.15s 2; }
 .cta:active .cta-box { translate: -2px 0; transition-duration: 0.1s; }
 .cta[data-torn] .cta-ticket { animation: ticket-tear 0.36s var(--ease-out) forwards; }
 .cta:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
@@ -420,15 +434,15 @@
 @media (max-width: 920px) {
   .hd { inset: 10px 0 auto; padding: 0 10px; }
   .bar { width: 100%; border-radius: 16px; }
-  .bar-row { justify-content: space-between; height: 62px; padding: 0 7px 0 7px; }
+  .bar-row { justify-content: space-between; height: 64px; padding: 0 7px 0 7px; }
   .bar-more { display: none; }
   .logo { padding-right: 0; border-right: 0; }
-  .esl { height: 42px; }
-  .esl-flag { width: 26px; }
-  .esl-flag svg { width: 16px; height: 16px; }
-  .esl-code { left: 34px; }
-  .logo-word { padding: 0 10px 3px 9px; font-size: 16.5px; }
-  .hd[data-stuck] .bar-row { height: 56px; }
+  .esl { height: 48px; }
+  .esl-flag { width: 31px; }
+  .esl-flag svg { width: 19px; height: 19px; }
+  .esl-code { left: 41px; }
+  .logo-word { padding: 0 12px 4px 11px; font-size: 20px; }
+  .hd[data-stuck] .bar-row { height: 60px; }
   .hd[data-stuck] .menu-btn { height: 42px; }
   .hd[data-stuck] .burger { width: 32px; height: 32px; }
   .hd[data-stuck] .burger i { left: 10px; right: 10px; }
@@ -519,6 +533,13 @@
   .hd[data-open] .drawer-foot { opacity: 1; translate: 0 0; transition-delay: calc(var(--i) * 55ms + 120ms); }
   .hd[data-open] .scrim { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 }
+@media (max-width: 440px) {
+  .esl { height: 44px; }
+  .esl-flag { width: 27px; }
+  .esl-flag svg { width: 17px; height: 17px; }
+  .esl-code { left: 37px; }
+  .logo-word { padding: 0 10px 3px 9px; font-size: 17px; }
+}
 @media (max-width: 380px) {
   .logo-word { padding: 0 8px 3px 7px; font-size: 15px; }
   .menu-btn { padding-left: 12px; }
@@ -530,12 +551,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bar { animation: none; }
-  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .esl, .logo-word, .logo-rest, .roll-ch, .nav button, .nav button::before, .food, .cta-box, .cta-ticket, .cta-led-roll, .burger i, .drawer, .drawer nav button, .drawer nav button > span, .drawer-cta, .drawer-foot, .scrim {
+  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .esl, .logo-word, .logo-rest, .roll-ch, .nav button, .gun, .cta-box, .cta-ticket, .burger i, .drawer, .drawer nav button, .drawer nav button > span, .drawer-cta, .drawer-foot, .scrim {
     transition-duration: 0.01ms;
     transition-delay: 0s;
   }
   .esl-led,
-  .food,
+  .gun,
+  .nav button::after,
   .cta-ticket,
   .cta-led b { animation: none !important; }
 }
