@@ -93,10 +93,12 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
       <span className="spark s1" aria-hidden="true">✦</span>
       <span className="spark s2" aria-hidden="true">✦</span>
       <span className="spark s3" aria-hidden="true">✦</span>
+      <p className="hero-ghost">
+        <span>Melbourne’s favourite</span> <span>discount grocer</span>
+      </p>
 
       <div className="hero-grid">
         <div className="hero-copy">
-          <p className="eyebrow">Melbourne’s favourite discount grocer</p>
 
           <h1 id="hero-title">
             {LINES.map((line, index) => (

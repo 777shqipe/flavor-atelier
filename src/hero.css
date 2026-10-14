@@ -21,6 +21,29 @@
 .spark.s3 { right: 6%; bottom: 22%; font-size: 17px; animation-delay: -2.1s; }
 @keyframes twinkle { from { scale: 0.7; opacity: 0.35; rotate: -12deg; } to { scale: 1.15; opacity: 1; rotate: 12deg; } }
 
+/* Tagline as giant outlined lettering behind the hero, slipped a few degrees (same treatment as "Why us" in Contact). */
+.hero-ghost {
+  position: absolute;
+  left: calc(var(--pad) * 0.4);
+  bottom: -0.08em;
+  z-index: -1;
+  display: grid;
+  margin: 0;
+  color: transparent;
+  font: 400 clamp(64px, 10.5vw, 190px) / 0.86 var(--font-display);
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  -webkit-text-stroke: 1.5px rgb(246 240 219 / 0.11);
+  rotate: -4deg;
+  transform-origin: 0 100%;
+  pointer-events: none;
+  user-select: none;
+  animation: hero-ghost 1.4s var(--ease-out) 0.2s both;
+}
+.hero-ghost span:last-child { padding-left: 0.6em; }
+@keyframes hero-ghost { from { opacity: 0; rotate: -1deg; translate: -40px 0; } }
+
 /* ---------- copy ------------------------------------------------------ */
 .hero-copy { padding-left: clamp(0px, 3.6vw, 64px); }
 .hero h1 { max-width: none; color: var(--cream); font-size: clamp(58px, 7.6vw, 126px); line-height: 0.9; letter-spacing: -0.045em; text-shadow: 0 2px 40px rgb(0 30 22 / 0.35); }
@@ -36,8 +59,6 @@
 .marker::before { content: ""; position: absolute; inset: 0.14em -0.02em 0.02em; z-index: -1; border-radius: 0.1em; background: var(--sun); rotate: -1.2deg; scale: 0 1; transform-origin: left center; transition: scale 0.8s var(--ease-out) 1.15s; }
 .hero[data-ready] .marker { color: var(--green-900); }
 .hero[data-ready] .marker::before { scale: 1 1; }
-.hero-copy .eyebrow { display: inline-flex; align-items: center; gap: 10px; margin-bottom: clamp(22px, 2.4vw, 34px); padding: 9px 16px 9px 13px; border-radius: 99px; background: rgb(0 30 22 / 0.22); box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.16); color: var(--cream-200); font-size: 11.5px; letter-spacing: 0.17em; animation: fade-up 0.8s 0.05s var(--ease-out) both; }
-.hero-copy .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 0 rgb(246 181 49 / 0.6); animation: ping 2.4s ease-out infinite; }
 @keyframes ping { 70% { box-shadow: 0 0 0 10px rgb(246 181 49 / 0); } 100% { box-shadow: 0 0 0 0 rgb(246 181 49 / 0); } }
 .hero .lead { max-width: 33ch; margin: clamp(26px, 2.6vw, 38px) 0 clamp(30px, 3vw, 42px); color: rgb(219 230 217 / 0.78); font-size: clamp(18px, 1.42vw, 21px); line-height: 1.55; animation: fade-up 0.9s 0.55s var(--ease-out) both; }
 .hero .lead strong { color: var(--cream); font-weight: 600; }
@@ -175,7 +196,7 @@
   .spark.s1 { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spark, .stk svg, .hb-peel, .ring-art, .hero-copy .eyebrow::before, .disc::before, .disc-rays { animation: none; }
+  .spark, .hero-ghost, .stk svg, .hb-peel, .ring-art, .disc::before, .disc-rays { animation: none; }
   .squiggle path { stroke-dashoffset: 0; }
   .marker::before { scale: 1 1; }
   .marker { color: var(--green-900); }
