@@ -1,6 +1,9 @@
-/* Footer toy: a pile of groceries you can throw around, and a bin that won't take them. */
+/* Footer toy: a few groceries you can throw around, a till that rings them up,
+   and a bin that won't take them. */
 
 .pile {
+  --tw: clamp(150px, 16vw, 240px);
+  --bw: clamp(98px, 10vw, 156px);
   position: relative;
   height: clamp(420px, 40vw, 600px);
   border-bottom: 1px solid var(--line);
@@ -54,13 +57,13 @@
   to { rotate: 1.6deg; }
 }
 
-/* Melbourne red-lid bin: the landfill one. */
+/* Melbourne red-lid bin: the landfill one. It has a face, and opinions. */
 .pile-bin {
   position: absolute;
   right: var(--pad);
   bottom: 0;
   z-index: 2;
-  width: clamp(98px, 10vw, 156px);
+  width: var(--bw);
   aspect-ratio: 120 / 160;
   transform-origin: 50% 100%;
   filter: drop-shadow(0 2px 1px rgb(0 10 6 / 0.25)) drop-shadow(0 16px 14px rgb(0 10 6 / 0.28));
@@ -81,15 +84,128 @@
 .bin-lid { transform-box: fill-box; transform-origin: 50% 100%; }
 .pile-bin[data-spit] { animation: bin-hop 0.55s var(--ease-out); }
 .pile-bin[data-spit] .bin-lid { animation: lid-slap 0.5s var(--ease-out); }
+/* A tip comes with a gentler nod, not a slap. */
+.pile-bin[data-spit][data-mood="tip"] { animation: bin-nod 0.6s var(--ease-out); }
+.pile-bin[data-spit][data-mood="tip"] .bin-lid { animation: lid-lift 0.6s var(--ease-out); }
 @keyframes bin-hop {
   25% { scale: 1.08 0.9; }
   55% { translate: 0 -12px; scale: 0.95 1.06; rotate: -3deg; }
   80% { translate: 0 0; scale: 1.02 0.98; }
 }
+@keyframes bin-nod {
+  30% { scale: 1.04 0.96; }
+  60% { rotate: 2deg; }
+}
 @keyframes lid-slap {
   25% { scale: 1 0.1; }
   60% { scale: 1 1.12; }
 }
+@keyframes lid-lift {
+  40% { translate: 0 -6px; rotate: -4deg; }
+}
+
+/* The face: eyes follow whatever is being dragged, blink now and then, and the brows and mouth react. */
+.bin-pupils { translate: var(--lx, 0px) var(--ly, 0px); transition: translate 0.25s var(--ease-out); }
+.bin-blink { transform-box: fill-box; transform-origin: 50% 0; scale: 1 0; animation: bin-blink 5.4s 2s infinite; }
+@keyframes bin-blink {
+  0%, 94%, 100% { scale: 1 0; }
+  97% { scale: 1 1; }
+}
+.bin-brow { transform-box: fill-box; transform-origin: 50% 50%; transition: translate 0.25s var(--ease-out), rotate 0.25s var(--ease-out); }
+.bin-mouth { opacity: 0; transition: opacity 0.15s; }
+.pile-bin:not([data-mood]) .m-idle,
+.pile-bin[data-mood="no"] .m-o,
+.pile-bin[data-mood="item"] .m-o,
+.pile-bin[data-mood="mad"] .m-frown,
+.pile-bin[data-mood="tip"] .m-grin { opacity: 1; }
+/* indignant: brows up */
+.pile-bin[data-mood="no"] .bin-brow,
+.pile-bin[data-mood="item"] .bin-brow { translate: 0 -3px; }
+/* fed up: brows down and in */
+.pile-bin[data-mood="mad"] .bin-brow { translate: 0 2.5px; }
+.pile-bin[data-mood="mad"] .bin-brow.l { rotate: 16deg; }
+.pile-bin[data-mood="mad"] .bin-brow.r { rotate: -16deg; }
+/* helpful: one brow up, like a wink of advice */
+.pile-bin[data-mood="tip"] .bin-brow.l { translate: 0 -3.5px; rotate: -6deg; }
+
+/* The till: a tower scanner, a counter to set things on, and a customer display. */
+.pile-till {
+  position: absolute;
+  left: var(--pad);
+  bottom: 0;
+  width: var(--tw);
+  aspect-ratio: 200 / 170;
+}
+.pile-till::before {
+  content: "";
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: -5px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgb(0 10 6 / 0.35), transparent 72%);
+}
+.till-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 2px 1px rgb(0 10 6 / 0.25)) drop-shadow(0 16px 14px rgb(0 10 6 / 0.28));
+}
+.till-laser { animation: till-sweep 1.6s ease-in-out infinite alternate; }
+@keyframes till-sweep {
+  from { translate: 0 -11px; }
+  to { translate: 0 11px; }
+}
+.pile-till[data-beep] .till-glass { animation: till-flash 0.45s var(--ease-out); }
+@keyframes till-flash { 0%, 30% { fill: #ff6a55; } }
+.till-screen { transition: fill 0.3s; }
+.pile-till[data-tone="warn"] .till-screen { fill: #f6b531; }
+.pile-till[data-tone="warn"][data-beep] .till-screen { animation: till-alarm 0.24s steps(1) 5; }
+@keyframes till-alarm { 50% { fill: #e3261b; } }
+
+.till-lcd {
+  position: absolute;
+  left: 50.5%;
+  top: 4.7%;
+  width: 45%;
+  height: 21.2%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 4%;
+  overflow: hidden;
+  color: #1c2a12;
+  font: 700 calc(var(--tw) * 0.049) / 1.2 var(--font-mono);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.till-lcd > span { overflow: hidden; text-overflow: clip; animation: lcd-in 0.3s steps(3) both; }
+.till-lcd > span + span { animation-delay: 0.12s; }
+@keyframes lcd-in { from { opacity: 0; } }
+.till-logo { --logo-bg: #00382a; --logo-fg: #fffdf6; position: absolute; left: 10%; top: 64%; width: 14%; height: auto; }
+/* The receipt grows a line with every rescue. */
+.till-rcpt {
+  position: absolute;
+  left: 63%;
+  top: 65%;
+  width: 22%;
+  height: calc(var(--n, 0) * 4.4% + 1%);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 5px, rgb(20 20 20 / 0.22) 5px 6.4px) 22% 3px / 56% 100% no-repeat,
+    #fffdf6;
+  box-shadow: inset 0 0 0 1.4px #141414;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 87.5% calc(100% - 3px), 75% 100%, 62.5% calc(100% - 3px), 50% 100%, 37.5% calc(100% - 3px), 25% 100%, 12.5% calc(100% - 3px), 0 100%);
+  transition: height 0.5s var(--bounce);
+}
+
+/* Rung up: the grocery shrinks into the till, and comes back to the pile a few seconds later. */
+.pi[data-gone] { pointer-events: none; }
+.pi[data-gone] > * { animation: pi-out 0.4s var(--ease-out) forwards !important; }
+@keyframes pi-out { to { opacity: 0; scale: 0.2; translate: 0 40%; } }
 
 .pile-bubble {
   position: absolute;
@@ -122,6 +238,37 @@
   animation: bubble 2.6s var(--ease-out) both, bubble-shake 0.09s linear 0.1s 6 alternate;
 }
 @keyframes bubble-shake { to { translate: 2px -1px; } }
+/* Tips, beeps and warnings carry a little label up front. */
+.pile-bubble[data-tone="tip"],
+.pile-bubble[data-tone="ok"],
+.pile-bubble[data-tone="warn"] { max-width: min(270px, 70vw); }
+.pile-bubble[data-tone="tip"] { background: #bfe6f6; animation-duration: 4s; }
+.pile-bubble[data-tone="tip"]::before,
+.pile-bubble[data-tone="ok"]::before,
+.pile-bubble[data-tone="warn"]::before {
+  display: inline-block;
+  margin: 0 7px 2px 0;
+  padding: 3px 6px 2px;
+  border-radius: 6px;
+  color: #fff;
+  font: 700 10px / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+  vertical-align: 1px;
+}
+.pile-bubble[data-tone="tip"]::before { content: "TIP"; background: #1f6fb8; }
+.pile-bubble[data-tone="ok"]::before { content: "BEEP"; background: #1f8a5b; }
+.pile-bubble[data-tone="warn"] { background: var(--sun); color: #17140c; }
+.pile-bubble[data-tone="warn"]::before { content: "HEADS UP"; background: var(--tomato); }
+/* The till talks from its display, to the right. */
+.till-bubble {
+  right: auto;
+  left: 52%;
+  bottom: 104%;
+  border-radius: 18px 18px 18px 4px;
+  transform-origin: 0 100%;
+  animation-duration: 3.6s;
+}
+.till-bubble[data-tone="warn"] { animation-duration: 4.6s; }
 @keyframes bubble {
   0% { opacity: 0; scale: 0.3; rotate: 8deg; }
   10% { opacity: 1; scale: 1.06; rotate: -2deg; }
@@ -131,13 +278,16 @@
 }
 
 @media (max-width: 640px) {
-  .pile { height: 400px; }
+  .pile { --tw: 118px; --bw: 84px; height: 400px; }
   .pile-copy { top: 56px; }
   .pile-title { font-size: 40px; }
   .pile-bubble { font-size: 12.5px; }
+  .pile-bubble[data-tone="warn"],
+  .pile-bubble[data-tone="tip"],
+  .pile-bubble[data-tone="ok"] { max-width: min(220px, 62vw); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pile-bin[data-spit], .pile-bin[data-spit] .bin-lid { animation: none; }
+  .pile-bin[data-spit], .pile-bin[data-spit] .bin-lid, .bin-blink, .till-laser, .till-screen, .till-glass { animation: none !important; }
   .pile .pi > * { animation: none !important; }
   .pile-bubble { animation: none; }
 }

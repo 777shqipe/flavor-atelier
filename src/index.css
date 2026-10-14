@@ -280,7 +280,7 @@ p { line-height: 1.6; }
 footer[data-surface="deep"] { position: relative; isolation: isolate; }
 .foot-film { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
 .foot-film video,
-.foot-film img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.foot-film img { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: brightness(0.6); }
 .foot-film::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--grain) 0 0 / 180px 180px; opacity: 0.14; mix-blend-mode: overlay; }
 .foot-film::after { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(120% 90% at 50% 55%, transparent 38%, rgb(0 16 11 / 0.8) 100%), linear-gradient(180deg, rgb(0 28 18 / 0.6) 0%, rgb(0 22 14 / 0.3) 36%, rgb(0 20 13 / 0.82) 100%); }
 .pile,

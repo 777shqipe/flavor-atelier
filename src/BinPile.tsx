@@ -1,53 +1,106 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type * as MatterNS from "matter-js";
+import { LogoMark } from "./Logo";
 import { Pack } from "./Pack";
-import { Apple, Banana, Bread, Carrot, Lemon } from "./Produce";
-import { ITEMS, PACK_BOX } from "./products";
+import { Apple, Banana, Bread } from "./Produce";
+import { ITEMS, PACK_BOX, type Shape } from "./products";
 import "./binpile.css";
 
 /**
- * "Nothing good goes in the bin": groceries tumble into the footer the first
- * time it scrolls into view. Drag and throw them (or tap them on a phone). Get
- * one into the red-lid landfill bin and the bin spits it straight back out.
+ * "Nothing good goes in the bin": a handful of groceries tumble into the footer
+ * the first time it scrolls into view, between a checkout till on the left and
+ * a red-lid landfill bin on the right. Drag and throw them (or tap them on a
+ * phone). The bin spits good food straight back out, and anything with a
+ * use-by gets a tip on how to use it up instead. The till rings up whatever is
+ * put on its counter, warns about the use-by ones, and the shelf restocks.
  * Physics by matter-js, loaded only when the footer gets close.
  */
 
-type Def = { key: string; w: number; h: number; shape: "box" | "circle"; round: number; node: ReactNode };
+type Perish = { tag: string; warn: string; tips: string[] };
+type Def = {
+  key: string;
+  name: string;
+  price: number;
+  was: number;
+  /** Use-by (or keep-frozen) groceries: the till warns, the bin gives a tip. */
+  perish?: Perish;
+  w: number;
+  h: number;
+  shape: "box" | "circle";
+  round: number;
+  node: ReactNode;
+};
+type Look = Pick<Def, "w" | "h" | "shape" | "round" | "node">;
 
-const PACKS = ["beans", "popcorn", "muesli", "yoghurt", "dishwash", "oatmilk", "pb", "sparkling", "dumplings", "cornflakes", "coldbrew", "icecream", "applejuice", "chickpeas", "gummies", "sanpellegrino", "shin", "milka"];
-const PACK_SCALE = 0.46;
+const PACK_SCALE = 0.52;
+const packLook = (shape: Shape, color: string, label: [string, string?]): Look => {
+  const [, , bw, bh] = PACK_BOX[shape];
+  return { w: bw * PACK_SCALE, h: bh * PACK_SCALE, shape: "box", round: 8, node: <Pack shape={shape} color={color} label={label} tight /> };
+};
+const stocked = (id: string) => {
+  const item = ITEMS.find((candidate) => candidate.id === id);
+  return {
+    price: item?.price ?? 2,
+    was: item?.was ?? item?.price ?? 2,
+    ...packLook(item?.shape ?? "box", item?.color ?? "#d8b27a", item?.label ?? [id.toUpperCase()]),
+  };
+};
 
-function buildDefs(): Def[] {
-  const packs: Def[] = PACKS.flatMap((id) => {
-    const item = ITEMS.find((candidate) => candidate.id === id);
-    if (!item?.shape || !item.color || !item.label) return [];
-    const [, , bw, bh] = PACK_BOX[item.shape];
-    return [
-      {
-        key: id,
-        w: bw * PACK_SCALE,
-        h: bh * PACK_SCALE,
-        shape: "box" as const,
-        round: 8,
-        node: <Pack shape={item.shape} color={item.color} label={item.label} tight />,
-      },
-    ];
-  });
-  const fresh: Def[] = [
-    { key: "apple", w: 46, h: 46, shape: "circle", round: 0, node: <Apple /> },
-    { key: "banana", w: 90, h: 38, shape: "box", round: 14, node: <Banana /> },
-    { key: "bread", w: 86, h: 48, shape: "box", round: 16, node: <Bread /> },
-    { key: "carrot", w: 94, h: 32, shape: "box", round: 12, node: <Carrot /> },
-    { key: "lemon", w: 52, h: 36, shape: "box", round: 16, node: <Lemon /> },
-  ];
-  // Interleave so packs and produce land mixed together.
-  const all = [...packs, ...fresh];
-  return all.map((_, i) => all[(i * 7) % all.length]);
-}
+const day = (days: number) => new Date(Date.now() + days * 86_400_000);
+const longDate = (days: number) =>
+  day(days).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" }).replace(",", "");
+const shortDate = (days: number) => day(days).toLocaleDateString("en-AU", { day: "2-digit", month: "short" }).toUpperCase();
+const useBy = (days: number, warn: (when: string) => string, tips: (when: string) => string[]): Perish => ({
+  tag: `Use by ${shortDate(days)}`,
+  warn: warn(longDate(days)),
+  tips: tips(longDate(days)),
+});
 
-const DEFS = buildDefs();
+/** Ten groceries in drop order; phones get the first seven. Produce and milk prices are placeholders. */
+const DEFS: Def[] = [
+  { key: "cornflakes", name: "Corn flakes", ...stocked("cornflakes") },
+  {
+    key: "milk",
+    name: "Fresh milk",
+    price: 1.5,
+    was: 3.2,
+    perish: useBy(
+      3,
+      (when) => `Use by ${when}. Keep it cold. After that, it can make you sick.`,
+      (when) => [`Use by ${when}. Freeze it, or make pancakes tonight.`, "Milk freezes fine. Thaw it in the fridge, then give it a shake."],
+    ),
+    ...packLook("carton", "#6bb8ff", ["FRESH", "MILK"]),
+  },
+  { key: "apple", name: "Wonky apple", price: 0.5, was: 1.2, w: 46, h: 46, shape: "circle", round: 0, node: <Apple /> },
+  { key: "chickpeas", name: "Chickpeas", ...stocked("chickpeas") },
+  {
+    key: "yoghurt",
+    name: "Greek yoghurt",
+    perish: useBy(
+      6,
+      (when) => `Use by ${when}. Past that, don’t risk it, even if it looks fine.`,
+      (when) => [`Use by ${when}. Freeze dollops for smoothies.`, "Bake it into a cake. Or a curry. Your call."],
+    ),
+    ...stocked("yoghurt"),
+  },
+  { key: "banana", name: "Spotty banana", price: 0.3, was: 0.8, w: 90, h: 38, shape: "box", round: 14, node: <Banana /> },
+  { key: "popcorn", name: "Popcorn", ...stocked("popcorn") },
+  {
+    key: "dumplings",
+    name: "Dumplings",
+    perish: {
+      tag: "Keep frozen",
+      warn: "Keep frozen. Once thawed, cook within a day and never refreeze.",
+      tips: ["Still frozen? It’s got months. Back in the freezer.", "Ten minutes in a pan. That’s dinner."],
+    },
+    ...stocked("dumplings"),
+  },
+  { key: "bread", name: "Day-old loaf", price: 1.5, was: 4.5, w: 86, h: 48, shape: "box", round: 16, node: <Bread /> },
+  { key: "pb", name: "Peanut butter", ...stocked("pb") },
+];
+const BY_KEY = Object.fromEntries(DEFS.map((def) => [def.key, def]));
 
-/** What the bin says when it spits something back. Shuffled, no repeats until the deck runs out. */
+/** What the bin says when it spits something good back. Shuffled, no repeats until the deck runs out. */
 const LINES = [
   "Oi! That’s still good.",
   "Not in my bin.",
@@ -67,10 +120,9 @@ const LINES = [
   "Plenty of life left in that.",
   "I only take actual rubbish.",
   "Pop it in a lunchbox.",
-  "Bin rejected. Fridge accepted.",
+  "Wrong bin. Try the till.",
   "Smell it. Taste it. Eat it.",
   "That’s someone’s lunch.",
-  "Wrong bin. There is no right bin.",
 ];
 
 /** First time a particular grocery lands in the bin, it gets its own comeback. */
@@ -78,55 +130,126 @@ const ABOUT: Record<string, string> = {
   banana: "Brown spots? That’s banana bread.",
   bread: "Stale? That’s French toast.",
   apple: "A bruise isn’t a bin ticket.",
-  carrot: "Bendy carrots taste the same.",
-  lemon: "Squeeze it, don’t bin it.",
   popcorn: "New bag. Same corn.",
-  muesli: "Overstock isn’t off.",
   cornflakes: "Best before. Not bad after.",
-  yoghurt: "Check the date, then grab a spoon.",
-  icecream: "Ice cream?! In the bin?!",
-  dumplings: "Dented box. Dumplings fine.",
   chickpeas: "Tins keep for years, mate.",
-  beans: "Tins keep for years, mate.",
-  gummies: "Gummies barely know what ‘off’ is.",
-  sparkling: "Still fizzy. Still fine.",
-  sanpellegrino: "Still fizzy. Still fine.",
-  shin: "Noodles keep for ages.",
-  milka: "Chocolate?! Are you mad?",
-  dishwash: "Not even food. Still no.",
-  oatmilk: "Unopened? It’s got months.",
   pb: "Peanut butter never gives up.",
-  coldbrew: "Still caffeinated. Still good.",
-  applejuice: "Sealed juice keeps for months.",
 };
 
 /** Keep chucking things in quickly and the bin loses patience. */
 const FED_UP = ["Seriously?", "Again?!", "Mate. Stop.", "I can do this all day.", "Lid’s staying shut.", "Persistent, aren’t you?"];
 
-type Say = { text: string; tone?: "item" | "mad" };
+/** What the till says once something good is rung up. */
+const BEEPS = [
+  (price: string, saved: string) => `$${price}. You saved $${saved}.`,
+  (price: string, saved: string) => `Rescued for $${price}. That’s $${saved} off.`,
+  (_price: string, saved: string) => `Into the bag. $${saved} saved.`,
+];
 
+type Say = { text: string; tone?: "item" | "mad" | "tip" };
+type Ring = { lcd: [string, string]; text: string; tone: "ok" | "warn"; count: number };
+
+const money = (value: number) => value.toFixed(2);
+
+/** Melbourne's red-lid landfill bin, with a face, because it has opinions. */
 function BinArt() {
   return (
     <svg viewBox="0 0 120 160" aria-hidden="true" focusable="false">
+      <defs>
+        <clipPath id="bin-eyes">
+          <ellipse cx="45" cy="66" rx="10.5" ry="11.5" />
+          <ellipse cx="75" cy="66" rx="10.5" ry="11.5" />
+        </clipPath>
+      </defs>
       <g strokeLinejoin="round" strokeLinecap="round">
+        {/* axle and wheels, tucked behind the body */}
+        <rect x="16" y="137" width="88" height="7" rx="3.5" fill="#141414" />
+        {[25, 95].map((cx) => (
+          <g key={cx}>
+            <circle cx={cx} cy="148" r="10.5" fill="#1d2320" stroke="#141414" strokeWidth="2.4" />
+            <circle cx={cx} cy="148" r="4" fill="#6b7a74" />
+          </g>
+        ))}
+
+        {/* tapered body, lit from the left */}
+        <path d="M14 44H106L99.5 136Q98.8 144 91 144H29Q21.2 144 20.5 136Z" fill="#2f3e38" />
+        <path d="M17 46H31L34 141H29Q23 141 22.6 135Z" fill="#3e5049" />
+        <path d="M95 46H103L97 135Q96.6 140 92 141H91Z" fill="#25312c" />
+        <path d="M14 44H106L99.5 136Q98.8 144 91 144H29Q21.2 144 20.5 136Z" fill="none" stroke="#141414" strokeWidth="2.4" />
+
+        {/* the lid: handle at the back, a domed top and a heavy front lip */}
         <g className="bin-lid">
-          <rect x="9" y="-6" width="102" height="42" rx="7" fill="#d42a1e" stroke="#141414" strokeWidth="2.4" />
-          <rect x="17" y="2" width="86" height="26" rx="4" fill="#a81d14" />
+          <rect x="24" y="9" width="72" height="10" rx="4.5" fill="#8f1a12" stroke="#141414" strokeWidth="2.4" />
+          <path d="M10 42L13 25Q14.5 18 22 18H98Q105.5 18 107 25L110 42Z" fill="#d42a1e" stroke="#141414" strokeWidth="2.4" />
+          <path d="M19 26Q20.5 22.5 25 22.5H64" fill="none" stroke="#f26a58" strokeWidth="3" opacity="0.85" />
+          <rect x="6" y="36" width="108" height="10" rx="4" fill="#b5221a" stroke="#141414" strokeWidth="2.4" />
         </g>
-        <path d="M14 40H106L98 146H22Z" fill="#2b3833" stroke="#141414" strokeWidth="2.4" />
-        <path d="M34 54L38 132M60 54V132M86 54L82 132" stroke="#3e4e48" strokeWidth="4" />
-        <rect x="8" y="33" width="104" height="12" rx="4" fill="#202b27" stroke="#141414" strokeWidth="2.4" />
-        <rect x="31" y="70" width="58" height="34" rx="5" fill="#fffdf6" stroke="#141414" strokeWidth="2" />
-        <text x="60" y="86" textAnchor="middle" fontFamily="Anton, sans-serif" fontSize="12" letterSpacing="0.6" fill="#141414">
-          LANDFILL
-        </text>
-        <text x="60" y="98" textAnchor="middle" fontFamily="DM Sans, sans-serif" fontWeight="700" fontSize="7" fill="#d42a1e">
-          NO GOOD FOOD
-        </text>
-        <circle cx="30" cy="148" r="10" fill="#141414" />
-        <circle cx="90" cy="148" r="10" fill="#141414" />
-        <circle cx="30" cy="148" r="3.5" fill="#6b7a74" />
-        <circle cx="90" cy="148" r="3.5" fill="#6b7a74" />
+
+        {/* face */}
+        <g className="bin-face">
+          <path className="bin-brow l" d="M35 52.5Q45 48.5 54 52" fill="none" stroke="#141414" strokeWidth="3.2" />
+          <path className="bin-brow r" d="M66 52Q75 48.5 85 52.5" fill="none" stroke="#141414" strokeWidth="3.2" />
+          <ellipse cx="45" cy="66" rx="10.5" ry="11.5" fill="#fffdf6" />
+          <ellipse cx="75" cy="66" rx="10.5" ry="11.5" fill="#fffdf6" />
+          <g clipPath="url(#bin-eyes)">
+            <g className="bin-pupils">
+              <circle cx="46" cy="67" r="5.2" fill="#141414" />
+              <circle cx="76" cy="67" r="5.2" fill="#141414" />
+              <circle cx="47.8" cy="65" r="1.7" fill="#fff" />
+              <circle cx="77.8" cy="65" r="1.7" fill="#fff" />
+            </g>
+            <rect className="bin-blink" x="30" y="53" width="60" height="26" fill="#3a4b44" />
+          </g>
+          <ellipse cx="45" cy="66" rx="10.5" ry="11.5" fill="none" stroke="#141414" strokeWidth="2.4" />
+          <ellipse cx="75" cy="66" rx="10.5" ry="11.5" fill="none" stroke="#141414" strokeWidth="2.4" />
+          <path className="bin-mouth m-idle" d="M54 84Q60 87.5 66 84" fill="none" stroke="#141414" strokeWidth="2.6" />
+          <ellipse className="bin-mouth m-o" cx="60" cy="86" rx="4.2" ry="5" fill="#141414" />
+          <path className="bin-mouth m-frown" d="M52 89Q60 82 68 89" fill="none" stroke="#141414" strokeWidth="2.8" />
+          <path className="bin-mouth m-grin" d="M51 83Q60 93 69 83Z" fill="#141414" stroke="#141414" strokeWidth="2" />
+        </g>
+
+        {/* the council sticker, slapped on a bit crooked */}
+        <g transform="rotate(-3 60 112)">
+          <rect x="31" y="98" width="58" height="28" rx="4" fill="#fffdf6" stroke="#141414" strokeWidth="2" />
+          <text x="60" y="113" textAnchor="middle" fontFamily="Anton, sans-serif" fontSize="12" letterSpacing="0.6" fill="#141414">
+            LANDFILL
+          </text>
+          <text x="60" y="121.5" textAnchor="middle" fontFamily="DM Sans, sans-serif" fontWeight="700" fontSize="6.4" fill="#d42a1e">
+            NO GOOD FOOD
+          </text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+/** A checkout till: tower scanner, counter, customer display on a pole, and a receipt that gets longer with every rescue. */
+function TillArt() {
+  return (
+    <svg className="till-art" viewBox="0 0 200 170" aria-hidden="true" focusable="false">
+      <g stroke="#141414" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round">
+        {/* customer display */}
+        <rect x="140" y="46" width="12" height="32" fill="#26322d" />
+        <rect x="94" y="2" width="104" height="48" rx="8" fill="#1e2824" />
+        <rect className="till-screen" x="101" y="8" width="90" height="36" rx="3" fill="#b8d98a" />
+
+        {/* tower scanner, its red laser sweeping the glass */}
+        <rect x="12" y="30" width="60" height="48" rx="7" fill="#1e2824" />
+        <rect className="till-glass" x="19" y="37" width="46" height="34" rx="3" fill="#3a0f0c" />
+        <path className="till-laser" d="M24 54H60" stroke="#ff4b3a" strokeWidth="2.2" />
+
+        {/* cabinet */}
+        <rect x="8" y="86" width="184" height="78" rx="4" fill="#efe6cf" />
+        <rect x="9.2" y="138" width="181.6" height="24.8" fill="#ddd1b1" stroke="none" />
+        <path d="M14 140H186" strokeWidth="1.6" opacity="0.5" />
+        <rect x="8" y="92" width="184" height="7" fill="#e3261b" />
+        <rect x="122" y="106" width="52" height="6" rx="2" fill="#141414" />
+        <rect x="8" y="86" width="184" height="78" rx="4" fill="none" />
+
+        {/* counter top */}
+        <rect x="0" y="74" width="200" height="14" rx="4" fill="#2b3833" />
+        <path d="M6 78H194" stroke="#4b5e55" strokeWidth="2.4" />
+        <rect x="14" y="164" width="172" height="6" rx="2" fill="#141414" />
       </g>
     </svg>
   );
@@ -135,12 +258,15 @@ function BinArt() {
 export function BinPile() {
   const stage = useRef<HTMLDivElement>(null);
   const bin = useRef<HTMLDivElement>(null);
+  const till = useRef<HTMLDivElement>(null);
   const [bubble, setBubble] = useState<(Say & { n: number }) | null>(null);
+  const [ring, setRing] = useState<(Ring & { n: number }) | null>(null);
 
   useEffect(() => {
     const el = stage.current;
     const binEl = bin.current;
-    if (!el || !binEl) return;
+    const tillEl = till.current;
+    if (!el || !binEl || !tillEl) return;
     let disposed = false;
     let teardown = () => {};
 
@@ -151,7 +277,10 @@ export function BinPile() {
         near.disconnect();
         import("matter-js").then((mod) => {
           if (disposed) return;
-          teardown = start(mod.default ?? mod, el, binEl, (say) => setBubble((b) => ({ ...say, n: (b?.n ?? 0) + 1 })));
+          teardown = start(mod.default ?? mod, el, binEl, tillEl, {
+            say: (line) => setBubble((b) => ({ ...line, n: (b?.n ?? 0) + 1 })),
+            ring: (next) => setRing((r) => ({ ...next, n: (r?.n ?? 0) + 1 })),
+          });
         });
       },
       { rootMargin: "600px 0px" },
@@ -164,15 +293,31 @@ export function BinPile() {
     };
   }, []);
 
+  const lcd = ring?.lcd ?? ["Ready", "Saved $0.00"];
+
   return (
     <div className="pile" ref={stage}>
       <div className="pile-copy">
-        <p className="eyebrow">Drag them. Throw them. Try the bin.</p>
+        <p className="eyebrow">Drag them. Try the bin. Try the till.</p>
         <p className="pile-title">
           Nothing good goes
           <br />
           in the bin.
         </p>
+      </div>
+      <div className="pile-till" ref={till} data-tone={ring?.tone} style={{ "--n": Math.min(7, ring?.count ?? 0) } as CSSProperties} aria-hidden="true">
+        <TillArt />
+        <LogoMark className="till-logo" />
+        <span className="till-lcd">
+          <span key={`a${ring?.n ?? 0}`}>{lcd[0]}</span>
+          <span key={`b${ring?.n ?? 0}`}>{lcd[1]}</span>
+        </span>
+        <span className="till-rcpt" />
+        {ring && (
+          <span className="pile-bubble till-bubble" key={ring.n} data-tone={ring.tone}>
+            {ring.text}
+          </span>
+        )}
       </div>
       <div className="pile-bin" ref={bin} aria-hidden="true">
         <BinArt />
@@ -207,11 +352,12 @@ function shuffled<T>(list: readonly T[]): T[] {
   return out;
 }
 
-/** Picks the bin's next line: the item's own comeback first, the generic deck after, and a sulk when spammed. */
+/** Picks the bin's next line: a tip for use-by food, the item's own comeback, then the generic deck, and a sulk when spammed. */
 function lineMaker() {
   let deck: string[] = [];
   let fedUp: string[] = [];
   const heard = new Set<string>();
+  const tipped: Record<string, number> = {};
   let streak = 0;
   let last = 0;
   return (key: string): Say => {
@@ -222,6 +368,12 @@ function lineMaker() {
       if (!fedUp.length) fedUp = shuffled(FED_UP);
       return { text: fedUp.pop()!, tone: "mad" };
     }
+    const tips = BY_KEY[key]?.perish?.tips;
+    if (tips) {
+      const n = tipped[key] ?? 0;
+      tipped[key] = n + 1;
+      return { text: tips[n % tips.length], tone: "tip" };
+    }
     if (ABOUT[key] && !heard.has(key)) {
       heard.add(key);
       return { text: ABOUT[key], tone: "item" };
@@ -231,7 +383,9 @@ function lineMaker() {
   };
 }
 
-function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say: (line: Say) => void) {
+type Hooks = { say: (line: Say) => void; ring: (ring: Ring) => void };
+
+function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, tillEl: HTMLElement, hooks: Hooks) {
   const { Engine, Bodies, Body, Composite, Constraint, Sleeping } = Matter;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const engine = Engine.create({ enableSleeping: true });
@@ -241,17 +395,21 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
   let W = el.clientWidth;
   let H = el.clientHeight;
   // Sizes are fixed at start and follow the footer width; phones get fewer, smaller groceries.
-  const k = Math.min(1.05, Math.max(0.72, W / 1200));
-  const limit = W < 640 ? 13 : W < 1000 ? 18 : nodes.length;
+  const k = Math.min(1.3, Math.max(0.78, W / 1000));
+  const limit = W < 640 ? 7 : nodes.length;
 
-  // ---- static scenery: floor, side walls, the bin (rebuilt on resize) -------
+  // ---- static scenery: floor, side walls, the bin, the till (rebuilt on resize) ----
   const T = 400;
   let statics: MatterNS.Body[] = [];
   let inside = { x0: 0, x1: 0, y0: 0, y1: 0 };
+  let counter = { x0: 0, x1: 0, top: 0, head: 0 };
+  let eye = { x: 0, y: 0 };
 
   const layout = () => {
     W = el.clientWidth;
     H = el.clientHeight;
+    const wall = (x: number, y: number, w: number, h: number) => Bodies.rectangle(x, y, w, h, { isStatic: true, friction: 0.6 });
+
     const bw = binEl.offsetWidth;
     const bh = binEl.offsetHeight;
     const bx = binEl.offsetLeft;
@@ -259,7 +417,14 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     const sx = bw / 120;
     const sy = bh / 160;
     const wallH = (146 - 40) * sy;
-    const wall = (x: number, y: number, w: number, h: number) => Bodies.rectangle(x, y, w, h, { isStatic: true, friction: 0.6 });
+
+    // The till is drawn on a 200×170 grid; its blocks are solid, so things rest on the counter.
+    const tx = tillEl.offsetLeft;
+    const ty = H - tillEl.offsetHeight;
+    const ux = tillEl.offsetWidth / 200;
+    const uy = tillEl.offsetHeight / 170;
+    const block = (x: number, y: number, w: number, h: number) => wall(tx + (x + w / 2) * ux, ty + (y + h / 2) * uy, w * ux, h * uy);
+
     Composite.remove(world, statics);
     statics = [
       wall(W / 2, H + T / 2, W + T * 2, T),
@@ -270,9 +435,15 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
       wall(bx + 18 * sx, by + 40 * sy + wallH / 2, 8, wallH),
       wall(bx + 102 * sx, by + 40 * sy + wallH / 2, 8, wallH),
       wall(bx + 60 * sx, by + 142 * sy, 84 * sx, 8),
+      block(0, 74, 200, 96),
+      block(12, 30, 60, 48),
+      block(94, 2, 104, 48),
+      block(140, 46, 12, 32),
     ];
     Composite.add(world, statics);
     inside = { x0: bx + 22 * sx, x1: bx + 98 * sx, y0: by + 44 * sy, y1: by + 146 * sy };
+    counter = { x0: tx, x1: tx + 200 * ux, top: ty + 74 * uy, head: ty };
+    eye = { x: bx + 60 * sx, y: by + 66 * sy };
   };
 
   // ---- groceries -------------------------------------------------------------
@@ -287,8 +458,10 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
       def.shape === "circle"
         ? Bodies.circle(0, 0, w / 2, { restitution: 0.35, friction: 0.4, frictionAir: 0.012, density: 0.0016 })
         : Bodies.rectangle(0, 0, w, h, opts);
-    return { key: def.key, node, body, w, h, added: false, binnedAt: 0 };
+    // touched: only something a person has handled gets rung up, not whatever happens to fall on the counter.
+    return { def, node, body, w, h, added: false, touched: false, binnedAt: 0, tillAt: 0 };
   });
+  type It = (typeof items)[number];
 
   const paint = () => {
     for (const it of items) {
@@ -298,17 +471,63 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     }
   };
 
-  // ---- the bin refuses ----------------------------------------------------------
+  const timers: number[] = [];
+  const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
+  const replay = (node: HTMLElement, attr: string) => {
+    node.removeAttribute(attr);
+    void node.offsetWidth;
+    node.setAttribute(attr, "");
+  };
+
+  // ---- the bin refuses (and pulls a face) ------------------------------------------
   const nextLine = lineMaker();
-  const spit = (it: (typeof items)[number]) => {
+  let moodTimer = 0;
+  const spit = (it: It) => {
+    const line = nextLine(it.def.key);
+    const soft = line.tone === "tip";
+    it.touched = false;
     Sleeping.set(it.body, false);
     Body.setPosition(it.body, { x: it.body.position.x, y: Math.min(it.body.position.y, inside.y0 + 10) });
-    Body.setVelocity(it.body, { x: -(5 + Math.random() * 4), y: -(13 + Math.random() * 3) });
-    Body.setAngularVelocity(it.body, (Math.random() - 0.5) * 0.5);
-    binEl.removeAttribute("data-spit");
-    void binEl.offsetWidth;
-    binEl.setAttribute("data-spit", "");
-    say(nextLine(it.key));
+    Body.setVelocity(it.body, soft ? { x: -(3.5 + Math.random() * 2), y: -(10 + Math.random() * 2) } : { x: -(5 + Math.random() * 4), y: -(13 + Math.random() * 3) });
+    Body.setAngularVelocity(it.body, (Math.random() - 0.5) * (soft ? 0.2 : 0.5));
+    replay(binEl, "data-spit");
+    binEl.dataset.mood = line.tone ?? "no";
+    window.clearTimeout(moodTimer);
+    moodTimer = window.setTimeout(() => delete binEl.dataset.mood, 2600);
+    hooks.say(line);
+  };
+
+  // ---- the till rings it up --------------------------------------------------------
+  let count = 0;
+  let saved = 0;
+  let beeps: typeof BEEPS = [];
+  const restock = (it: It) => {
+    drop(it, spawnX(it), it.h / 2 + 12 + Math.random() * H * 0.12);
+    kick();
+  };
+  const ringUp = (it: It) => {
+    const { def } = it;
+    Composite.remove(world, it.body);
+    it.added = false;
+    it.touched = false;
+    it.tillAt = 0;
+    it.node.dataset.gone = "";
+    later(() => {
+      it.node.style.visibility = "hidden";
+      delete it.node.dataset.gone;
+    }, 420);
+    later(() => restock(it), 4200);
+
+    count += 1;
+    saved += def.was - def.price;
+    replay(tillEl, "data-beep");
+    if (def.perish) {
+      hooks.ring({ lcd: [def.name, def.perish.tag], text: def.perish.warn, tone: "warn", count });
+    } else {
+      if (!beeps.length) beeps = shuffled(BEEPS);
+      const text = beeps.pop()!(money(def.price), money(def.was - def.price));
+      hooks.ring({ lcd: [def.name, `Saved $${money(saved)}`], text, tone: "ok", count });
+    }
   };
 
   // ---- loop ---------------------------------------------------------------------
@@ -316,6 +535,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
   let visible = false;
   let dragging: { body: MatterNS.Body; c: MatterNS.Constraint } | null = null;
   let pending = 0;
+  let look = { x: 0, y: 0 };
 
   // Fixed 60 Hz steps whatever the display rate, so a 120 Hz screen doesn't run the pile at double speed.
   const STEP = 1000 / 60;
@@ -341,15 +561,42 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
       const speed = Math.hypot(b.velocity.x, b.velocity.y);
       if (speed > 38) Body.setVelocity(b, { x: (b.velocity.x / speed) * 38, y: (b.velocity.y / speed) * 38 });
       const { x, y } = b.position;
+      const held = dragging !== null && dragging.body === b;
       // Inside the bin, or resting across its mouth: either way the bin refuses it.
       const binned = x > inside.x0 - 14 && x < inside.x1 + 14 && y > inside.y0 - 170 && y < inside.y1;
       if (binned && !it.binnedAt) it.binnedAt = now;
       if (!binned) it.binnedAt = 0;
-      if (it.binnedAt && now - it.binnedAt > 320 && !(dragging && dragging.body === b)) {
+      if (it.binnedAt && now - it.binnedAt > 320 && !held) {
         it.binnedAt = 0;
         spit(it);
+        awake = true;
+        continue;
       }
-      if (!b.isSleeping || it.binnedAt) awake = true;
+      // Set down anywhere on the till (counter, scanner or display): scanned.
+      const reach = Math.max(it.w, it.h) / 2 + 26;
+      const onTill = it.touched && x > counter.x0 && x < counter.x1 && y < counter.top && y > counter.head - reach;
+      if (onTill && !it.tillAt) it.tillAt = now;
+      if (!onTill) it.tillAt = 0;
+      if (it.tillAt && now - it.tillAt > 300 && !held) {
+        ringUp(it);
+        continue;
+      }
+      if (!b.isSleeping || it.binnedAt || it.tillAt) awake = true;
+    }
+    // The bin keeps an eye on whatever is being dragged.
+    let lx = 0;
+    let ly = 0;
+    if (dragging) {
+      const dx = dragging.body.position.x - eye.x;
+      const dy = dragging.body.position.y - eye.y;
+      const d = Math.hypot(dx, dy) || 1;
+      lx = (dx / d) * 3.6;
+      ly = (dy / d) * 2.8;
+    }
+    if (Math.abs(lx - look.x) > 0.1 || Math.abs(ly - look.y) > 0.1) {
+      look = { x: lx, y: ly };
+      binEl.style.setProperty("--lx", `${lx.toFixed(2)}px`);
+      binEl.style.setProperty("--ly", `${ly.toFixed(2)}px`);
     }
     paint();
     if (visible && awake) raf = requestAnimationFrame(frame);
@@ -359,24 +606,30 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     if (!raf && visible) raf = requestAnimationFrame(frame);
   };
 
-  const drop = (it: (typeof items)[number], x: number, y: number) => {
+  const drop = (it: It, x: number, y: number) => {
     Body.setPosition(it.body, { x, y });
+    Body.setVelocity(it.body, { x: 0, y: 0 });
     Body.setAngle(it.body, (Math.random() - 0.5) * 1.6);
     Body.setAngularVelocity(it.body, (Math.random() - 0.5) * 0.18);
     Composite.add(world, it.body);
     it.added = true;
     it.node.style.visibility = "visible";
-    it.node.dataset.in = "";
+    replay(it.node, "data-in");
+  };
+
+  // Groceries land between the till and the bin (on a phone, there's only room if they can land on the counter too).
+  const spawnX = (it: It) => {
+    const x0 = (W < 640 ? counter.x0 + 8 : counter.x1 + 24) + it.w / 2;
+    const x1 = inside.x0 - 30 - it.w / 2;
+    return x0 + Math.random() * Math.max(0, x1 - x0);
   };
 
   layout();
   let spawned = false;
-  const timers: number[] = [];
   const spawn = () => {
     spawned = true;
-    const span = Math.max(80, inside.x0 - 60);
     if (reduce) {
-      items.forEach((it, i) => drop(it, 40 + ((i * 97) % span), H - 60 - (i % 4) * 70));
+      items.forEach((it, i) => drop(it, spawnX(it), H - 60 - (i % 4) * 70));
       for (let i = 0; i < 500; i += 1) Engine.update(engine, 1000 / 60);
       paint();
       return;
@@ -384,14 +637,11 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     // Each one pops in just under the top of the stage and falls from there, never from outside the footer.
     items.forEach((it, i) => {
       pending += 1;
-      timers.push(
-        window.setTimeout(() => {
-          pending -= 1;
-          const x = Math.min(inside.x0 - 20, 30 + it.w / 2 + Math.random() * span);
-          drop(it, x, it.h / 2 + 12 + Math.random() * H * 0.22);
-          kick();
-        }, 80 + i * 70),
-      );
+      later(() => {
+        pending -= 1;
+        drop(it, spawnX(it), it.h / 2 + 12 + Math.random() * H * 0.22);
+        kick();
+      }, 80 + i * 90);
     });
   };
 
@@ -435,6 +685,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     on(it.node, "pointerdown", (event) => {
       // First touch ends the idle sway for the whole pile.
       el.dataset.touched = "";
+      it.touched = true;
       lastType = event.pointerType;
       if (event.pointerType === "touch") return;
       event.preventDefault();
@@ -475,7 +726,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     on(it.node, "pointercancel", release);
     // Safari's click is not a PointerEvent, so remember what pressed it.
     on(it.node, "click", () => {
-      if (lastType !== "touch") return;
+      if (lastType !== "touch" || !it.added) return;
       Sleeping.set(it.body, false);
       Body.setVelocity(it.body, { x: (Math.random() - 0.5) * 10, y: -(10 + Math.random() * 5) });
       Body.setAngularVelocity(it.body, (Math.random() - 0.5) * 0.45);
@@ -486,6 +737,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
   return () => {
     cancelAnimationFrame(raf);
     timers.forEach((t) => window.clearTimeout(t));
+    window.clearTimeout(moodTimer);
     io.disconnect();
     ro.disconnect();
     listeners.forEach(([node, type, fn]) => node.removeEventListener(type, fn));

@@ -241,6 +241,7 @@ export function WhyFilm() {
   const [hold, setHold] = useState(false);
   const [feed, setFeed] = useState<number[]>([]);
 
+  const root = useRef<HTMLElement>(null);
   const screen = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const paper = useRef<HTMLDivElement>(null);
@@ -293,6 +294,37 @@ export function WhyFilm() {
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [paint]);
+
+  // The card opens out to fill the screen as it scrolls in and folds back as it leaves;
+  // while it fills the screen, the header steps aside.
+  useEffect(() => {
+    const el = root.current;
+    const scr = screen.current;
+    if (!el || !scr) return;
+    const doc = document.documentElement;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const { top, bottom } = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const reach = vh * 0.7;
+      const p = Math.max(0, Math.min(1, 1 - top / reach, bottom / reach));
+      scr.style.setProperty("--p", p.toFixed(4));
+      doc.toggleAttribute("data-immersive", top < vh * 0.08 && bottom > vh * 0.6);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      doc.removeAttribute("data-immersive");
+    };
+  }, []);
 
   // The stage is drawn on a fixed 760×520 canvas and scaled to whatever room it gets.
   useLayoutEffect(() => {
@@ -373,7 +405,7 @@ export function WhyFilm() {
   const words = head.lead.split(" ");
 
   return (
-    <section className="film" id="why" data-surface="cream" aria-labelledby="why-title">
+    <section className="film" id="why" ref={root} data-surface="cream" aria-labelledby="why-title">
       <div
         className="film-screen"
         ref={screen}
