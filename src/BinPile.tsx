@@ -15,7 +15,7 @@ import "./binpile.css";
 type Def = { key: string; w: number; h: number; shape: "box" | "circle"; round: number; node: ReactNode };
 
 const PACKS = ["beans", "popcorn", "muesli", "yoghurt", "dishwash", "oatmilk", "pb", "sparkling", "dumplings", "cornflakes", "coldbrew", "icecream", "applejuice", "chickpeas", "gummies", "sanpellegrino", "shin", "milka"];
-const PACK_SCALE = 0.62;
+const PACK_SCALE = 0.46;
 
 function buildDefs(): Def[] {
   const packs: Def[] = PACKS.flatMap((id) => {
@@ -34,11 +34,11 @@ function buildDefs(): Def[] {
     ];
   });
   const fresh: Def[] = [
-    { key: "apple", w: 62, h: 62, shape: "circle", round: 0, node: <Apple /> },
-    { key: "banana", w: 120, h: 50, shape: "box", round: 18, node: <Banana /> },
-    { key: "bread", w: 114, h: 64, shape: "box", round: 22, node: <Bread /> },
-    { key: "carrot", w: 126, h: 43, shape: "box", round: 16, node: <Carrot /> },
-    { key: "lemon", w: 70, h: 48, shape: "box", round: 22, node: <Lemon /> },
+    { key: "apple", w: 46, h: 46, shape: "circle", round: 0, node: <Apple /> },
+    { key: "banana", w: 90, h: 38, shape: "box", round: 14, node: <Banana /> },
+    { key: "bread", w: 86, h: 48, shape: "box", round: 16, node: <Bread /> },
+    { key: "carrot", w: 94, h: 32, shape: "box", round: 12, node: <Carrot /> },
+    { key: "lemon", w: 52, h: 36, shape: "box", round: 16, node: <Lemon /> },
   ];
   // Interleave so packs and produce land mixed together.
   const all = [...packs, ...fresh];
@@ -241,7 +241,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
   let W = el.clientWidth;
   let H = el.clientHeight;
   // Sizes are fixed at start and follow the footer width; phones get fewer, smaller groceries.
-  const k = Math.min(1.22, Math.max(0.7, W / 1100));
+  const k = Math.min(1.05, Math.max(0.72, W / 1200));
   const limit = W < 640 ? 13 : W < 1000 ? 18 : nodes.length;
 
   // ---- static scenery: floor, side walls, the bin (rebuilt on resize) -------
@@ -263,6 +263,8 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     Composite.remove(world, statics);
     statics = [
       wall(W / 2, H + T / 2, W + T * 2, T),
+      // A lid on the stage, so nothing gets thrown up over the section above.
+      wall(W / 2, -T / 2, W + T * 2, T),
       wall(-T / 2, H - 2000, T, 4000),
       wall(W + T / 2, H - 2000, T, 4000),
       wall(bx + 18 * sx, by + 40 * sy + wallH / 2, 8, wallH),
@@ -315,10 +317,22 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
   let dragging: { body: MatterNS.Body; c: MatterNS.Constraint } | null = null;
   let pending = 0;
 
-  const frame = () => {
+  // Fixed 60 Hz steps whatever the display rate, so a 120 Hz screen doesn't run the pile at double speed.
+  const STEP = 1000 / 60;
+  let last = 0;
+  let acc = 0;
+
+  const frame = (now: number) => {
     raf = 0;
-    Engine.update(engine, 1000 / 60);
-    const now = performance.now();
+    acc += last ? Math.min(50, now - last) : STEP;
+    last = now;
+    let steps = 0;
+    while (acc >= STEP && steps < 3) {
+      Engine.update(engine, STEP);
+      acc -= STEP;
+      steps += 1;
+    }
+    if (steps === 3) acc = 0;
     let awake = pending > 0 || dragging !== null;
     for (const it of items) {
       if (!it.added) continue;
@@ -339,6 +353,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     }
     paint();
     if (visible && awake) raf = requestAnimationFrame(frame);
+    else last = 0;
   };
   const kick = () => {
     if (!raf && visible) raf = requestAnimationFrame(frame);
@@ -351,6 +366,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
     Composite.add(world, it.body);
     it.added = true;
     it.node.style.visibility = "visible";
+    it.node.dataset.in = "";
   };
 
   layout();
@@ -365,25 +381,28 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, say
       paint();
       return;
     }
+    // Each one pops in just under the top of the stage and falls from there, never from outside the footer.
     items.forEach((it, i) => {
       pending += 1;
       timers.push(
         window.setTimeout(() => {
           pending -= 1;
-          drop(it, 40 + Math.random() * span, -it.h - Math.random() * 160);
+          const x = Math.min(inside.x0 - 20, 30 + it.w / 2 + Math.random() * span);
+          drop(it, x, it.h / 2 + 12 + Math.random() * H * 0.22);
           kick();
-        }, 120 + i * 95),
+        }, 80 + i * 70),
       );
     });
   };
 
+  // Start the drop once most of the stage is on screen, so the whole fall is seen.
   const io = new IntersectionObserver(
     ([entry]) => {
       visible = entry.isIntersecting;
-      if (visible && !spawned) spawn();
+      if (!spawned && entry.intersectionRatio >= 0.45) spawn();
       kick();
     },
-    { threshold: 0.2 },
+    { threshold: [0, 0.45] },
   );
   io.observe(el);
 
