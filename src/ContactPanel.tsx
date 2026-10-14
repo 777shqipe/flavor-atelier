@@ -179,7 +179,7 @@ function TopicIcon({ id }: { id: Topic }) {
 const STICKERS = [
   { look: "sun", kicker: "No minimum", big: "0", line: "A few boxes or a full truckload.", under: "One pallet? We’ll still take it." },
   { look: "lilac", kicker: "Answers & pick-ups", big: "Same day", line: "Fast decisions, so stock never sits.", under: "A clear offer from our buying team, same day." },
-  { look: "holo", kicker: "Paid upfront", big: "100%", line: "No invoices to chase.", under: "Paid before it leaves your dock." },
+  { look: "star", kicker: "Paid upfront", big: "100%", line: "No invoices to chase", under: "Paid before it leaves your dock." },
   { look: "tomato", kicker: "We collect", big: "Door to door", line: "Your surplus gets a second life.", under: "We bring the truck. Every pallet tracked." },
 ] as const;
 
@@ -211,9 +211,36 @@ function Sticker({ item, index }: { item: (typeof STICKERS)[number]; index: numb
       </p>
       <button className="ct-peel" type="button" aria-pressed={peeled} onClick={() => setPeeled((p) => !p)}>
         <span className="ct-face">
-          <small>{item.kicker}</small>
-          <strong>{item.big}</strong>
-          <span className="ct-face-line">{item.line}</span>
+          {item.look === "star" ? (
+            <span className="ct-holo">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <path id="ct-arc-top" d="M26 54a24 24 0 0 1 48 0" fill="none" />
+                <path id="ct-arc-bottom" d="M21.5 54a28.5 28.5 0 0 0 57 0" fill="none" />
+                <text className="ct-holo-arc" textAnchor="middle">
+                  <textPath href="#ct-arc-top" startOffset="50%">
+                    ★ {item.kicker} ★
+                  </textPath>
+                </text>
+                <text className="ct-holo-arc" textAnchor="middle">
+                  <textPath href="#ct-arc-bottom" startOffset="50%">
+                    {item.line}
+                  </textPath>
+                </text>
+                <text className="ct-holo-big" x="50" y="62" textAnchor="middle">
+                  {item.big}
+                </text>
+              </svg>
+              <span className="sr-only">
+                {item.kicker}: {item.big}. {item.line}.
+              </span>
+            </span>
+          ) : (
+            <>
+              <small>{item.kicker}</small>
+              <strong>{item.big}</strong>
+              <span className="ct-face-line">{item.line}</span>
+            </>
+          )}
         </span>
         <span className="ct-flap-wrap" aria-hidden="true">
           <span className="ct-flap" />
@@ -422,6 +449,10 @@ export function ContactPanel({
         tabIndex={-1}
         onClick={(event) => event.target === event.currentTarget && onClose()}
       >
+        <span className="ct-ghost" aria-hidden="true">
+          Why us
+        </span>
+
         <header className="ct-head">
           <p className="ct-eyebrow">Contact us</p>
           <h2 id="ct-title">How can we help?</h2>
