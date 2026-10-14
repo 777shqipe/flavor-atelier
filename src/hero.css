@@ -34,7 +34,7 @@
   letter-spacing: 0.005em;
   text-transform: uppercase;
   white-space: nowrap;
-  -webkit-text-stroke: 1.5px rgb(246 240 219 / 0.11);
+  -webkit-text-stroke: 1.2px rgb(246 240 219 / 0.055);
   rotate: -4deg;
   transform-origin: 0 100%;
   pointer-events: none;

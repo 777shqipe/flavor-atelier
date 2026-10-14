@@ -54,9 +54,13 @@ export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey
         <span className="esl-screen">
           <i className="esl-flag">
             <svg viewBox="0 0 24 24">
-              <path d="M3 5h2.4l1.9 9.2a1 1 0 0 0 1 .8h7.6a1 1 0 0 0 1-.8L18.4 9H6.2" />
-              <circle cx="9.4" cy="18.6" r="1.25" />
-              <circle cx="15.6" cy="18.6" r="1.25" />
+              <g className="esl-cart">
+                <path d="M3 5h2.4l1.9 9.2a1 1 0 0 0 1 .8h7.6a1 1 0 0 0 1-.8L18.4 9H6.2" />
+                <circle cx="9.4" cy="18.6" r="1.25" />
+                <circle cx="15.6" cy="18.6" r="1.25" />
+              </g>
+              {/* Easter egg: each refresh redraws a heart for a moment before the cart comes back. */}
+              <path className="esl-heart" d="M12 19.6s-7.9-4.7-7.9-10.7A4.3 4.3 0 0 1 12 6.2a4.3 4.3 0 0 1 7.9 2.7c0 6-7.9 10.7-7.9 10.7z" />
             </svg>
           </i>
           <span className="logo-word">

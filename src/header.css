@@ -140,7 +140,9 @@
   color: #fff3ee;
 }
 .esl-flag svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0.5px 0 rgb(90 10 6 / 0.4)); }
-.esl-flag circle { fill: currentColor; stroke: none; }
+.esl-flag circle,
+.esl-heart { fill: currentColor; stroke: none; }
+.esl-heart { opacity: 0; }
 .esl-code {
   position: absolute;
   right: 9px;
@@ -178,6 +180,19 @@
 .esl[data-flash] .esl-flag { animation: esl-flag 0.8s steps(1); }
 .esl[data-flash] .esl-code { animation: esl-code 0.8s steps(1); }
 .esl[data-flash] .logo-word { animation: esl-text 0.8s steps(1); }
+/* The heart lands with the redraw (0.46s in), holds, then a blank frame and the cart is back. */
+.esl[data-flash] .esl-heart { animation: esl-heart 2s steps(1); }
+.esl[data-flash] .esl-cart { animation: esl-cart 2s steps(1); }
+@keyframes esl-heart {
+  0% { opacity: 0; }
+  23% { opacity: 1; }
+  86% { opacity: 0; }
+}
+@keyframes esl-cart {
+  0% { opacity: 1; }
+  23% { opacity: 0; }
+  90% { opacity: 1; }
+}
 @keyframes esl-screen {
   0% { background: #141414; }
   12% { background: #f3f2ec; }
