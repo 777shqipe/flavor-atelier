@@ -70,14 +70,18 @@
   transition: translate 1.15s var(--bounce) var(--e), scale 1.15s var(--bounce) var(--e), opacity 0.5s ease var(--e);
 }
 .hero:not([data-ready]) .stk-in { opacity: 0; translate: 0 -30cqw; scale: 0.6; }
-.stk img { display: block; width: 100%; height: auto; animation: hero-float 6s ease-in-out infinite alternate; transition: scale 0.5s var(--spring), rotate 0.5s var(--spring); }
-.stk:hover img { scale: 1.07; rotate: 2deg; animation-play-state: paused; }
+.stk img,
+.stk svg { display: block; width: 100%; height: auto; animation: hero-float 6s ease-in-out infinite alternate; transition: scale 0.5s var(--spring), rotate 0.5s var(--spring); }
+.stk:hover img,
+.stk:hover svg { scale: 1.07; rotate: 2deg; animation-play-state: paused; }
 @keyframes hero-float { from { translate: 0 -0.9cqw; rotate: -1deg; } to { translate: 0 0.9cqw; rotate: 1deg; } }
-.stk.k1 { --d: 14; --r: -9deg; left: 6cqw; top: 14cqw; width: 36cqw; }
-.stk.k2 { --d: 20; --r: 8deg; left: 52cqw; top: 6cqw; width: 40cqw; }
-.stk.k2 img { animation-delay: -2s; }
-.stk.k3 { --d: 30; --r: -12deg; left: 20cqw; top: 61cqw; z-index: 5; width: 58cqw; }
-.stk.k3 img { animation-delay: -3.6s; }
+.stk.k1 { --d: 14; --r: -9deg; left: 8cqw; top: 16cqw; width: 30cqw; }
+.stk.k2 { --d: 20; --r: 8deg; left: 54cqw; top: 8cqw; width: 32cqw; }
+.stk.k2 img,
+.stk.k2 svg { animation-delay: -2s; }
+.stk.k3 { --d: 30; --r: -12deg; left: 24cqw; top: 60cqw; z-index: 5; width: 44cqw; }
+.stk.k3 img,
+.stk.k3 svg { animation-delay: -3.6s; }
 
 /* Price bursts are markdown stickers: hover lifts a corner, click peels it back
    to the shelf price underneath. */
@@ -149,7 +153,7 @@
   .spark.s1 { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spark, .stk img, .hb-peel, .ring-art { animation: none; }
+  .spark, .stk img, .stk svg, .hb-peel, .ring-art { animation: none; }
   .squiggle path { stroke-dashoffset: 0; }
   .marker::before { scale: 1 1; }
   .marker { color: var(--green-900); }

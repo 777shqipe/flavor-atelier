@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Page } from "./Header";
+import { Pack } from "./Pack";
 import { Peel } from "./Peel";
 import { RingBadge } from "./RingBadge";
+import type { Shape } from "./products";
 import "./hero.css";
 
 const LINES = [
@@ -20,10 +22,17 @@ const LINES = [
   </>,
 ];
 
-const STICKERS = [
-  { id: "orange", cls: "k1", src: "/media/sanpellegrino-cut.webp", w: 723, h: 827, label: "Sanpellegrino Aranciata Rossa, $4" },
-  { id: "ramen", cls: "k2", src: "/media/shin-cut.webp", w: 840, h: 899, label: "Shin Ramyun Black, $4" },
-  { id: "choc", cls: "k3", src: "/media/milka-cut.webp", w: 822, h: 345, label: "Milka Biscoff, $2" },
+const STICKERS: Array<{
+  id: string;
+  cls: string;
+  shape: Shape;
+  color: string;
+  label: [string, string?];
+  labelText: string;
+}> = [
+  { id: "fizz", cls: "k1", shape: "cans", color: "#e8542f", label: ["BLOOD", "ORANGE"], labelText: "Blood orange fizz, $4" },
+  { id: "ramen", cls: "k2", shape: "bag", color: "#c0290f", label: ["SPICY", "RAMEN"], labelText: "Spicy ramen 4-pack, $4" },
+  { id: "choc", cls: "k3", shape: "box", color: "#7a4ce0", label: ["CHOC", "BISCUIT"], labelText: "Choc-biscuit bar, $2" },
 ] as const;
 
 /** Markdown stickers, each stuck over the shelf price it beat. Peel one to see. */
@@ -127,12 +136,12 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
               key={item.id}
               className={`stk ${item.cls}`}
               type="button"
-              aria-label={`${item.label}. See this week’s finds`}
+              aria-label={`${item.labelText}. See this week’s finds`}
               style={{ "--e": `${index * 130 + 300}ms` } as CSSProperties}
               onClick={toFinds}
             >
               <span className="stk-in">
-                <img src={item.src} width={item.w} height={item.h} alt="" draggable={false} />
+                <Pack shape={item.shape} color={item.color} label={item.label} />
               </span>
             </button>
           ))}

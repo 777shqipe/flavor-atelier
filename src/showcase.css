@@ -131,7 +131,7 @@
   opacity: 0.5;
 }
 
-/* ================= Scene A · crav × banh mi (Sanpellegrino) ========== */
+/* ================= Scene A · citrus fizz poster ========================= */
 .poster[data-scene="crav"] {
   background: #f5a300;
   color: #1d1b19;
@@ -212,6 +212,17 @@
   width: 100%;
   height: 100%;
 }
+/* Generic illustrated packs (no brand logos): same sticker energy, own artwork. */
+.a-prod.a-pack {
+  height: auto;
+  width: 21cqw;
+}
+.a-prod.a-pack svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.a-prod.a-pack .eyes { top: 30%; }
 .eyes {
   position: absolute;
   left: 50%;
@@ -323,7 +334,7 @@
   color: #1d1b19;
 }
 
-/* ================= Scene B · bucks (Shin Ramyun Black) ================ */
+/* ================= Scene B · spicy ramen poster =========================== */
 .poster[data-scene="bucks"] {
   background: #0b0805;
   color: #f6e8c8;
@@ -374,6 +385,15 @@
   width: auto;
   rotate: -5deg;
   filter: drop-shadow(0 1.4cqw 1.6cqw rgb(40 5 0 / 0.45));
+}
+.b-prod.b-pack {
+  height: auto;
+  width: 23cqw;
+}
+.b-prod.b-pack svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .chili {
   display: block;
@@ -529,7 +549,7 @@
   opacity: 0.75;
 }
 
-/* ================= Scene C · cookies × banh mi (Milka Biscoff) ======== */
+/* ================= Scene C · choc-biscuit poster ========================== */
 .poster[data-scene="cookie"] {
   background: #fbf1df;
   color: #141414;
@@ -578,6 +598,14 @@
   height: auto;
   rotate: -12deg;
   filter: drop-shadow(0 1.2cqw 1.2cqw rgb(40 10 80 / 0.35));
+}
+.c-bar.c-pack {
+  width: 28cqw;
+}
+.c-bar.c-pack svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .crumb {
   display: block;
@@ -679,6 +707,7 @@
   .a-word { --r: 1.8cqw; font-size: 22.5cqw; }
   .a-prod-ly { top: 45cqw; }
   .a-prod { height: 62cqw; }
+  .a-prod.a-pack { height: auto; width: 44cqw; }
   .eye { width: 8cqw; }
   .eye i { width: 3.8cqw; height: 3.8cqw; margin: -1.9cqw 0 0 -1.9cqw; }
   .a-rossa-ly { top: 94cqw; }
@@ -713,6 +742,7 @@
   .b-mark-ly { left: 5cqw; top: 5cqw; }
   .b-prod-ly { top: 13cqw; }
   .b-prod { height: 66cqw; }
+  .b-prod.b-pack { height: auto; width: 48cqw; }
   .b-chili-ly.c1 { left: 6cqw; top: 22cqw; width: 14cqw; }
   .b-chili-ly.c2 { right: 6cqw; top: 14cqw; width: 11cqw; }
   .b-chili-ly.c3 { left: 8cqw; bottom: 20cqw; width: 15cqw; }
@@ -750,6 +780,7 @@
   .c-disc { width: 66cqw; box-shadow: 0 0 0 2.2cqw #cfa46f; }
   .c-bar-ly { top: 51cqw; }
   .c-bar { width: 88cqw; }
+  .c-bar.c-pack { width: 62cqw; }
   .c-crumb-ly.k1 { left: 14cqw; top: 82cqw; }
   .c-crumb-ly.k2 { left: 82cqw; top: 40cqw; }
   .c-crumb-ly.k3 { left: 74cqw; top: 124cqw; }

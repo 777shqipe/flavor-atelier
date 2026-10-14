@@ -69,14 +69,22 @@ export function AboutPage() {
 
       <section className="story" data-surface="cream" aria-labelledby="story-title">
         <div className="story-lead rv">
-          <span aria-hidden="true">{YEARS}</span>
-          <p>years of bargains, challenges and positive change.</p>
+          <div className="story-card">
+            <span className="sc-kicker">SINCE 1995</span>
+            <span className="sc-num" aria-hidden="true">
+              {YEARS}
+            </span>
+            <p>years of bargains, challenges and positive change.</p>
+            <span className="sc-stamp" aria-hidden="true">
+              STILL SAVING
+            </span>
+          </div>
         </div>
         <div className="story-copy rv" style={{ "--rv": "120ms" } as CSSProperties}>
           <p className="eyebrow">Our story</p>
           <h2 id="story-title">
             Ridiculous prices.
-            <br />A serious purpose.
+            <br />A <em>serious</em> purpose.
           </h2>
           <p>
             Cheaper Buy Miles has been fighting food waste since 1995. We buy close-to-date, past best-before and
@@ -86,6 +94,20 @@ export function AboutPage() {
             Same great brands, same great quality, just a lot cheaper. What began as a small shop selling jam has grown
             into four much-loved stores.
           </p>
+          <ul className="story-pillars">
+            <li>
+              <b>Up to 70% off</b>
+              <span>Big-brand groceries</span>
+            </li>
+            <li>
+              <b>Zero landfill</b>
+              <span>Good food gets eaten</span>
+            </li>
+            <li>
+              <b>4 inner-Melb shops</b>
+              <span>New stock daily</span>
+            </li>
+          </ul>
         </div>
       </section>
 

@@ -14,14 +14,8 @@ import "./binpile.css";
 
 type Def = { key: string; w: number; h: number; shape: "box" | "circle"; round: number; node: ReactNode };
 
-const PACKS = ["beans", "popcorn", "muesli", "yoghurt", "dishwash", "oatmilk", "pb", "sparkling", "dumplings", "cornflakes", "coldbrew", "icecream", "applejuice", "chickpeas", "gummies"];
+const PACKS = ["beans", "popcorn", "muesli", "yoghurt", "dishwash", "oatmilk", "pb", "sparkling", "dumplings", "cornflakes", "coldbrew", "icecream", "applejuice", "chickpeas", "gummies", "sanpellegrino", "shin", "milka"];
 const PACK_SCALE = 0.62;
-
-const PHOTOS = [
-  { key: "sanpellegrino", src: "/media/sanpellegrino-cut.webp", w: 104, h: 119 },
-  { key: "shin", src: "/media/shin-cut.webp", w: 112, h: 120 },
-  { key: "milka", src: "/media/milka-cut.webp", w: 150, h: 63 },
-];
 
 function buildDefs(): Def[] {
   const packs: Def[] = PACKS.flatMap((id) => {
@@ -39,14 +33,6 @@ function buildDefs(): Def[] {
       },
     ];
   });
-  const photos: Def[] = PHOTOS.map((p) => ({
-    key: p.key,
-    w: p.w,
-    h: p.h,
-    shape: "box",
-    round: 10,
-    node: <img src={p.src} alt="" draggable={false} />,
-  }));
   const fresh: Def[] = [
     { key: "apple", w: 62, h: 62, shape: "circle", round: 0, node: <Apple /> },
     { key: "banana", w: 120, h: 50, shape: "box", round: 18, node: <Banana /> },
@@ -54,8 +40,8 @@ function buildDefs(): Def[] {
     { key: "carrot", w: 126, h: 43, shape: "box", round: 16, node: <Carrot /> },
     { key: "lemon", w: 70, h: 48, shape: "box", round: 22, node: <Lemon /> },
   ];
-  // Interleave so packs, photos and produce land mixed together.
-  const all = [...packs, ...photos, ...fresh];
+  // Interleave so packs and produce land mixed together.
+  const all = [...packs, ...fresh];
   return all.map((_, i) => all[(i * 7) % all.length]);
 }
 

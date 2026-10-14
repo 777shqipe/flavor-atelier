@@ -5,10 +5,26 @@ import { TruckScene } from "./TruckScene";
 import "./suppliers.css";
 
 const STEPS = [
-  { title: "Tell us what you've got", text: "A few lines is plenty: what it is, how much, and when it needs to move." },
-  { title: "We come back fast", text: "Our buying team gets back to you. Fast decisions, flexible volumes." },
-  { title: "Seal it, collect it", text: "Deals can be sealed and stock collected the same day." },
-  { title: "Paid upfront", text: "We pay upfront, no delays, and every pallet is tracked door to door." },
+  {
+    title: "Tell us what you've got",
+    tag: "2 min",
+    text: "A few lines is plenty: what it is, how much, and when it needs to move.",
+  },
+  {
+    title: "We come back fast",
+    tag: "Same day",
+    text: "Our buying team gets back to you. Fast decisions, flexible volumes.",
+  },
+  {
+    title: "Seal it, collect it",
+    tag: "Door to door",
+    text: "Deals can be sealed and stock collected the same day.",
+  },
+  {
+    title: "Paid upfront",
+    tag: "100% upfront",
+    text: "We pay upfront, no delays, and every pallet is tracked door to door.",
+  },
 ] as const;
 
 const BENEFITS = [
@@ -64,8 +80,11 @@ function HowItWorks() {
         {STEPS.map((step, index) => (
           <li key={step.title} className="step" data-on={progress >= index / (STEPS.length - 0.6) || undefined}>
             <span className="step-num">0{index + 1}</span>
-            <div>
-              <h3>{step.title}</h3>
+            <div className="step-card">
+              <div className="step-top">
+                <h3>{step.title}</h3>
+                <span className="step-tag">{step.tag}</span>
+              </div>
               <p>{step.text}</p>
             </div>
           </li>

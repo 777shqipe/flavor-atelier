@@ -1,45 +1,59 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { CATEGORIES } from "./products";
 import { STORES } from "./stores";
 import "./contact.css";
 
 /**
- * Contact, as a side panel. A short enquiry form: who you are, what it is
- * about, and a message. Sending only confirms on this page.
- * TODO: POST the enquiry. Nothing leaves the browser yet.
+ * Contact panel. One plain job: pick what you need, write a line,
+ * leave a name and email. Nothing else is required.
  */
 
 export type Topic = "stock" | "shop" | "other";
 
-const TOPICS: Array<{ id: Topic; label: string; desk: string; hint: string; placeholder: string }> = [
+type TopicMeta = {
+  id: Topic;
+  label: string;
+  sub: string;
+  desk: string;
+  hint: string;
+  placeholder: string;
+  suggestions: string[];
+};
+
+const TOPICS: TopicMeta[] = [
   {
     id: "stock",
-    label: "Selling stock",
+    label: "I have stock to sell",
+    sub: "Suppliers · Buying team",
     desk: "Buying team",
-    hint: "Surplus food and wholesale lots go to the buying team.",
-    placeholder: "What you have, roughly how much, and when it needs to move.",
+    hint: "Overstock or short-dated food? We pay upfront and collect fast.",
+    placeholder: "Example: 20 boxes of pasta, best before June, in Footscray…",
+    suggestions: ["Short-dated food", "Too much stock", "Need fast pickup"],
   },
   {
     id: "shop",
-    label: "A store",
+    label: "Question about a store",
+    sub: "Shoppers · Store team",
     desk: "Store team",
-    hint: "A product, a visit, or something you bought goes to the store team.",
-    placeholder: "The product, the store, or what happened.",
+    hint: "Looking for a product, opening hours, or feedback on a visit?",
+    placeholder: "Example: is the $2 rice still in Brunswick?…",
+    suggestions: ["Is it still in stock?", "Opening hours", "Feedback on a visit"],
   },
   {
     id: "other",
     label: "Something else",
+    sub: "General · Head office",
     desk: "Head office",
-    hint: "Press, partnerships, and general notes go to head office.",
-    placeholder: "How can we help?",
+    hint: "Partnerships, press, jobs, or just saying hello.",
+    placeholder: "Example: I'd like to partner with you on…",
+    suggestions: ["Partnership", "Press", "Jobs"],
   },
 ];
 
 const VOLUMES = [
-  { id: "", label: "Not sure yet" },
-  { id: "few", label: "A few pallets" },
-  { id: "half", label: "Half a truck" },
-  { id: "full", label: "A full truckload" },
+  { id: "small", label: "A few boxes" },
+  { id: "medium", label: "Some pallets" },
+  { id: "large", label: "A truckload" },
+  { id: "unsure", label: "Not sure" },
 ];
 
 type Fields = {
@@ -47,14 +61,13 @@ type Fields = {
   email: string;
   phone: string;
   message: string;
-  category: string;
   volume: string;
   store: string;
 };
 
-type Errors = Partial<Record<"name" | "email" | "phone" | "message", string>>;
+type Errors = Partial<Record<"name" | "email" | "message", string>>;
 
-const EMPTY: Fields = { name: "", email: "", phone: "", message: "", category: "", volume: "", store: "" };
+const EMPTY: Fields = { name: "", email: "", phone: "", message: "", volume: "", store: "" };
 
 const emailOk = (value: string) => /^\S+@\S+\.\S+$/.test(value);
 
@@ -75,6 +88,30 @@ export function Clip({ className = "" }: { className?: string }) {
   );
 }
 
+function TopicIcon({ id }: { id: Topic }) {
+  if (id === "stock") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 8l9-5 9 5v8l-9 5-9-5V8z" />
+        <path d="M3 8l9 5 9-5M12 13v8" />
+      </svg>
+    );
+  }
+  if (id === "shop") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 10h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z" />
+        <path d="M3 10l2.5-6h13L21 10M9 21v-6h6v6" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z" />
+    </svg>
+  );
+}
+
 export function ContactPanel({
   open,
   topic,
@@ -87,13 +124,8 @@ export function ContactPanel({
   onClose: () => void;
 }) {
   const panel = useRef<HTMLElement>(null);
-  const film = useRef<HTMLVideoElement>(null);
-  const [reduceMotion, setReduceMotion] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  const [seen, setSeen] = useState(open);
-  if (open && !seen) setSeen(true);
   const nameInput = useRef<HTMLInputElement>(null);
   const emailInput = useRef<HTMLInputElement>(null);
-  const phoneInput = useRef<HTMLInputElement>(null);
   const messageInput = useRef<HTMLTextAreaElement>(null);
   const thanks = useRef<HTMLHeadingElement>(null);
   const sentRef = useRef(false);
@@ -108,7 +140,7 @@ export function ContactPanel({
   }, [sent]);
 
   const resetSheet = useCallback(() => {
-    setValues((v) => ({ ...EMPTY, name: v.name, email: v.email, phone: v.phone }));
+    setValues((v) => ({ ...EMPTY, name: v.name, email: v.email }));
     setErrors({});
     setSent(false);
   }, []);
@@ -150,33 +182,6 @@ export function ContactPanel({
   }, [open, onClose]);
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const apply = () => setReduceMotion(mq.matches);
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-
-  // The story starts from the top every time the card opens.
-  useEffect(() => {
-    const video = film.current;
-    if (!video) return;
-    if (!open || reduceMotion) {
-      video.pause();
-      return;
-    }
-    const start = () => {
-      video.currentTime = 0;
-      void video.play().catch(() => {});
-    };
-    if (video.readyState >= 1) start();
-    else {
-      video.addEventListener("loadedmetadata", start, { once: true });
-      video.load();
-    }
-    return () => video.removeEventListener("loadedmetadata", start);
-  }, [open, reduceMotion]);
-
-  useEffect(() => {
     if (open || !sent) return;
     const t = window.setTimeout(resetSheet, 480);
     return () => window.clearTimeout(t);
@@ -190,7 +195,19 @@ export function ContactPanel({
 
   const pickTopic = (next: Topic) => {
     if (sent) resetSheet();
+    // Clear only the topic-specific extras, keep name/email/message.
+    setValues((v) => ({ ...v, volume: "", store: "" }));
     onTopic(next);
+  };
+
+  const addSuggestion = (text: string) => {
+    setValues((v) => {
+      if (!v.message.trim()) return { ...v, message: `${text} — ` };
+      if (v.message.includes(text)) return v;
+      return { ...v, message: `${v.message.trim()} ${text.toLowerCase()} ` };
+    });
+    if (errors.message) setErrors((e) => ({ ...e, message: undefined }));
+    messageInput.current?.focus();
   };
 
   const onTopicKey = (event: KeyboardEvent) => {
@@ -207,19 +224,17 @@ export function ContactPanel({
     event.preventDefault();
     if (sent) return;
     const next: Errors = {};
-    if (!values.name.trim()) next.name = "Enter your name.";
-    if (!emailOk(values.email.trim())) next.email = "Enter a valid email address.";
-    const digits = values.phone.replace(/\D/g, "");
-    if (values.phone.trim() && digits.length < 8) next.phone = "Enter a full phone number, or leave it blank.";
-    if (!values.message.trim()) next.message = "Write a short message.";
+    if (!values.name.trim()) next.name = "Tell us your name.";
+    if (!emailOk(values.email.trim())) next.email = "Enter a valid email so we can reply.";
+    if (values.message.trim().length < 3) next.message = "Write a few words so we know how to help.";
     setErrors(next);
-    const invalid = next.name ? nameInput : next.email ? emailInput : next.phone ? phoneInput : next.message ? messageInput : null;
+    const invalid = next.name ? nameInput : next.email ? emailInput : next.message ? messageInput : null;
     if (invalid) {
       invalid.current?.focus();
       return;
     }
     setSent(true);
-    window.setTimeout(() => thanks.current?.focus({ preventScroll: true }), 30);
+    window.setTimeout(() => thanks.current?.focus({ preventScroll: true }), 40);
   };
 
   const again = () => {
@@ -233,19 +248,10 @@ export function ContactPanel({
     <div className="ct" data-open={open || undefined}>
       <div className="ct-scrim" onClick={onClose} />
       <aside className="ct-panel" ref={panel} role="dialog" aria-modal="true" aria-labelledby="ct-title" tabIndex={-1}>
-        <div className="ct-film" aria-hidden="true">
-          {seen &&
-            (reduceMotion ? (
-              <img src="/media/contact-story.jpg?v=2" alt="" />
-            ) : (
-              <video ref={film} src="/media/contact-story.mp4?v=2" poster="/media/contact-story.jpg?v=2" muted playsInline loop preload="none" />
-            ))}
-        </div>
-        <div className="ct-scroll">
-        <header className="ct-band">
-          <div className="ct-band-copy">
-            <p className="ct-eyebrow">Get in touch</p>
-            <h2 id="ct-title">Contact us</h2>
+        <header className="ct-head">
+          <div>
+            <p className="ct-eyebrow">Contact us</p>
+            <h2 id="ct-title">How can we help?</h2>
           </div>
           <button className="ct-close" type="button" onClick={onClose} aria-label="Close">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -254,194 +260,209 @@ export function ContactPanel({
           </button>
         </header>
 
-        {sent ? (
-          <div className="ct-done">
-            <h3 ref={thanks} tabIndex={-1}>
-              Thanks{first ? `, ${first}` : ""}.
-            </h3>
-            <p>
-              Your note is with the {current.desk.toLowerCase()}. We’ll reply to <b>{values.email.trim()}</b>.
-            </p>
-            <div className="ct-done-actions">
-              <button className="ct-send" type="button" onClick={again}>
-                Send another message
-              </button>
-              <button className="ct-text" type="button" onClick={onClose}>
-                Close
-              </button>
-            </div>
-          </div>
-        ) : (
-          <form className="ct-form" onSubmit={submit} noValidate>
-            <p className="ct-lead">A name, an email, and a short message is enough.</p>
-
-            <fieldset className="ct-about">
-              <legend>I’m writing about</legend>
-              <div className="ct-topics" role="radiogroup" aria-label="What is this about?" onKeyDown={onTopicKey}>
-                {TOPICS.map((item) => (
-                  <button
-                    key={item.id}
-                    className="ct-topic"
-                    type="button"
-                    role="radio"
-                    aria-checked={item.id === topic}
-                    tabIndex={item.id === topic ? 0 : -1}
-                    onClick={() => pickTopic(item.id)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <p className="ct-hint">{current.hint}</p>
-            </fieldset>
-
-            <label className="ct-field">
-              <span>Name</span>
-              <input
-                ref={nameInput}
-                type="text"
-                name="name"
-                value={values.name}
-                onChange={set("name")}
-                autoComplete="name"
-                aria-invalid={!!errors.name}
-                aria-describedby={errors.name ? "ct-err-name" : undefined}
-              />
-              {errors.name && (
-                <em id="ct-err-name" className="ct-err">
-                  {errors.name}
-                </em>
-              )}
-            </label>
-
-            <label className="ct-field">
-              <span>Email</span>
-              <input
-                ref={emailInput}
-                type="email"
-                name="email"
-                value={values.email}
-                onChange={set("email")}
-                autoComplete="email"
-                inputMode="email"
-                aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? "ct-err-email" : undefined}
-              />
-              {errors.email && (
-                <em id="ct-err-email" className="ct-err">
-                  {errors.email}
-                </em>
-              )}
-            </label>
-
-            <label className="ct-field">
-              <span>
-                Phone <small>optional</small>
+        <div className="ct-scroll">
+          {sent ? (
+            <div className="ct-done">
+              <span className="ct-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
               </span>
-              <input
-                ref={phoneInput}
-                type="tel"
-                name="phone"
-                value={values.phone}
-                onChange={set("phone")}
-                autoComplete="tel"
-                inputMode="tel"
-                aria-invalid={!!errors.phone}
-                aria-describedby={errors.phone ? "ct-err-phone" : undefined}
-              />
-              {errors.phone && (
-                <em id="ct-err-phone" className="ct-err">
-                  {errors.phone}
-                </em>
-              )}
-            </label>
-
-            {topic === "stock" && (
-              <fieldset className="ct-extra">
-                <legend>About the stock</legend>
-                <label className="ct-field">
-                  <span>
-                    Category <small>optional</small>
-                  </span>
-                  <select name="category" value={values.category} onChange={set("category")}>
-                    <option value="">Mixed or not sure</option>
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="ct-field">
-                  <span>
-                    How much <small>optional</small>
-                  </span>
-                  <select name="volume" value={values.volume} onChange={set("volume")}>
-                    {VOLUMES.map((item) => (
-                      <option key={item.id || "unsure"} value={item.id}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+              <h3 ref={thanks} tabIndex={-1}>
+                Thanks{first ? `, ${first}` : ""}!
+              </h3>
+              <p>
+                Your note is with the {current.desk.toLowerCase()}. We’ll reply to <b>{values.email.trim()}</b>.
+              </p>
+              <div className="ct-done-actions">
+                <button className="ct-send" type="button" onClick={again}>
+                  Send another message
+                </button>
+                <button className="ct-text" type="button" onClick={onClose}>
+                  Close
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form className="ct-form" onSubmit={submit} noValidate>
+              <fieldset className="ct-group">
+                <legend>
+                  <span className="ct-num" aria-hidden="true">1</span> What do you need?
+                </legend>
+                <div className="ct-topics" role="radiogroup" aria-label="What do you need?" onKeyDown={onTopicKey}>
+                  {TOPICS.map((item) => {
+                    const checked = item.id === topic;
+                    return (
+                      <button
+                        key={item.id}
+                        className="ct-topic"
+                        type="button"
+                        role="radio"
+                        aria-checked={checked}
+                        tabIndex={checked ? 0 : -1}
+                        onClick={() => pickTopic(item.id)}
+                      >
+                        <span className="ct-topic-icon" aria-hidden="true">
+                          <TopicIcon id={item.id} />
+                        </span>
+                        <b>{item.label}</b>
+                        <small>{item.sub}</small>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="ct-hint" key={current.id}>{current.hint}</p>
               </fieldset>
-            )}
 
-            {topic === "shop" && (
-              <label className="ct-field">
-                <span>
-                  Which store <small>optional</small>
-                </span>
-                <select name="store" value={values.store} onChange={set("store")}>
-                  <option value="">Any store</option>
-                  {STORES.map((store) => (
-                    <option key={store.id} value={store.id}>
-                      {store.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-
-            <label className="ct-field">
-              <span>Message</span>
-              <textarea
-                ref={messageInput}
-                name="message"
-                value={values.message}
-                onChange={set("message")}
-                placeholder={current.placeholder}
-                rows={4}
-                aria-invalid={!!errors.message}
-                aria-describedby={errors.message ? "ct-err-message" : undefined}
-              />
-              {errors.message && (
-                <em id="ct-err-message" className="ct-err">
-                  {errors.message}
-                </em>
+              {topic === "stock" && (
+                <div className="ct-group">
+                  <p className="ct-q" id="ct-volume-q">
+                    How much is it? <small>(optional)</small>
+                  </p>
+                  <div className="ct-pills" role="group" aria-labelledby="ct-volume-q">
+                    {VOLUMES.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className="ct-pill"
+                        aria-pressed={values.volume === item.id}
+                        onClick={() => setValues((v) => ({ ...v, volume: v.volume === item.id ? "" : item.id }))}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
-            </label>
 
-            <button className="ct-send" type="submit">
-              Send message
-            </button>
-            <p className="ct-note">We only use this to reply to you.</p>
-          </form>
-        )}
+              {topic === "shop" && (
+                <label className="ct-field">
+                  <span>
+                    Which store? <small>(optional)</small>
+                  </span>
+                  <select name="store" value={values.store} onChange={set("store")}>
+                    <option value="">Any store is fine</option>
+                    {STORES.map((store) => (
+                      <option key={store.id} value={store.id}>
+                        {store.name} — {store.address.split(",")[0]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
-        <footer className="ct-foot">
-          <p>Or call a store</p>
-          <ul>
-            {STORES.map((store) => (
-              <li key={store.id}>
-                <a href={`tel:${store.phone.replace(/\s/g, "")}`}>
-                  <span>{store.name}</span>
-                  <span>{store.phone}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </footer>
+              <div className="ct-group">
+                <p className="ct-q" id="ct-msg-q">
+                  <span className="ct-num" aria-hidden="true">2</span> What should we know?
+                </p>
+                <div className="ct-suggest" aria-label="Ideas for your message">
+                  {current.suggestions.map((text) => (
+                    <button key={text} type="button" className="ct-chip" onClick={() => addSuggestion(text)}>
+                      {text}
+                    </button>
+                  ))}
+                </div>
+                <label className="ct-field">
+                  <span className="sr-only">Your message</span>
+                  <textarea
+                    ref={messageInput}
+                    name="message"
+                    value={values.message}
+                    onChange={set("message")}
+                    placeholder={current.placeholder}
+                    rows={4}
+                    aria-invalid={!!errors.message}
+                    aria-describedby={errors.message ? "ct-err-message" : undefined}
+                  />
+                  {errors.message && (
+                    <em id="ct-err-message" className="ct-err">
+                      {errors.message}
+                    </em>
+                  )}
+                </label>
+              </div>
+
+              <div className="ct-group">
+                <p className="ct-q">
+                  <span className="ct-num" aria-hidden="true">3</span> Where do we reply?
+                </p>
+                <div className="ct-who">
+                  <label className="ct-field">
+                    <span>Your name</span>
+                    <input
+                      ref={nameInput}
+                      type="text"
+                      name="name"
+                      value={values.name}
+                      onChange={set("name")}
+                      autoComplete="name"
+                      placeholder="e.g. Alex"
+                      aria-invalid={!!errors.name}
+                      aria-describedby={errors.name ? "ct-err-name" : undefined}
+                    />
+                    {errors.name && (
+                      <em id="ct-err-name" className="ct-err">
+                        {errors.name}
+                      </em>
+                    )}
+                  </label>
+                  <label className="ct-field">
+                    <span>Email</span>
+                    <input
+                      ref={emailInput}
+                      type="email"
+                      name="email"
+                      value={values.email}
+                      onChange={set("email")}
+                      autoComplete="email"
+                      inputMode="email"
+                      placeholder="you@example.com"
+                      aria-invalid={!!errors.email}
+                      aria-describedby={errors.email ? "ct-err-email" : undefined}
+                    />
+                    {errors.email && (
+                      <em id="ct-err-email" className="ct-err">
+                        {errors.email}
+                      </em>
+                    )}
+                  </label>
+                  <label className="ct-field">
+                    <span>
+                      Phone <small>(optional)</small>
+                    </span>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={values.phone}
+                      onChange={set("phone")}
+                      autoComplete="tel"
+                      inputMode="tel"
+                      placeholder="Only if you prefer a call"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <button className="ct-send" type="submit">
+                Send message
+              </button>
+              <p className="ct-note">We only use this to reply to you.</p>
+            </form>
+          )}
+
+          <footer className="ct-foot">
+            <p>Prefer to talk? Call a store</p>
+            <ul>
+              {STORES.map((store) => (
+                <li key={store.id}>
+                  <a href={`tel:${store.phone.replace(/\s/g, "")}`}>
+                    <span>{store.name}</span>
+                    <span>{store.phone}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </footer>
         </div>
 
         <p className="sr-only" role="status">

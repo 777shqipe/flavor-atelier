@@ -7,7 +7,9 @@ import { Flyer } from "./Flyer";
 import { InstaShelf } from "./InstaShelf";
 import { Header, type Page } from "./Header";
 import { Hero } from "./Hero";
+import { Odometer } from "./Odometer";
 import { PageSwap, type Swap } from "./PageSwap";
+import { Peel } from "./Peel";
 import { Receipt } from "./Receipt";
 import { Showcase } from "./Showcase";
 import { StoreMap } from "./StoreMap";
@@ -40,23 +42,73 @@ const YEAR = new Date().getFullYear();
 const showWeeklyFlyer = false;
 const TICKER = ["Once it’s gone, it’s gone", "New finds every week", "Big brands, small prices", "Less waste, more taste"];
 
-function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; onOpenStore: (index: number) => void }) {
+function Home({
+  onNavigate,
+  onOpenStore,
+  onContact,
+}: {
+  onNavigate: (page: Page) => void;
+  onOpenStore: (index: number) => void;
+  onContact: (topic?: Topic) => void;
+}) {
+  const [maniSeen, setManiSeen] = useState(false);
+  const maniRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = maniRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setManiSeen(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <main>
       <Hero onNavigate={onNavigate} />
 
-      <section className="manifesto" data-surface="cream" aria-labelledby="manifesto-title">
+      <section className="manifesto" ref={maniRef} data-surface="cream" aria-labelledby="manifesto-title">
         <div className="display-letters rv" tabIndex={0}>
           <span aria-hidden="true">C</span>
           <span aria-hidden="true">B</span>
           <span aria-hidden="true">M</span>
           <p className="display-name">Cheaper Buy Miles</p>
+          <Peel
+            className="mani-seal"
+            from="tr"
+            bleed={0.04}
+            back={{ borderRadius: "10px" }}
+            under={
+              <span className="mani-seal-under">
+                Zero
+                <br />
+                landfill
+              </span>
+            }
+          >
+            <span className="mani-seal-face">
+              <small>RESCUED</small>
+              <b>DAILY</b>
+            </span>
+          </Peel>
         </div>
         <div className="rv" style={{ "--rv": "100ms" } as CSSProperties}>
           <p className="eyebrow">Our purpose</p>
           <h2 id="manifesto-title">
             One <em>bargain</em> at a time.
           </h2>
+          <p className="mani-tag">
+            <span>Surplus in</span>
+            <i>→</i>
+            <span>Savings out</span>
+          </p>
         </div>
         <div className="manifesto-copy rv" style={{ "--rv": "200ms" } as CSSProperties}>
           <p>
@@ -64,22 +116,34 @@ function Home({ onNavigate, onOpenStore }: { onNavigate: (page: Page) => void; o
             giving you huge savings.
           </p>
           <ul className="manifesto-facts">
-            <li>
-              <b>1995</b>
+            <li style={{ "--fc": "#f6b531" } as CSSProperties}>
+              <span className="mf-bar" aria-hidden="true" />
+              <b>
+                <Odometer value={maniSeen ? "1995" : "0000"} />
+              </b>
               <span>Still the same fight</span>
             </li>
-            <li>
-              <b>4</b>
+            <li style={{ "--fc": "#6fd3b0" } as CSSProperties}>
+              <span className="mf-bar" aria-hidden="true" />
+              <b>
+                <Odometer value={maniSeen ? "04" : "00"} />
+              </b>
               <span>Shops, one purpose</span>
             </li>
-            <li>
-              <b>kg</b>
-              <span>Millions kept from landfill</span>
+            <li style={{ "--fc": "#ff9a3d" } as CSSProperties}>
+              <span className="mf-bar" aria-hidden="true" />
+              <b>10M+</b>
+              <span>Kilos kept from landfill</span>
             </li>
           </ul>
-          <button className="button outline" type="button" onClick={() => onNavigate("about")}>
-            About us
-          </button>
+          <div className="mani-actions">
+            <button className="button" type="button" onClick={() => onNavigate("about")}>
+              Our story
+            </button>
+            <button className="button outline" type="button" onClick={() => onContact("stock")}>
+              Got surplus stock?
+            </button>
+          </div>
         </div>
       </section>
 
@@ -168,35 +232,62 @@ function Footer({ onNavigate, onContact }: { onNavigate: (page: Page) => void; o
       <FootFilm />
       <BinPile />
       <div className="footer-main">
-        <div>
+        <div className="footer-brand">
           <p className="eyebrow">Cheaper Buy Miles</p>
           <h2>
             More taste.
             <br />
-            Less waste.
+            <em>Less waste.</em>
           </h2>
+          <button className="footer-ticket" type="button" onClick={onContact}>
+            <span className="ft-tag">OPEN DOCKET</span>
+            <span className="ft-copy">
+              <b>Have surplus stock or a question?</b>
+              <small>Write to our buying or store team →</small>
+            </span>
+          </button>
         </div>
         <nav className="footer-links" aria-label="Footer">
-          <button type="button" onClick={() => onNavigate("home")}>Home</button>
-          <button type="button" onClick={() => onNavigate("stores")}>Our stores</button>
-          <button type="button" onClick={() => onNavigate("about")}>About us</button>
-          <button type="button" onClick={() => onNavigate("suppliers")}>Suppliers</button>
-          <button type="button" onClick={onContact}>Contact us</button>
+          <p className="footer-label">Explore</p>
+          <button type="button" onClick={() => onNavigate("home")}>
+            <small>01</small> Home
+          </button>
+          <button type="button" onClick={() => onNavigate("stores")}>
+            <small>02</small> Our stores
+          </button>
+          <button type="button" onClick={() => onNavigate("about")}>
+            <small>03</small> About us
+          </button>
+          <button type="button" onClick={() => onNavigate("suppliers")}>
+            <small>04</small> Suppliers
+          </button>
+          <button type="button" onClick={onContact}>
+            <small>05</small> Contact us
+          </button>
         </nav>
-        <div>
+        <div className="footer-social-col">
           <p className="footer-label">Follow the bargains</p>
+          <p className="footer-sub">New arrivals land on our feed daily before they hit the shelves.</p>
           <div className="socials">
-            <span>ig</span>
-            <span>f</span>
-            <span>in</span>
-            <span>♪</span>
+            <a href="https://www.instagram.com/cheaperbuymiles/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <span>ig</span>
+            </a>
+            <a href="https://www.facebook.com/cheaperbuymiles/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <span>fb</span>
+            </a>
+            <button type="button" onClick={() => onNavigate("stores")} aria-label="Our 4 Melbourne stores">
+              <span>4×</span>
+            </button>
+            <button type="button" onClick={onContact} aria-label="Contact us">
+              <span>✉</span>
+            </button>
           </div>
         </div>
       </div>
       <div className="footer-bottom">
-        <span>Melbourne, Australia</span>
+        <span>Melbourne, Australia · Est. 1995</span>
         <span>Good food shouldn’t go to waste.</span>
-        <span>© {YEAR} CBM</span>
+        <span>© {YEAR} Cheaper Buy Miles</span>
       </div>
     </footer>
   );
@@ -252,7 +343,7 @@ export default function App() {
       <div className="app-shell" inert={contact.open}>
         <Header page={page} onNavigate={navigate} onContact={() => openContact()} />
         <div key={page} className="page-in">
-          {page === "home" && <Home onNavigate={navigate} onOpenStore={setStore} />}
+          {page === "home" && <Home onNavigate={navigate} onOpenStore={setStore} onContact={openContact} />}
           {page === "stores" && <StoresPage active={store} onSelect={setStore} />}
           {page === "about" && <AboutPage />}
           {page === "suppliers" && <SuppliersPage onContact={() => openContact("stock")} />}

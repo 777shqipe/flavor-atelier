@@ -1,5 +1,7 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode, type RefObject } from "react";
 import type { Page } from "./Header";
+import { Pack as PackArt } from "./Pack";
+import type { Shape } from "./products";
 import "./showcase.css";
 
 type Scene = "crav" | "bucks" | "cookie";
@@ -12,51 +14,43 @@ type Product = {
   name: string;
   price: string;
   unit: string;
-  src: string;
-  w: number;
-  h: number;
+  pack: { shape: Shape; color: string; label: [string, string?] };
   alt: string;
 };
 
 const PRODUCTS: Product[] = [
   {
-    id: "sanpellegrino",
+    id: "fizz",
     scene: "crav",
     tone: "light",
-    brand: "Sanpellegrino",
-    name: "Aranciata Rossa",
+    brand: "Blood orange",
+    name: "Citrus fizz",
     price: "$4",
     unit: "4 × 330ml",
-    src: "/media/sanpellegrino-cut.webp",
-    w: 723,
-    h: 827,
-    alt: "Four-pack of Sanpellegrino Aranciata Rossa",
+    pack: { shape: "cans", color: "#e8542f", label: ["BLOOD", "ORANGE"] },
+    alt: "Four cans of blood orange fizz",
   },
   {
-    id: "shin",
+    id: "ramen",
     scene: "bucks",
     tone: "dark",
-    brand: "Nongshim",
-    name: "Shin Ramyun Black",
+    brand: "Instant noodles",
+    name: "Spicy ramen",
     price: "$4",
     unit: "4 pack",
-    src: "/media/shin-cut.webp",
-    w: 840,
-    h: 899,
-    alt: "Pack of Shin Ramyun Black instant noodles",
+    pack: { shape: "bag", color: "#c0290f", label: ["SPICY", "RAMEN"] },
+    alt: "Bag of spicy instant ramen",
   },
   {
-    id: "milka",
+    id: "choc",
     scene: "cookie",
     tone: "light",
-    brand: "Milka × Lotus",
-    name: "Milka Biscoff",
+    brand: "Choc-biscuit",
+    name: "Choc-biscuit bar",
     price: "$2",
     unit: "Limited",
-    src: "/media/milka-cut.webp",
-    w: 822,
-    h: 345,
-    alt: "Milka Biscoff chocolate bar",
+    pack: { shape: "box", color: "#7a4ce0", label: ["CHOC", "BISCUIT"] },
+    alt: "Chocolate biscuit bar",
   },
 ];
 
@@ -227,8 +221,8 @@ function Crav({ p, index }: { p: Product; index: number }) {
       </Layer>
 
       <Layer className="a-prod-ly" depth={1.4} delay={260} from="drop" float={6.5}>
-        <div className="a-prod" style={{ aspectRatio: `${p.w} / ${p.h}` }}>
-          <img src={p.src} alt={p.alt} width={p.w} height={p.h} draggable={false} />
+        <div className="a-prod a-pack">
+          <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} />
           <Eyes />
         </div>
       </Layer>
@@ -280,15 +274,9 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
           <span className="b-mark">CBM</span>
         </Layer>
         <Layer className="b-prod-ly" depth={1.6} delay={200} from="drop" float={7}>
-          <img
-            className="b-prod"
-            src={p.src}
-            alt={p.alt}
-            width={p.w}
-            height={p.h}
-            style={{ aspectRatio: `${p.w} / ${p.h}` }}
-            draggable={false}
-          />
+          <div className="b-prod b-pack" role="img" aria-label={p.alt}>
+            <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} />
+          </div>
         </Layer>
         <Layer className="b-chili-ly c1" depth={3.4} delay={560} from="pop" float={5} phase={-1}>
           <Chili />
@@ -316,9 +304,9 @@ function Bucks({ p, index, onNavigate }: { p: Product; index: number; onNavigate
 
         <Layer className="b-title-ly" depth={-0.6} delay={150} from="up">
           <p className="b-title" aria-hidden="true">
-            <span>SHIN</span>
-            <span>RAMYUN</span>
-            <span>BLACK</span>
+            <span>SPICY</span>
+            <span>RAMEN</span>
+            <span>4-PACK</span>
           </p>
         </Layer>
         <Layer className="b-mascot-ly" depth={2.4} delay={520} from="pop" float={5.2}>
@@ -390,8 +378,8 @@ function Cookie({ p, index, onNavigate }: { p: Product; index: number; onNavigat
 
       <Layer className="c-top-ly" delay={80} from="down">
         <div className="c-top">
-          <span>{p.brand} Biscoff</span>
-          <strong>#ChocolateMeetsBiscuit</strong>
+          <span>{p.brand}</span>
+          <strong>#ChocMeetsBiscuit</strong>
           <span className="pill ghost">
             <Counter index={index} />
           </span>
@@ -403,25 +391,19 @@ function Cookie({ p, index, onNavigate }: { p: Product; index: number; onNavigat
       </Layer>
       <Layer className="c-milka-ly" depth={-1} delay={160} from="left">
         <span className="c-type" aria-hidden="true">
-          MILKA
+          CHOC
         </span>
       </Layer>
       <Layer className="c-biscoff-ly" depth={-1} delay={220} from="right">
         <span className="c-type" aria-hidden="true">
-          BISCOFF
+          BISCUIT
         </span>
       </Layer>
 
       <Layer className="c-bar-ly" depth={1.6} delay={340} from="drop" float={6.2}>
-        <img
-          className="c-bar"
-          src={p.src}
-          alt={p.alt}
-          width={p.w}
-          height={p.h}
-          style={{ aspectRatio: `${p.w} / ${p.h}` }}
-          draggable={false}
-        />
+        <div className="c-bar c-pack" role="img" aria-label={p.alt}>
+          <PackArt shape={p.pack.shape} color={p.pack.color} label={p.pack.label} />
+        </div>
       </Layer>
 
       <Layer className="c-crumb-ly k1" depth={3} delay={700} from="pop" float={3.6}>
