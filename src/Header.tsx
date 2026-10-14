@@ -28,24 +28,15 @@ function Roll({ text }: { text: string }) {
 }
 
 /**
- * A deli "take a number" ticket on its side: V-notched where it leaves the
- * roll, pointed at the far end, yellow edge stripes, a perforation to tear at
- * and the dispenser's triangle mark by the tip.
+ * A deli "take a number" ticket on its side, pointed at the far end with thin
+ * yellow edge stripes. Longer than what shows: the rest waits inside the
+ * dispenser and slides out on hover.
  */
 function TicketArt() {
   return (
-    <svg viewBox="0 0 164 40" focusable="false">
-      <path
-        d="M.6.6H136c12 5.4 21.5 13.4 24.4 17.8a2.6 2.6 0 0 1 0 3.2C157.5 26 148 34 136 39.4H.6l12-18.1a2.4 2.4 0 0 0 0-2.6z"
-        fill="#fffdf7"
-        stroke="#1d1d1b"
-        strokeWidth="1.1"
-        strokeLinejoin="round"
-      />
-      <path d="M26 2.4h107v3.2H26zM26 34.4h107v3.2H26z" fill="#f5c400" />
-      <path d="M22 3v34" stroke="#cfc8b4" strokeWidth="1" strokeDasharray="1.6 2.2" />
-      <path d="M116.5 13h2.6v14h-2.6zM121.5 12.4L134 20l-12.5 7.6z" fill="#f5c400" />
-      <path d="M124.6 12v16" stroke="#fffdf7" strokeWidth="1.8" />
+    <svg viewBox="0 0 240 44" focusable="false">
+      <path d="M0 .5h208c14 6 24.5 15.5 27.6 19.9a2.8 2.8 0 0 1 0 3.2C232.5 28 222 37.5 208 43.5H0z" fill="#fffdf7" />
+      <path d="M0 3.5h205v2H0zM0 38.5h205v2H0z" fill="#f5c400" />
     </svg>
   );
 }
@@ -155,17 +146,21 @@ export function Header({
                     <b>You</b>
                   </span>
                 </span>
-                {/* Stub and ticket are the same drawing cut along a ragged tear line:
-                    hover starts the rip, click finishes it. */}
+                {/* Stub and ticket are the same drawing cut along a ragged tear line at
+                    the slot: hover pulls more ticket out, click rips it off. */}
                 <span className="cta-ticket" key={ticket} aria-hidden="true">
                   <span className="cta-stub">
-                    <TicketArt />
+                    <span className="cta-slide">
+                      <TicketArt />
+                    </span>
                   </span>
                   <span className="cta-tear">
-                    <TicketArt />
-                    <span className="cta-copy">
-                      <small>It’s my turn</small>
-                      <span className="cta-word">Contact us</span>
+                    <span className="cta-slide">
+                      <TicketArt />
+                      <span className="cta-copy">
+                        <small>It’s my turn</small>
+                        <span className="cta-word">Contact us</span>
+                      </span>
                     </span>
                   </span>
                 </span>

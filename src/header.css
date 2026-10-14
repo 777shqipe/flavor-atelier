@@ -16,7 +16,7 @@
 :root[data-immersive] .hd:not([data-open]) { translate: 0 calc(-100% - 28px); }
 .bar {
   /* Breathing room between logo, links and CTA; grows with the viewport. */
-  --hd-gap: clamp(16px, 3.6vw, 64px);
+  --hd-gap: clamp(16px, 4.4vw, 80px);
   --r: 18px;
   position: relative;
   z-index: 2;
@@ -46,7 +46,7 @@
     0 2px 6px rgb(0 0 0 / 0.22);
 }
 .hd[data-open] .bar { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09), inset 0 1px 0 rgb(255 255 255 / 0.14), 0 40px 70px -24px rgb(0 0 0 / 0.85), 0 4px 10px rgb(0 0 0 / 0.25); }
-.bar-row { display: flex; align-items: center; height: 68px; padding: 0 10px 0 0; transition: height 0.55s var(--ease-out), padding 0.55s var(--ease-out); }
+.bar-row { display: flex; align-items: center; height: 68px; padding: 0 6px 0 0; transition: height 0.55s var(--ease-out), padding 0.55s var(--ease-out); }
 
 /* Nav + CTA fold into the logo once the page scrolls. */
 .bar-more { display: grid; grid-template-columns: 1fr; transition: grid-template-columns 0.6s var(--ease-out); }
@@ -265,12 +265,12 @@
 .hd[data-stuck] .logo-word { padding-right: 15px; font-size: 28px; letter-spacing: 0.04em; }
 .hd[data-stuck] .logo-rest { max-width: 0; padding-right: 0 !important; opacity: 0; }
 @media (hover: hover) {
-  .hd[data-stuck] .bar:hover .bar-row { padding-right: 10px; }
+  .hd[data-stuck] .bar:hover .bar-row { padding-right: 6px; }
   .hd[data-stuck] .bar:hover .esl { border-radius: var(--r) 0 0 var(--r); }
   .hd[data-stuck] .bar:hover .esl-screen { border-radius: calc(var(--r) - 5px) 7px 7px calc(var(--r) - 5px); }
 }
 .hd[data-stuck] .bar:focus-within .bar-row,
-.hd[data-stuck][data-peek] .bar-row { padding-right: 10px; }
+.hd[data-stuck][data-peek] .bar-row { padding-right: 6px; }
 .hd[data-stuck] .bar:focus-within .esl,
 .hd[data-stuck][data-peek] .esl { border-radius: var(--r) 0 0 var(--r); }
 .hd[data-stuck] .bar:focus-within .esl-screen,
@@ -287,7 +287,7 @@
   display: grid;
   place-items: center;
   height: 48px;
-  padding: 0 clamp(16px, 1.7vw, 24px);
+  padding: 0 clamp(16px, 1.9vw, 28px);
   overflow: visible;
   border: 0;
   background: transparent;
@@ -377,19 +377,20 @@
 .nav button:hover .roll-ch { translate: 0 -100%; }
 
 /* ---------- CTA: take a number ---------------------------------------- */
-/* A red deli-counter dispenser: its LED shows who is being served, the paper
-   ticket in the slot is yours. Hover tugs the ticket and the display jumps to
-   your number; click tears it off, and a fresh one feeds out of the slot. */
+/* The right end of the capsule, framed by a thin green border: a flat red
+   deli-counter dispenser whose display says it's your turn, and the paper
+   ticket in its slot. Hover pulls more ticket out (the capsule grows with it);
+   click rips it off, and a fresh one feeds out of the slot. */
 .cta {
   position: relative;
   isolation: isolate;
   display: inline-flex;
   align-items: center;
-  height: 48px;
+  height: 56px;
   margin-left: var(--hd-gap);
-  padding: 0 4px 0 0;
+  padding: 0;
   border: 0;
-  border-radius: 12px 6px 6px 12px;
+  border-radius: calc(var(--r) - 6px);
   background: transparent;
   cursor: pointer;
 }
@@ -399,84 +400,73 @@
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 4px;
-  width: 60px;
-  height: 48px;
-  border-radius: 12px 5px 5px 12px;
-  background:
-    radial-gradient(90% 60% at 30% 8%, rgb(255 255 255 / 0.3), transparent 60%),
-    linear-gradient(180deg, #ee3f31, #cb261c 68%, #a91d14);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.4),
-    inset 0 -2px 0 rgb(90 10 6 / 0.4),
-    0 0 0 0.5px rgb(0 0 0 / 0.5),
-    0 12px 18px -8px rgb(0 0 0 / 0.65);
+  gap: 5px;
+  width: 64px;
+  height: 100%;
+  border-radius: calc(var(--r) - 6px) 4px 4px calc(var(--r) - 6px);
+  background: #d8372a;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 -2px 0 rgb(0 0 0 / 0.16);
   transition: translate 0.35s var(--spring);
 }
-.cta-box small { padding-right: 5px; color: #ffe9e2; font: 700 8px / 1 var(--font-cond); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+.cta-box small { padding-right: 5px; color: #ffe9e2; font: 700 8.5px / 1 var(--font-cond); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
 /* The ticket slot down the right edge. */
-.cta-box::after { content: ""; position: absolute; top: 7px; right: 3px; bottom: 7px; width: 3px; border-radius: 2px; background: #3a0805; box-shadow: inset 1px 0 1px #000, 1px 0 0 rgb(255 255 255 / 0.18); }
-.cta-led { display: grid; place-items: center; width: 40px; height: 20px; margin-right: 5px; overflow: hidden; border-radius: 4px; background: #170705; box-shadow: inset 0 1px 3px #000, 0 1px 0 rgb(255 255 255 / 0.25); }
-.cta-led b { color: #ff5233; font: 700 13px / 1 var(--font-mono); letter-spacing: 0.06em; text-indent: 0.06em; text-transform: uppercase; text-shadow: 0 0 6px rgb(255 70 40 / 0.85); }
+.cta-box::after { content: ""; position: absolute; top: 9px; right: 3px; bottom: 9px; width: 3px; border-radius: 2px; background: #4a0c07; }
+.cta-led { display: grid; place-items: center; width: 44px; height: 22px; margin-right: 5px; overflow: hidden; border-radius: 4px; background: #1a0806; box-shadow: inset 0 1px 2px #000; }
+.cta-led b { color: #ff5a3a; font: 700 14px / 1 var(--font-mono); letter-spacing: 0.06em; text-indent: 0.06em; text-transform: uppercase; text-shadow: 0 0 5px rgb(255 70 40 / 0.7); }
 
-/* The ticket: a white "take a number" stub with a V notch, a pointed end and
-   yellow edge stripes. It is drawn twice and cut along a ragged tear line
-   just outside the slot, so the stub stays put while the ticket rips away. */
+/* The ticket: drawn twice and cut along a ragged tear line just outside the
+   slot, so the stub stays put while the ticket rips away. Its left part sits
+   under the dispenser; widening the ticket reveals more of it. */
 .cta-ticket {
   position: relative;
   z-index: 1;
   display: block;
-  width: 164px;
-  height: 40px;
-  margin-left: -6px;
-  filter: drop-shadow(0 6px 5px rgb(0 0 0 / 0.36)) drop-shadow(0 1px 0.5px rgb(0 0 0 / 0.3));
-  animation: ticket-feed 0.7s var(--spring) 0.2s backwards;
+  width: 188px;
+  height: 44px;
+  margin-left: -34px;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.28));
+  transition: width 0.55s var(--spring);
 }
 .cta-stub,
 .cta-tear { position: absolute; inset: 0; }
-.cta-ticket svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.cta-slide { position: absolute; top: 0; right: 0; width: 240px; height: 100%; animation: ticket-feed 0.7s var(--spring) 0.2s backwards; }
+.cta-slide svg { display: block; width: 100%; height: 100%; }
 .cta-stub {
-  clip-path: polygon(0 -2px, 22.8px -2px, 20.6px 4px, 23.2px 8px, 21px 12px, 23.6px 16px, 20.8px 20px, 22.9px 24px, 20.5px 28px, 23.1px 32px, 21.2px 36px, 22.6px 42px, 0 42px);
+  clip-path: polygon(0 -2px, 36.8px -2px, 34.6px 4px, 37.2px 9px, 35px 14px, 37.6px 19px, 34.8px 24px, 36.9px 29px, 34.5px 34px, 37.1px 39px, 35.2px 44px, 36.6px 46px, 0 46px);
   transform-origin: 0 50%;
 }
 .cta-tear {
-  clip-path: polygon(22.8px -2px, 100% -2px, 100% 42px, 22.6px 42px, 21.2px 36px, 23.1px 32px, 20.5px 28px, 22.9px 24px, 20.8px 20px, 23.6px 16px, 21px 12px, 23.2px 8px, 20.6px 4px);
-  transform-origin: 22px 100%;
-  transition: rotate 0.45s var(--spring), translate 0.45s var(--spring);
+  clip-path: polygon(36.8px -2px, 100% -2px, 100% 46px, 36.6px 46px, 35.2px 44px, 37.1px 39px, 34.5px 34px, 36.9px 29px, 34.8px 24px, 37.6px 19px, 35px 14px, 37.2px 9px, 34.6px 4px);
+  transform-origin: 36px 100%;
 }
 .cta-copy {
   position: absolute;
   top: 0;
+  right: 46px;
   bottom: 0;
-  left: 29px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 3px;
-  padding-top: 1px;
 }
 /* DM Sans ships upright only here, so the italic is a skew. */
-.cta-copy small { align-self: flex-start; color: #e2a600; font: 800 7px / 1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; transform: skewX(-12deg); }
-.cta-word { color: #2f2f2b; font: 700 14.5px / 1 var(--font-sans); letter-spacing: -0.01em; white-space: nowrap; }
-/* Hover starts the rip from the top edge; the stub gives a little in the slot. */
-.cta:hover .cta-tear { rotate: 5deg; translate: 1px 0; }
-.cta:hover .cta-stub { rotate: -1deg; transition: rotate 0.3s var(--spring); }
+.cta-copy small { align-self: flex-start; color: #d39a00; font: 800 7.5px / 1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; transform: skewX(-12deg); }
+.cta-word { color: var(--green-900); font: 700 16px / 1 var(--font-sans); letter-spacing: -0.015em; white-space: nowrap; }
+.cta:hover .cta-ticket { width: 216px; }
 .cta:hover .cta-led b { animation: led-call 0.9s steps(1) 0.15s 2; }
 .cta:active .cta-box { translate: -2px 0; transition-duration: 0.1s; }
 .cta[data-torn] .cta-tear { animation: ticket-rip 0.46s var(--ease-out) forwards; }
 .cta[data-torn] .cta-stub { animation: stub-snap 0.35s var(--spring); }
 .cta:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
 
-@keyframes ticket-feed {
-  from { translate: -85% 0; clip-path: inset(-20px -20px -20px 85%); }
-  to { translate: 0 0; clip-path: inset(-20px -20px -20px 0); }
-}
-/* The rip runs down to the bottom edge, then the ticket comes free and drops away. */
+/* A fresh ticket slides out of the slot tip first. */
+@keyframes ticket-feed { from { translate: -150px 0; } }
+/* The rip runs down from the top edge, then the ticket comes free and drops away. */
 @keyframes ticket-rip {
-  0% { rotate: 5deg; translate: 1px 0; }
-  28% { rotate: 12deg; translate: 3px 1px; opacity: 1; }
-  45% { rotate: 14deg; translate: 9px 0; opacity: 1; }
-  100% { rotate: 32deg; translate: 46px 34px; opacity: 0; }
+  0% { rotate: 0deg; translate: 0 0; }
+  22% { rotate: 7deg; translate: 1px 0; opacity: 1; }
+  40% { rotate: 12deg; translate: 6px 1px; opacity: 1; }
+  100% { rotate: 30deg; translate: 50px 36px; opacity: 0; }
 }
 @keyframes stub-snap {
   35% { rotate: -3deg; translate: -1px 0; }
@@ -627,14 +617,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bar { animation: none; }
-  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .esl, .logo-word, .logo-rest, .roll-ch, .nav button, .gun, .cta-box, .cta-ticket, .cta-tear, .cta-stub, .burger i, .drawer, .drawer nav button, .drawer nav button > span, .drawer-cta, .drawer-foot, .scrim {
+  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .esl, .logo-word, .logo-rest, .roll-ch, .nav button, .gun, .cta-box, .cta-ticket, .cta-slide, .cta-tear, .cta-stub, .burger i, .drawer, .drawer nav button, .drawer nav button > span, .drawer-cta, .drawer-foot, .scrim {
     transition-duration: 0.01ms;
     transition-delay: 0s;
   }
   .esl-led,
   .gun,
   .nav button::after,
-  .cta-ticket,
+  .cta-slide,
   .cta-tear,
   .cta-stub,
   .cta-led b { animation: none !important; }
