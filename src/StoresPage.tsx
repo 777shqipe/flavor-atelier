@@ -138,7 +138,9 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                       draggable={false}
                     />
                   ))}
-                  <span className="sh-blind" aria-hidden="true" />
+                  <span className="sh-blind" aria-hidden="true">
+                    <i className="sh-pull" />
+                  </span>
                 </div>
                 {/* the print's caption: who, where, open or not, and the way to the next one */}
                 <div className="sh-caption">
