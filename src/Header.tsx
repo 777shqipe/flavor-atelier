@@ -6,9 +6,9 @@ export type Page = "home" | "stores" | "about";
 
 /** Each link's price-gun label lands at its own slight angle, as if stuck on by hand. */
 const LINKS: Array<[Page, string, number]> = [
-  ["home", "Home", -3],
-  ["stores", "Stores", 2.5],
-  ["about", "About us", -2],
+  ["home", "Home", -2],
+  ["stores", "Stores", 1.5],
+  ["about", "About us", -1.5],
 ];
 
 /** Label whose letters roll up one after another on hover. */
