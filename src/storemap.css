@@ -1,78 +1,45 @@
-/* Store map: a night-time Melbourne in brand greens, shopfront pins, sticker
-   landmarks, a bowed loop route and a trolley that drives it. Controls are
-   solid dark capsules, like the header. */
+/* Store map: Melbourne printed on parchment in brand greens, shopfront pins,
+   sticker landmarks, a bowed loop route and a trolley that drives it. No frame:
+   the map's edges fade into the page it sits on. */
 
-.finder { --night: #0d1f18; --panel: linear-gradient(180deg, #183129, #0c1b15); position: relative; container-type: inline-size; color: var(--cream); }
-.finder-stage {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-radius: var(--r-3);
-  background: var(--night);
-  /* a mounted print: thin rule, paper mat, second rule, then the drop */
-  box-shadow:
-    0 0 0 1px rgb(0 88 66 / 0.16),
-    0 0 0 8px var(--paper),
-    0 0 0 9px rgb(0 88 66 / 0.14),
-    0 50px 80px -40px rgb(0 30 20 / 0.75);
-}
-/* paper grain over the tiles (above the map, below every control) */
-.finder-stage::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 440;
-  border-radius: inherit;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.9  0 0 0 0 0.9  0 0 0 0 0.8  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
-  background-size: 180px 180px;
-  opacity: 0.09;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-.finder-stage::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 450;
-  border-radius: inherit;
-  background: radial-gradient(120% 90% at 50% 45%, transparent 58%, rgb(0 0 0 / 0.42) 100%);
-  box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.1), inset 0 1px 0 rgb(246 240 219 / 0.08), inset 0 0 120px rgb(0 0 0 / 0.45);
-  pointer-events: none;
-}
+.finder { --float-room: 240px; position: relative; container-type: inline-size; color: var(--green-900); }
+.finder-stage { position: relative; isolation: isolate; }
 .finder-map {
   position: relative;
   z-index: 0;
   isolation: isolate;
   width: 100%;
   height: clamp(540px, 74vh, 720px);
-  background:
-    radial-gradient(rgb(246 240 219 / 0.11) 1px, transparent 1.2px) 0 0 / 22px 22px,
-    linear-gradient(rgb(246 240 219 / 0.035) 1px, transparent 1px) 0 0 / 110px 110px,
-    linear-gradient(90deg, rgb(246 240 219 / 0.035) 1px, transparent 1px) 0 0 / 110px 110px,
-    var(--night);
   font-family: var(--font-sans);
+  /* soft edges instead of a card: the print just fades out into the sheet */
+  -webkit-mask: linear-gradient(90deg, #0000, #000 8% 92%, #0000), linear-gradient(#0000, #000 9% 91%, #0000);
+  -webkit-mask-composite: source-in;
+  mask: linear-gradient(90deg, #0000, #000 8% 92%, #0000), linear-gradient(#0000, #000 9% 91%, #0000);
+  mask-composite: intersect;
 }
-/* Esri's dark grey canvas, pushed into the brand's deep greens. */
-.finder-map .leaflet-tile-pane { filter: sepia(1) hue-rotate(96deg) saturate(1.9) brightness(0.92) contrast(1.06); }
-.finder-map .leaflet-control-attribution {
-  margin: 0;
-  padding: 3px 10px;
-  border-radius: 10px 0 0 0;
-  background: rgb(12 27 21 / 0.75);
-  color: rgb(246 240 219 / 0.55);
-  font-size: 9.5px;
+.finder-map.leaflet-container { background: transparent; }
+/* Esri's light grey canvas through a gradient map (see INK_STOPS in StoreMap). */
+.finder-map .leaflet-tile-pane { filter: url(#parch-map); }
+/* the same paper grain as the page, over the tiles and pins, below every control */
+.finder-map::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 450;
+  background: var(--grain) 0 0 / 180px 180px;
+  opacity: 0.16;
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
-.finder-map .leaflet-control-attribution a { color: inherit; }
-.finder-map .leaflet-container,
-.finder-map.leaflet-container { background: var(--night); }
+.finder-credit { position: absolute; right: 9%; bottom: 4px; z-index: 460; margin: 0; color: rgb(0 56 42 / 0.5); font: 500 9.5px / 1 var(--font-sans); }
 
 /* ---------- compass ------------------------------------------------------- */
 .finder-compass { position: absolute; z-index: 460; bottom: 34px; right: 20px; width: 50px; height: 50px; overflow: visible; pointer-events: none; }
-.finder-compass circle { fill: rgb(12 27 21 / 0.72); stroke: rgb(246 240 219 / 0.22); stroke-width: 1; }
+.finder-compass circle { fill: rgb(255 252 240 / 0.85); stroke: rgb(0 88 66 / 0.35); stroke-width: 1; }
 .finder-compass .needle { transform-origin: 22px 22px; animation: needle 6s ease-in-out infinite; }
-.finder-compass .needle path:first-child { fill: var(--sun); }
-.finder-compass .needle path:last-child { fill: rgb(246 240 219 / 0.45); }
-.finder-compass text { fill: var(--cream); font: 700 6.5px var(--font-sans); text-anchor: middle; }
+.finder-compass .needle path:first-child { fill: var(--green); }
+.finder-compass .needle path:last-child { fill: rgb(0 88 66 / 0.28); }
+.finder-compass text { fill: var(--green); font: 700 6.5px var(--font-sans); text-anchor: middle; }
 @keyframes needle { 0%, 100% { rotate: -6deg; } 40% { rotate: 5deg; } 60% { rotate: -2deg; } }
 
 /* ---------- route ------------------------------------------------------- */
@@ -96,7 +63,7 @@
   transform-origin: 50% 93.4%;
   transition: translate 0.45s var(--spring), scale 0.65s var(--bounce);
 }
-.pin-art svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1.5px 1px rgb(0 0 0 / 0.35)) drop-shadow(0 12px 12px rgb(0 0 0 / 0.38)); }
+.pin-art svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1.5px 1px rgb(30 45 20 / 0.3)) drop-shadow(0 10px 10px rgb(30 45 20 / 0.25)); }
 .pin-shadow {
   position: absolute;
   left: -16px;
@@ -104,7 +71,7 @@
   width: 32px;
   height: 10px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent);
+  background: radial-gradient(closest-side, rgb(30 45 20 / 0.4), transparent);
   transition: scale 0.45s var(--spring), opacity 0.45s;
 }
 .pin-pulse {
@@ -127,9 +94,9 @@
   height: 26px;
   padding: 0 11px 0 6px;
   border-radius: 99px;
-  background: var(--cream);
-  box-shadow: 0 0 0 1.5px #17140c, 0 8px 16px -6px rgb(0 0 0 / 0.6);
-  color: #17140c;
+  background: #fffdf6;
+  box-shadow: 0 0 0 1.5px var(--green-900), 0 8px 14px -6px rgb(30 45 20 / 0.4);
+  color: var(--green-900);
   font: 700 12px / 1 var(--font-sans);
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -169,17 +136,17 @@
 /* ---------- landmarks ------------------------------------------------------ */
 .sm-lm { width: 0; height: 0; pointer-events: none; }
 .lm { position: absolute; left: calc(var(--w) / -2); top: calc(var(--w) / var(--ar) * -1); width: var(--w); }
-.lm-art svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 8px 8px rgb(0 0 0 / 0.35)); }
+.lm-art svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 6px 6px rgb(30 45 20 / 0.25)); }
 .lm-cap {
   position: absolute;
   top: 100%;
   left: 50%;
   margin-top: 5px;
-  color: rgb(246 240 219 / 0.78);
+  color: rgb(0 56 42 / 0.8);
   font: 700 9px / 1 var(--font-sans);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 0.9);
+  text-shadow: 0 0 3px #f3eed9, 0 0 6px #f3eed9;
   white-space: nowrap;
   translate: -50% 0;
 }
@@ -232,7 +199,7 @@
   transform-origin: 24px 38px;
   transition: scale 0.4s var(--spring), opacity 0.35s;
 }
-.cart svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 6px rgb(0 0 0 / 0.5)); transition: scale 0.3s var(--spring); }
+.cart svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 5px 5px rgb(30 45 20 / 0.35)); transition: scale 0.3s var(--spring); }
 .cart[data-dir="l"] svg { scale: -1 1; }
 .cart[data-in] { scale: 0.25; opacity: 0; }
 .cart[data-moving] { animation: cart-bob 0.26s ease-in-out infinite alternate; }
@@ -251,11 +218,8 @@
 .finder-top { position: absolute; top: 16px; z-index: 500; display: grid; gap: 8px; justify-items: start; }
 .finder-top.left { left: 16px; }
 .finder-top.right { right: 16px; justify-items: end; }
-.locate,
-.zoom {
-  background: var(--panel);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07), inset 0 1px 0 rgb(255 255 255 / 0.12), 0 18px 30px -14px rgb(0 0 0 / 0.7);
-}
+.locate { background: var(--green); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 16px 26px -16px rgb(0 56 42 / 0.8); }
+.zoom { background: #fbf8ec; box-shadow: inset 0 0 0 1px rgb(0 88 66 / 0.2), 0 16px 26px -18px rgb(0 56 42 / 0.6); }
 .locate {
   display: inline-flex;
   align-items: center;
@@ -284,27 +248,27 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--cream);
+  color: var(--green);
   font: 500 22px / 1 var(--font-sans);
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
 }
-.zoom button:hover { background: rgb(246 240 219 / 0.1); color: var(--sun); }
+.zoom button:hover { background: rgb(0 88 66 / 0.08); color: var(--green-700); }
 .zoom button:active { scale: 0.9; transition-duration: 0.08s; }
-.zoom button + button::before { content: ""; position: absolute; top: -2px; left: 12px; right: 12px; height: 1px; background: rgb(246 240 219 / 0.1); }
+.zoom button + button::before { content: ""; position: absolute; top: -2px; left: 12px; right: 12px; height: 1px; background: rgb(0 88 66 / 0.14); }
 .zoom button { position: relative; transition: background-color 0.2s, color 0.2s, scale 0.3s var(--spring); }
-.zoom .all { margin-top: 2px; background: var(--sun); color: #17140c; font: 700 10px / 1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4); }
+.zoom .all { margin-top: 2px; background: var(--green); color: var(--cream); font: 700 10px / 1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4); }
 .zoom .all::before { display: none; }
-.zoom .all:hover { background: #ffd060; color: #17140c; }
+.zoom .all:hover { background: var(--green-700); color: var(--cream); }
 .locate:active { translate: 0 0; scale: 0.98; }
-.finder button:focus-visible, .finder a:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+.finder button:focus-visible, .finder a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .finder-note {
   max-width: 270px;
   margin: 0;
   padding: 10px 14px;
   border-radius: 14px;
   background: var(--cream);
-  box-shadow: 0 0 0 1.5px #17140c, 0 14px 22px -12px rgb(0 0 0 / 0.7);
+  box-shadow: 0 0 0 1px rgb(0 88 66 / 0.35), 0 14px 22px -14px rgb(0 56 42 / 0.6);
   color: var(--green-900);
   font: 600 13px / 1.35 var(--font-sans);
   rotate: -1.5deg;
@@ -324,9 +288,9 @@
   gap: 8px;
   padding: 7px 12px;
   border-radius: 6px;
-  background: var(--cream);
-  box-shadow: 0 0 0 1.5px #17140c, 0 10px 18px -10px rgb(0 0 0 / 0.7);
-  color: #17140c;
+  background: #fbf8ec;
+  box-shadow: 0 0 0 1px rgb(0 88 66 / 0.35), 0 10px 18px -12px rgb(0 56 42 / 0.5);
+  color: var(--green-900);
   font: 700 10px / 1 var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -336,12 +300,11 @@
   pointer-events: none;
   animation: note-in 0.6s var(--bounce) 0.3s both;
 }
-.finder-plate b { padding: 2px 5px; border-radius: 4px; background: #17140c; color: var(--sun); }
+.finder-plate b { padding: 2px 5px; border-radius: 4px; background: var(--green); color: var(--cream); }
 
 /* ---------- narrow ------------------------------------------------------------ */
 @container (max-width: 760px) {
   .finder-plate { display: none; }
-  .finder-stage { box-shadow: 0 0 0 1px rgb(0 88 66 / 0.16), 0 0 0 5px var(--paper), 0 0 0 6px rgb(0 88 66 / 0.14), 0 40px 60px -36px rgb(0 30 20 / 0.7); }
   .finder-top.left { top: 10px; left: 10px; }
   .finder-top.right { top: 10px; right: 10px; }
   .finder-compass { display: none; }
@@ -350,7 +313,6 @@
   .finder-plate { display: none; }
 }
 @media (max-width: 520px) {
-  .finder-map { height: 580px; }
   .locate { height: 46px; padding: 0 16px 0 13px; font-size: 13px; }
 }
 

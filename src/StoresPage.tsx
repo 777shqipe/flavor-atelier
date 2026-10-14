@@ -21,8 +21,6 @@ const Icon = ({ d, circle }: { d: string; circle?: boolean }) => (
 
 export function StoresPage({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
   const status = useOpenStatus();
-  const [copiedAt, setCopiedAt] = useState<number | null>(null);
-  const copied = copiedAt === active;
   const frame = useRef<HTMLDivElement>(null);
   // Remember the previous photo so the new one can wipe in over it.
   const [pair, setPair] = useState({ cur: active, before: -1 });
@@ -43,16 +41,6 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
     return () => window.removeEventListener("keydown", onKey);
   }, [active, onSelect]);
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(STORES[active].address);
-      setCopiedAt(active);
-      window.setTimeout(() => setCopiedAt(null), 1800);
-    } catch {
-      /* clipboard can be blocked; the address is still on screen */
-    }
-  };
-
   // The photo drifts slightly against the pointer, like looking through a window.
   const look = (event: PointerEvent<HTMLDivElement>) => {
     const el = frame.current;
@@ -71,29 +59,19 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
     .filter(({ other }) => other !== store)
     .sort((a, b) => a.km - b.km)[0];
 
-  // One screen: the facts on the left, the live map on the right with the shopfront
-  // pinned over it like a postcard, and the four picks underneath.
+  // One parchment sheet: title and facts on the left, the live map printed straight
+  // onto the paper on the right with the shopfront photo pinned over it, and the
+  // four picks underneath.
   return (
     <main>
-      <section className="stores-hero" data-surface="green" aria-labelledby="stores-title">
-        <div className="aurora" aria-hidden="true" />
+      <section className="stores-hero" data-surface="paper" aria-labelledby="stores-title">
+        <div className="parchment" aria-hidden="true" />
         <div className="sh">
           <header className="sh-head">
-            <p className="eyebrow">Around Melbourne</p>
             <h1 id="stores-title">Our stores</h1>
-            <p className="sh-lead">Pick a shop or a pin and the trolley drives over. Or let us find the one closest to you.</p>
           </header>
 
           <article className="sh-facts" style={{ "--c": store.color } as CSSProperties}>
-            <p className="sh-count" aria-hidden="true">
-              <b>0{active + 1}</b>
-              <span className="sh-bars">
-                {STORES.map((item, index) => (
-                  <i key={item.id} data-on={index <= active || undefined} />
-                ))}
-              </span>
-              <em>04</em>
-            </p>
             <h2 className="sh-name" key={store.id} aria-label={store.name} aria-live="polite">
               {[...store.name].map((letter, index) => (
                 <span key={index} aria-hidden="true" style={{ "--i": index } as CSSProperties}>
@@ -129,9 +107,6 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                   <path d="M7 17L17 7M8 7h9v9" />
                 </svg>
               </a>
-              <button type="button" onClick={copy}>
-                {copied ? "Copied ✓" : "Copy address"}
-              </button>
             </div>
             <p className="sh-near" key={`near-${store.id}`}>
               Next closest: <b>{nearest.other.name}</b> · {formatKm(nearest.km)} away

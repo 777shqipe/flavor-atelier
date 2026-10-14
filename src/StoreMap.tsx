@@ -5,7 +5,7 @@ import { ROUTE, STORES, distanceKm, formatKm, type Store } from "./stores";
 import "./storemap.css";
 
 /**
- * The store map, drawn as a night-time city: dark green streets, little CBM
+ * The store map, printed on parchment: green-inked streets and water, little CBM
  * shopfronts for pins, sticker landmarks, and a trolley that drives a bowed
  * loop to whichever store you pick. Whatever is passed as children floats
  * over the map, above the tiles and below nothing.
@@ -28,6 +28,37 @@ const pinHtml = (store: Store, index: number) => `
     <span class="pin-art">${shopPinSvg(store)}</span>
     <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><b>0${index + 1}</b>${store.name}</span>
   </div>`;
+
+/**
+ * Gradient map for Esri's light grey tiles, as [luminance, colour] stops: water
+ * turns sage, parks pale green, land the page's parchment and streets a faint
+ * green ink. Sampled into a 101-step table for the SVG filter below.
+ */
+const INK_STOPS: [number, string][] = [
+  [0, "#2f5a4a"],
+  [0.7, "#7d9a86"],
+  [0.8, "#a3bba6"],
+  [0.85, "#c3cfb5"],
+  [0.9, "#dcdfc3"],
+  [0.915, "#eee7cf"],
+  [0.94, "#eee7cf"],
+  [0.975, "#e0e2ca"],
+  [1, "#d5dbc2"],
+];
+const INK_TABLES = [0, 1, 2].map((channel) =>
+  Array.from({ length: 101 }, (_, step) => {
+    const l = step / 100;
+    const k = Math.max(1, INK_STOPS.findIndex(([at]) => at >= l));
+    const [a, from] = INK_STOPS[k - 1];
+    const [b, to] = INK_STOPS[k];
+    const t = (l - a) / (b - a || 1);
+    const value = (hex: string) => parseInt(hex.slice(1 + channel * 2, 3 + channel * 2), 16) / 255;
+    return (value(from) + (value(to) - value(from)) * t).toFixed(3);
+  }).join(" "),
+);
+
+/** Height kept clear at the bottom of the map for whatever floats over it (CSS --float-room). */
+const floatRoom = (map: L.Map) => parseFloat(getComputedStyle(map.getContainer()).getPropertyValue("--float-room")) || 0;
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -169,9 +200,8 @@ export function StoreMap({
       minZoom: 10,
       maxZoom: 17,
     });
-    L.control.attribution({ prefix: false, position: "bottomright" }).addTo(map);
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
-      attribution: "Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+    // Attribution is printed under the map instead (.finder-credit): the map's edges fade out.
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
       maxNativeZoom: 16,
       maxZoom: 19,
     }).addTo(map);
@@ -180,7 +210,7 @@ export function StoreMap({
     const wide = () => box.clientWidth > 760;
     const overview = (animate = false) => {
       const bounds = L.latLngBounds([...points, CBD]);
-      const opts: L.FitBoundsOptions = { paddingTopLeft: [60, 110], paddingBottomRight: [wide() ? 150 : 80, wide() ? 230 : 250] };
+      const opts: L.FitBoundsOptions = { paddingTopLeft: [60, 110], paddingBottomRight: [wide() ? 150 : 80, floatRoom(map)] };
       if (animate) map.flyToBounds(bounds, { ...opts, duration: 1.1 });
       else map.fitBounds(bounds, opts);
     };
@@ -193,9 +223,9 @@ export function StoreMap({
       bow(P[from], P[LOOP[(k + 1) % LOOP.length]], centre, 0.17).map((p) => L.point(p.x, p.y)),
     );
     const loop = segs.flatMap((seg, k) => (k ? seg.slice(1) : seg)).map((p) => map.unproject(p, Z));
-    L.polyline(loop, { className: "route-glow", color: "#f6b531", weight: 12, opacity: 0.12, interactive: false }).addTo(map);
-    const drawn = L.polyline(loop, { className: "route-line", color: "#f6b531", weight: 2.5, opacity: 0.85, interactive: false }).addTo(map);
-    L.polyline(loop, { className: "route-dots", color: "#fffaf0", weight: 4, opacity: 0.95, dashArray: "0.1 14", lineCap: "round", interactive: false }).addTo(map);
+    L.polyline(loop, { className: "route-glow", color: "#005842", weight: 12, opacity: 0.12, interactive: false }).addTo(map);
+    const drawn = L.polyline(loop, { className: "route-line", color: "#005842", weight: 2.5, opacity: 0.8, interactive: false }).addTo(map);
+    L.polyline(loop, { className: "route-dots", color: "#f6b531", weight: 4.5, opacity: 0.95, dashArray: "0.1 14", lineCap: "round", interactive: false }).addTo(map);
     drawn.getElement()?.setAttribute("pathLength", "1");
 
     const between = (from: number, to: number) => {
@@ -314,7 +344,7 @@ export function StoreMap({
     // Park the store a little up and right of centre, clear of whatever floats bottom left.
     const closeIn = () => {
       const wideMap = map.getSize().x > 760;
-      const centre = map.unproject(map.project(target, 14.75).add([wideMap ? -150 : 0, wideMap ? 70 : 110]), 14.75);
+      const centre = map.unproject(map.project(target, 14.75).add([wideMap ? -150 : 0, Math.max(0, floatRoom(map) / 2 - 45)]), 14.75);
       map.flyTo(centre, 14.75, { animate: !reduced(), duration: 1.1 });
     };
 
@@ -337,7 +367,7 @@ export function StoreMap({
     const wideMap = map.getSize().x > 760;
     map.flyToBounds(bounds, {
       paddingTopLeft: [70, 110],
-      paddingBottomRight: [wideMap ? 140 : 70, wideMap ? 220 : 240],
+      paddingBottomRight: [wideMap ? 140 : 70, Math.max(60, floatRoom(map) - 10)],
       maxZoom: 15,
       duration: 0.9,
     });
@@ -404,6 +434,16 @@ export function StoreMap({
 
   return (
     <div className="finder" ref={wrap}>
+      <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute" }}>
+        <filter id="parch-map" colorInterpolationFilters="sRGB">
+          <feColorMatrix values="0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0" />
+          <feComponentTransfer>
+            <feFuncR type="table" tableValues={INK_TABLES[0]} />
+            <feFuncG type="table" tableValues={INK_TABLES[1]} />
+            <feFuncB type="table" tableValues={INK_TABLES[2]} />
+          </feComponentTransfer>
+        </filter>
+      </svg>
       <div className="finder-stage">
         <div
           ref={node}
@@ -453,6 +493,7 @@ export function StoreMap({
         </div>
 
         {children}
+        <p className="finder-credit">Esri, HERE, Garmin, © OpenStreetMap contributors</p>
       </div>
     </div>
   );
