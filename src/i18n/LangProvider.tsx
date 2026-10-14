@@ -39,9 +39,8 @@ function initialLang(): Lang {
   if (saved) return saved;
   for (const tag of navigator.languages ?? [navigator.language]) {
     const code = tag.toLowerCase().split("-")[0];
-    if (code === "vi") return "vi";
-    if (code === "zh") return "zh";
-    if (code === "en") return "en";
+    const match = LANGS.find((lang) => lang === code);
+    if (match) return match;
   }
   return "en";
 }
@@ -49,9 +48,10 @@ function initialLang(): Lang {
 const FONT_HREF: Partial<Record<Lang, string>> = {
   vi: "https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Patrick+Hand&family=Playfair+Display:wght@400;700&display=swap",
   zh: "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@500;700&display=swap",
+  ja: "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@500;700&display=swap",
 };
 
-/** The Latin display fonts already cover most of Vietnamese; the extra families load only on the pages that need them. */
+/** The Latin display fonts already cover Italian and most of Vietnamese; the extra families load only on the pages that need them. */
 function loadFonts(lang: Lang) {
   const href = FONT_HREF[lang];
   if (!href || document.querySelector(`link[data-lang-font="${lang}"]`)) return;

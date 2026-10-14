@@ -33,7 +33,10 @@ export function AboutPage({ onContact }: { onContact: () => void }) {
           </header>
           <div className="ah-art">
             <span className="ah-glow" aria-hidden="true" />
-            <img className="hero-illo" src="/media/illo-about.png" alt="" />
+            {/* The float is on its own span: two animations on one element (the fade-up and the float) both end up on the main thread. */}
+            <span className="ah-bob">
+              <img className="hero-illo" src="/media/illo-about.png" alt="" />
+            </span>
             {/* peel the seal and the shop is still there */}
             <Peel
               className="ah-seal"

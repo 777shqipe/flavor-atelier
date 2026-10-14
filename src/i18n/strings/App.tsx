@@ -208,4 +208,142 @@ export const appStrings = defineStrings({
       cookies: "Cookie",
     },
   },
+  it: {
+    ticker: ["Finito è finito", "Nuovi affari ogni settimana", "Grandi marche, piccoli prezzi", "Meno sprechi, più gusto"],
+    tickerAlt: ["Fino al 70% in meno sul listino", "Salvato, non sprecato", "Quattro negozi a Melbourne", "Contro lo spreco alimentare dal 1995"],
+    products: {
+      eyebrow: "Novità ogni settimana",
+      heading: "Ora in negozio",
+      lead: "Marche inaspettate, prezzi incredibili. Finito è finito.",
+    },
+    mix: {
+      label: "Affari della settimana",
+      store: "Ora in negozio",
+      feed: "Su Instagram",
+    },
+    home: {
+      sealUnder: (
+        <>
+          Zero
+          <br />
+          discariche
+        </>
+      ),
+      sealSmall: "SALVATO",
+      sealBig: "OGNI GIORNO",
+      purposeEyebrow: "La nostra missione",
+      purposeTitle: (
+        <>
+          Un <em>affare</em> alla volta.
+        </>
+      ),
+      tagIn: "Eccedenze in",
+      tagOut: "Sconti fuori",
+      copy: "Amiamo il cibo e odiamo lo spreco. Abbiamo salvato milioni di chili di cibo buono dalla spazzatura, e intanto ti facciamo risparmiare un sacco.",
+      promise: (
+        <>
+          <b>Garanzia di rimborso al 100%.</b> Non ti soddisfa qualcosa? Riportalo da noi.
+        </>
+      ),
+      story: "La nostra storia",
+      stock: "Hai merce in più?",
+    },
+    footer: {
+      title: (
+        <>
+          Più gusto.
+          <br />
+          <em>Meno sprechi.</em>
+        </>
+      ),
+      ticketTag: "TICKET APERTO",
+      ticketTitle: "Hai merce in più o una domanda?",
+      ticketSub: "Scrivi al team acquisti o ai negozi →",
+      navLabel: "Piè di pagina",
+      explore: "Esplora",
+      links: {
+        home: "Home",
+        stores: "I nostri negozi",
+        about: "Chi siamo",
+        suppliers: "Fornitori",
+        contact: "Contattaci",
+      },
+      followLabel: "Segui gli affari",
+      followSub: "Le novità arrivano ogni giorno sul nostro feed, prima di finire sugli scaffali.",
+      socialStores: "I nostri 4 negozi a Melbourne",
+      place: "Melbourne, Australia · Dal 1995",
+      tagline: "Il buon cibo non deve andare sprecato.",
+      privacy: "Privacy",
+      cookies: "Cookie",
+    },
+  },
+  ja: {
+    ticker: ["なくなり次第終了", "毎週、新しいお宝が入荷", "人気ブランドを、小さな価格で", "ムダを減らして、おいしさ増量"],
+    tickerAlt: ["希望小売価格から最大70%オフ", "レスキューされた、ムダなし", "メルボルンに4店舗", "1995年から食品ロスと戦う"],
+    products: {
+      eyebrow: "毎週、新しいお宝",
+      heading: "店舗で販売中",
+      lead: "意外なブランドが、信じられない価格で。なくなり次第終了です。",
+    },
+    mix: {
+      label: "今週のお宝",
+      store: "店舗で販売中",
+      feed: "Instagramで",
+    },
+    home: {
+      sealUnder: (
+        <>
+          埋立
+          <br />
+          ゼロ
+        </>
+      ),
+      sealSmall: "レスキュー",
+      sealBig: "毎日",
+      purposeEyebrow: "私たちの使命",
+      purposeTitle: (
+        <>
+          一つずつ、<em>お買い得</em>を。
+        </>
+      ),
+      tagIn: "余り品が入る",
+      tagOut: "お得が出る",
+      copy: "食べ物が大好きで、ムダは大嫌いです。まだおいしい食べ物を数百万キロ分、捨てずに救ってきました。その分、お得もたっぷりお届けします。",
+      promise: (
+        <>
+          <b>100%返金保証。</b>気に入らないものがあれば、お持ちください。
+        </>
+      ),
+      story: "私たちの歩み",
+      stock: "余った在庫、ありますか？",
+    },
+    footer: {
+      title: (
+        <>
+          おいしさ増量。
+          <br />
+          <em>ムダ削減。</em>
+        </>
+      ),
+      ticketTag: "受付中",
+      ticketTitle: "余り在庫や、ご質問はありますか？",
+      ticketSub: "仕入れ担当か店舗までご連絡ください →",
+      navLabel: "フッター",
+      explore: "サイトマップ",
+      links: {
+        home: "ホーム",
+        stores: "私たちの店舗",
+        about: "私たちについて",
+        suppliers: "サプライヤー",
+        contact: "お問い合わせ",
+      },
+      followLabel: "お得をフォロー",
+      followSub: "新入荷は、棚に並ぶ前に毎日フィードに登場します。",
+      socialStores: "メルボルンの4店舗",
+      place: "メルボルン、オーストラリア · 1995年創業",
+      tagline: "おいしい食べ物は、ムダにしたくないですよね。",
+      privacy: "プライバシー",
+      cookies: "クッキー",
+    },
+  },
 });

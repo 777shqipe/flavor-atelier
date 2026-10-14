@@ -122,11 +122,13 @@ function copyOf(s: WhyText, beat: Beat, locale: string): Copy {
 }
 
 /**
- * The pieces a line rises in, one after another. Latin and Vietnamese split on spaces; Chinese has none,
- * so it splits into words, or rises as one piece where Intl.Segmenter is missing.
+ * The pieces a line rises in, one after another. Latin and Vietnamese split on spaces; Chinese and Japanese
+ * have none, so they split into words, or rise as one piece where Intl.Segmenter is missing.
  */
+const UNSPACED: Lang[] = ["zh", "ja"];
+
 function riseParts(text: string, lang: Lang, locale: string): string[] {
-  if (lang !== "zh") return text.split(" ");
+  if (!UNSPACED.includes(lang)) return text.split(" ");
   if (typeof Intl.Segmenter !== "function") return [text];
   return Array.from(new Intl.Segmenter(locale, { granularity: "word" }).segment(text), (part) => part.segment);
 }
@@ -425,7 +427,7 @@ export function WhyFilm() {
 
   const state = rewind ? "rewind" : running ? "rec" : "paused";
   const words = riseParts(head.lead, lang, locale);
-  const spaced = lang !== "zh";
+  const spaced = !UNSPACED.includes(lang);
 
   return (
     <section className="film" id="why" ref={root} data-surface="cream" aria-labelledby="why-title">

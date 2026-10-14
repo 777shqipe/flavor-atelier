@@ -93,6 +93,8 @@
 .tm-row { display: flex; align-items: center; justify-content: space-between; margin: 0; padding-top: clamp(12px, 1.2vw, 16px); border-top: 1px solid rgb(255 255 255 / 0.06); color: rgb(246 240 219 / 0.4); font: 700 10px / 1 var(--font-mono); letter-spacing: 0.18em; text-transform: uppercase; }
 .tm-row b { margin-left: 8px; color: rgb(246 240 219 / 0.8); }
 .tm-led { width: 6px; height: 6px; border-radius: 50%; background: #ff3d2b; box-shadow: 0 0 8px #ff3d2b; animation: tm-blink 1.4s steps(2) infinite; }
+/* The stars and the LED are endless loops: they wait while the section is off screen (TimeMachine.tsx sets data-off). */
+.tm[data-off] :is(.tm-warp i, .tm-led) { animation-play-state: paused; }
 @keyframes tm-blink { 50% { opacity: 0.25; } }
 
 /* ---------- rail ------------------------------------------------------------------ */

@@ -106,4 +106,71 @@ export const heroStrings = defineStrings({
     ringText: "1995 年起 • 对抗食物浪费 •",
     ringLabel: "1995 年起，对抗食物浪费",
   },
+  it: {
+    lines: [<>Buon cibo.</>, <>Prezzi {squiggle("bassi.")}</>, <>Meno {marker("sprechi.")}</>],
+    lead: (
+      <>
+        <strong>Alimentari di grandi marche, salvati dallo spreco</strong> e portati nel tuo cestino a una frazione del solito
+        prezzo.
+      </>
+    ),
+    findStore: "Trova un negozio",
+    seeFinds: "Vedi gli affari della settimana",
+    ghost: ["Il preferito di Melbourne", "discount alimentare"],
+    stickers: [
+      "Olio extravergine d’oliva",
+      "Ramen piccante",
+      "Latte d’avena barista",
+      "Soda frizzante all’arancia rossa",
+      "Gelato alla fragola",
+      "Marmellata di fragole",
+      "Barretta di biscotti al cioccolato",
+    ],
+    stickerLink: (label: string) => `${label}. Vedi gli affari della settimana`,
+    bursts: [
+      { note: "Pack da 4", rrp: "Ahia!" },
+      { note: "Limitato", rrp: "Ma va!" },
+    ],
+    rrp: "Listino",
+    stats: [
+      ["Dal 1995", "Contro lo spreco alimentare"],
+      ["4 negozi", "Nel cuore di Melbourne"],
+      ["Milioni", "kg di cibo salvati"],
+    ],
+    ringText: "DAL 1995 • CONTRO LO SPRECO ALIMENTARE •",
+    ringLabel: "Dal 1995, contro lo spreco alimentare",
+  },
+  ja: {
+    lines: [<>いい食材。</>, <>もっと{squiggle("お得。")}</>, <>ムダ{marker("控えめ。")}</>],
+    lead: (
+      <>
+        <strong>人気ブランドの食品を、食品ロスから救出</strong>して、いつもの価格のほんの一部でお届けします。
+      </>
+    ),
+    findStore: "店舗を探す",
+    seeFinds: "今週のお買い得を見る",
+    ghost: ["メルボルンの人気店", "格安スーパー"],
+    stickers: [
+      "エクストラバージンオリーブオイル",
+      "ピリ辛ラーメン",
+      "バリスタ用オーツミルク",
+      "ブラッドオレンジの炭酸飲料",
+      "いちごジェラート",
+      "いちごジャム",
+      "チョコビスケットバー",
+    ],
+    stickerLink: (label: string) => `${label}。今週のお買い得を見る`,
+    bursts: [
+      { note: "4個入り", rrp: "痛っ" },
+      { note: "数量限定", rrp: "ムリ" },
+    ],
+    rrp: "希望小売価格",
+    stats: [
+      ["1995年", "食品ロスと戦う"],
+      ["4店舗", "メルボルン中心部"],
+      ["数百万", "kgの食品を救出"],
+    ],
+    ringText: "1995年から • 食品ロスと戦う •",
+    ringLabel: "1995年から、食品ロスと戦う",
+  },
 });

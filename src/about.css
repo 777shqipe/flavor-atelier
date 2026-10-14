@@ -171,7 +171,8 @@
 .ah-art { isolation: isolate; }
 .ah-glow { position: absolute; inset: 6% -8% 2%; z-index: -1; border-radius: 50%; background: radial-gradient(closest-side, rgb(246 181 49 / 0.3), rgb(246 181 49 / 0.06) 55%, transparent 74%); filter: blur(12px); animation: ah-glow 7s ease-in-out infinite alternate; pointer-events: none; }
 @keyframes ah-glow { to { scale: 1.08; opacity: 0.75; } }
-.ah-art .hero-illo { animation: fade-up 1s 0.15s var(--ease-out) both, ah-float 7s 1.2s ease-in-out infinite alternate; }
+.ah-art .ah-bob { display: block; animation: ah-float 7s 1.2s ease-in-out infinite alternate; }
+.ah-art .hero-illo { animation: fade-up 1s 0.15s var(--ease-out) both; }
 @keyframes ah-float { to { translate: 0 -10px; rotate: 0.6deg; } }
 
 .story-pillars { counter-reset: pillar; }
@@ -198,5 +199,5 @@
   .wn-num { font-size: clamp(56px, 16vw, 72px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ah-glow, .ah-art .hero-illo { animation: none !important; }
+  .ah-glow, .ah-art .ah-bob, .ah-art .hero-illo { animation: none !important; }
 }

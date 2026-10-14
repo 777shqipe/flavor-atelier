@@ -89,4 +89,60 @@ export const flyerStrings = defineStrings({
     showAll: "查看全部",
     cut: "沿虚线剪开，留住省下的钱。",
   },
+  it: {
+    issue: (n) => `N° ${n}`,
+    week: (date) => `Settimana del ${date}`,
+    stores: "Quattro negozi · Melbourne",
+    title: (
+      <>
+        Il <em>volantino</em> settimanale.
+      </>
+    ),
+    ring: "FINCHÉ DURA • NOVITÀ OGNI SETTIMANA •",
+    ringLabel: "Finché dura",
+    dek: "Eccedenze, confezioni cambiate e prodotti a breve scadenza di marchi che conosci. Arriva, lo prezziamo basso: finito è finito.",
+    searchPlaceholder: "Cerca tra le corsie",
+    searchLabel: "Cerca nel volantino",
+    onSpecial: "In offerta",
+    sortLabel: "Ordina",
+    sorts: { featured: "In evidenza", price: "Prezzo ↑", saving: "Più risparmio" },
+    allAisles: "Tutte le corsie",
+    filterLabel: "Filtra per corsia",
+    finds: (n) => (n === 1 ? "occasione" : "occasioni"),
+    inAisle: (name) => ` nella corsia ${name}`,
+    clearAll: "Azzera tutto",
+    preview: "Anteprima della gamma · nomi e prezzi sono segnaposto",
+    emptyTitle: "Niente su questo scaffale.",
+    emptyBody: "La merce va via in fretta. Prova un’altra corsia o azzera i filtri.",
+    showAll: "Mostra tutto",
+    cut: "Taglia lungo la linea. Tieni il risparmio.",
+  },
+  ja: {
+    issue: (n) => `第${n}号`,
+    week: (date) => `${date}の週`,
+    stores: "4店舗・メルボルン",
+    title: (
+      <>
+        毎週の<em>チラシ。</em>
+      </>
+    ),
+    ring: "在庫限り • 毎週掘り出し物 •",
+    ringLabel: "在庫限り",
+    dek: "おなじみブランドの過剰在庫、パッケージ変更品、賞味期限が近い商品が入荷します。価格はぐっと下げて、なくなり次第終了です。",
+    searchPlaceholder: "棚から探す",
+    searchLabel: "チラシを検索",
+    onSpecial: "特売中",
+    sortLabel: "並べ替え",
+    sorts: { featured: "おすすめ", price: "価格 ↑", saving: "一番お得" },
+    allAisles: "すべての棚",
+    filterLabel: "棚で絞り込む",
+    finds: () => "点の掘り出し物",
+    inAisle: (name) => `（${name}）`,
+    clearAll: "すべてクリア",
+    preview: "プレビュー版・商品名と価格はダミーです",
+    emptyTitle: "この棚は空っぽです。",
+    emptyBody: "入れ替わりが早いんです。ほかの棚を見るか、絞り込みを外してみてください。",
+    showAll: "すべて表示",
+    cut: "点線に沿って切り取ってください。お得も忘れずに。",
+  },
 });

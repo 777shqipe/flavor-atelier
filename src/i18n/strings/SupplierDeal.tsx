@@ -101,4 +101,70 @@ export const supplierDealStrings = defineStrings({
       ["100%", "预先付款"],
     ],
   },
+  it: {
+    stops: {
+      tell: {
+        tag: "2 min",
+        title: "Dicci cosa hai",
+        text: "Bastano poche righe: cos’è, quanto ce n’è e quando deve uscire.",
+        gain: "Nessun ordine minimo. Qualche pallet o un intero camion.",
+      },
+      reply: {
+        tag: "Stesso giorno",
+        title: "Ti rispondiamo subito",
+        text: "Il nostro team acquisti ti ricontatta con un’offerta chiara.",
+        gain: "Decisioni rapide e quantità flessibili, così la merce non resta mai ferma.",
+      },
+      collect: {
+        tag: "Tutta l’Australia",
+        title: "Chiuso, ritiriamo noi.",
+        text: "Ritiriamo ovunque in Australia, spesso in giornata.",
+        gain: "La tua eccedenza ha una seconda vita, invece del cassonetto.",
+      },
+      paid: {
+        tag: "100% in anticipo",
+        title: "Pagati subito",
+        text: "Niente solleciti di fattura, niente ritardi. Ogni pallet è tracciato dal ritiro alla consegna.",
+        gain: "Ogni affare vuol dire meno spreco alimentare.",
+      },
+    },
+    proof: [
+      ["0", "Ordine minimo"],
+      ["Stesso giorno", "Risposte e ritiri"],
+      ["100%", "Pagamento anticipato"],
+    ],
+  },
+  ja: {
+    stops: {
+      tell: {
+        tag: "2分",
+        title: "在庫を教えてください",
+        text: "数行で十分です。商品、数量、動かしたい時期を書いてください。",
+        gain: "最低発注数はなし。数パレットでも、トラック1台分でも。",
+      },
+      reply: {
+        tag: "当日",
+        title: "すぐにご返信します",
+        text: "買い取りチームから、明確な条件でご連絡します。",
+        gain: "判断が早く数量も柔軟なので、在庫が滞りません。",
+      },
+      collect: {
+        tag: "オーストラリア全土",
+        title: "成約後にお引き取り",
+        text: "成約したら、どこからでも引き取ります。多くは当日中です。",
+        gain: "余った商品が捨てられずに、もう一度役立ちます。",
+      },
+      paid: {
+        tag: "100%前払い",
+        title: "先にお支払い",
+        text: "請求書の催促も、支払いの遅れもありません。パレットは引き取りから納品まで追跡します。",
+        gain: "取引のたびに、食品ロスが減ります。",
+      },
+    },
+    proof: [
+      ["0", "最低発注数"],
+      ["当日", "返信と引き取り"],
+      ["100%", "前払い"],
+    ],
+  },
 });

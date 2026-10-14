@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
-import { useLang, useT } from "./i18n";
+import { gap, useLang, useT } from "./i18n";
 import { flyerStrings } from "./i18n/strings/Flyer";
 import { productStrings } from "./i18n/strings/Products";
 import { Deal } from "./FlyerDeal";
@@ -118,7 +118,7 @@ export function CutLine() {
 export function Flyer() {
   const s = useT(flyerStrings);
   const p = useT(productStrings);
-  const { locale } = useLang();
+  const { lang, locale } = useLang();
   const [cat, setCat] = useState<CatFilter>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("featured");
@@ -238,7 +238,9 @@ export function Flyer() {
       </div>
 
       <p className="flyer-meta" aria-live="polite">
-        <strong>{visible.length}</strong> {s.finds(visible.length)}
+        <strong>{visible.length}</strong>
+        {gap(lang)}
+        {s.finds(visible.length)}
         {cat !== "all" && <>{s.inAisle(p.cats[cat])}</>}
         {filtered && (
           <button type="button" onClick={reset}>

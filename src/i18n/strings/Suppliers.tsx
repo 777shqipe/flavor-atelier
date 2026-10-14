@@ -56,4 +56,40 @@ export const suppliersStrings = defineStrings({
     dealLead: "四步，从“货太多了”到“卖光了，谢谢”，每一步对你有什么好处。",
     forYou: "对你",
   },
+  it: {
+    eyebrow: "Per i fornitori",
+    heroTitle: "Hai eccedenze?",
+    heroTitleLine2: "Diamo loro nuova vita.",
+    heroLead: "Decisioni rapide, quantità flessibili e un finale migliore per il cibo buono.",
+    quote: "Chiedi un preventivo",
+    howItWorks: "Come funziona",
+    buysLabel: "Cosa compriamo",
+    buys: ["In scadenza", "Oltre il termine minimo", "Eccedenze", "Qualche pallet", "Un intero camion"],
+    dealEyebrow: "Collaborare con noi",
+    dealTitle: (
+      <>
+        Un affare che conviene <em>a tutti.</em>
+      </>
+    ),
+    dealLead: "Quattro passaggi da “ne abbiamo troppo” a “è finito, grazie”, e cosa fa ciascuno per te.",
+    forYou: "Per te",
+  },
+  ja: {
+    eyebrow: "サプライヤーの方へ",
+    heroTitle: "余剰在庫？",
+    heroTitleLine2: "役立てましょう。",
+    heroLead: "判断は速く、数量は柔軟に。おいしい食品に、より良い行き先を。",
+    quote: "見積もりを依頼",
+    howItWorks: "仕組み",
+    buysLabel: "買い取る商品",
+    buys: ["期限間近", "賞味期限切れ", "余剰在庫", "数パレット", "トラック1台分"],
+    dealEyebrow: "一緒に取り組む",
+    dealTitle: (
+      <>
+        みんなにとって<em>いい取引。</em>
+      </>
+    ),
+    dealLead: "「余っています」から「完売、ありがとう」まで、4つのステップ。それぞれのメリットをご紹介します。",
+    forYou: "あなたのメリット",
+  },
 });

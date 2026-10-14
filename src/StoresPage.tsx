@@ -3,7 +3,7 @@ import { RingBadge } from "./RingBadge";
 import { StoreMap } from "./StoreMap";
 import { STORES, directionsLink, distanceKm, formatKm } from "./stores";
 import { useOpenStatus } from "./useOpenStatus";
-import { useT } from "./i18n";
+import { useLang, useT } from "./i18n";
 import { storeStrings } from "./i18n/strings/Stores";
 import { storesPageStrings } from "./i18n/strings/StoresPage";
 import "./stores.css";
@@ -23,6 +23,7 @@ const Icon = ({ d, circle }: { d: string; circle?: boolean }) => (
 
 export function StoresPage({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
   const s = useT(storesPageStrings);
+  const { locale } = useLang();
   const shared = useT(storeStrings);
   const status = useOpenStatus();
   const frame = useRef<HTMLDivElement>(null);
@@ -116,7 +117,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
               </a>
             </div>
             <p className="sh-near" key={`near-${store.id}`}>
-              {s.nextClosest(nearest.other.name, formatKm(nearest.km))}
+              {s.nextClosest(nearest.other.name, formatKm(nearest.km, locale))}
             </p>
           </article>
 

@@ -31,4 +31,24 @@ export const pageSwapStrings = defineStrings({
     nowShowing: "正在放映",
     toBrowse: "随便逛",
   },
+  it: {
+    labels: {
+      home: { title: "Home", line: "Nuovi affari ogni settimana." },
+      stores: { title: "Negozi", line: "Quattro negozi, una mappa." },
+      about: { title: "Chi siamo", line: "Recuperiamo cibo buono dal 1995." },
+    },
+    band: "Cheaper Buy Miles ✦ Prezzi stracciati ✦ ",
+    nowShowing: "In proiezione",
+    toBrowse: "da curiosare",
+  },
+  ja: {
+    labels: {
+      home: { title: "ホーム", line: "毎週、新しいお買い得品。" },
+      stores: { title: "店舗一覧", line: "4つのお店、ひとつの地図。" },
+      about: { title: "私たちについて", line: "1995年から、おいしい食品をレスキュー。" },
+    },
+    band: "Cheaper Buy Miles ✦ 在庫一掃 ✦ ",
+    nowShowing: "上映中",
+    toBrowse: "見るだけOK",
+  },
 });

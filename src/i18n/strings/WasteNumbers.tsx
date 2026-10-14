@@ -86,4 +86,58 @@ export const wasteNumbersStrings = defineStrings({
     edible: { num: "70", text: "其中仍然可以吃。" },
     cite: (name: string) => `来源：${name}`,
   },
+  it: {
+    eyebrow: "Perché conta",
+    title: "Cibo buono, buttato a tonnellate.",
+    lead: "La maggior parte del cibo che l’Australia butta via era ancora buono da mangiare. È la nicchia in cui lavoriamo: eccedenze, invenduti e prodotti a scadenza ravvicinata, comprati prima di diventare una statistica.",
+    full: "Pieno.",
+    tower: {
+      num: "250.000",
+      unit: "tonnellate",
+      text: (
+        <>
+          Cibo buono buttato via dalle famiglie del Victoria ogni anno. <b>Abbastanza per riempire l’Eureka Tower.</b>
+        </>
+      ),
+    },
+    bags: { connector: "su", text: "borse della spesa finiscono nel cestino, più o meno." },
+    big: {
+      num: "7,6",
+      unit: "milioni di tonnellate",
+      text: (
+        <>
+          di spreco alimentare in tutta l’Australia ogni anno, dai campi alla tavola. Vale circa <b>$36.6 miliardi</b>.
+        </>
+      ),
+    },
+    edible: { num: "70", text: "di questo era ancora buono da mangiare." },
+    cite: (name: string) => `Fonte: ${name}`,
+  },
+  ja: {
+    eyebrow: "なぜ大切？",
+    title: "食べられる食品が、トン単位で捨てられています。",
+    lead: "オーストラリアで捨てられる食品の大半は、もともと食べられるものです。私たちは、その隙間で働いています。余剰品や過剰在庫、期限の近い商品を、統計の数字になる前に仕入れています。",
+    full: "満杯。",
+    tower: {
+      num: "25",
+      unit: "万トン",
+      text: (
+        <>
+          まだ食べられる食品が、ビクトリア州の家庭で毎年捨てられています。<b>ユーレカ・タワーがいっぱいになる量です。</b>
+        </>
+      ),
+    },
+    bags: { connector: "/", text: "買い物袋分の食品が、だいたいゴミ箱に入っています。" },
+    big: {
+      num: "760",
+      unit: "万トン",
+      text: (
+        <>
+          の食品ロスが、オーストラリアで毎年出ています。農場から食卓まで、価値は約<b>$366億</b>です。
+        </>
+      ),
+    },
+    edible: { num: "70", text: "は、まだ食べられる状態でした。" },
+    cite: (name: string) => `出典：${name}`,
+  },
 });

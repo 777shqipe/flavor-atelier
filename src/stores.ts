@@ -97,7 +97,10 @@ export function distanceKm(aLat: number, aLon: number, bLat: number, bLon: numbe
   return 12742 * Math.asin(Math.sqrt(h));
 }
 
-export const formatKm = (km: number) => (km < 10 ? km.toFixed(1) : Math.round(km).toString()) + " km";
+export const formatKm = (km: number, locale = "en-AU") => {
+  const digits = km < 10 ? 1 : 0;
+  return `${km.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits })} km`;
+};
 
 /* ---------- opening hours -------------------------------------------- */
 // Mon–Sat 9–7, Sun 10–6, Melbourne time. Public holidays are not modelled.

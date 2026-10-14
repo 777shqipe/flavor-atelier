@@ -51,4 +51,36 @@ export const storesPageStrings = defineStrings({
     next: "下一家门店",
     choose: "选择门店",
   },
+  it: {
+    title: "I nostri negozi",
+    ring: "APERTI 7 GIORNI • BASTA SPRECHI •",
+    ringLabel: "Aperti sette giorni su sette",
+    sign: { open: "Aperto", closed: "Chiuso" },
+    directions: "Indicazioni",
+    nextClosest: (name, km) => (
+      <>
+        Il più vicino: <b>{name}</b> · a {km}
+      </>
+    ),
+    storefront: (name) => `Facciata del negozio ${name}`,
+    previous: "Negozio precedente",
+    next: "Negozio successivo",
+    choose: "Scegli un negozio",
+  },
+  ja: {
+    title: "私たちの店舗",
+    ring: "毎週7日営業 • 食品ロスと戦う •",
+    ringLabel: "毎週7日営業",
+    sign: { open: "営業中", closed: "閉店中" },
+    directions: "ルート",
+    nextClosest: (name, km) => (
+      <>
+        次に近い店舗：<b>{name}</b> · {km}先
+      </>
+    ),
+    storefront: (name) => `${name}店の外観`,
+    previous: "前の店舗",
+    next: "次の店舗",
+    choose: "店舗を選ぶ",
+  },
 });

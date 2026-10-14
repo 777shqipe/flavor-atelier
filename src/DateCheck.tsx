@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { useLang, useT } from "./i18n";
+import { gap, useLang, useT } from "./i18n";
 import { dateCheckStrings } from "./i18n/strings/DateCheck";
 import { Odometer } from "./Odometer";
 import { Pack } from "./Pack";
@@ -38,7 +38,7 @@ function verdictKey(days: number): Verdict {
 
 export function DateCheck() {
   const s = useT(dateCheckStrings);
-  const { locale } = useLang();
+  const { lang, locale } = useLang();
   // The packs are printed when the page loads.
   const [printed] = useState(() => new Date());
   const [days, setDays] = useState(0);
@@ -115,7 +115,9 @@ export function DateCheck() {
         <label htmlFor="dc-days">
           <span>{s.today(fmt(today, locale))}</span>
           <strong>
-            <Odometer value={`+${String(days).padStart(2, "0")}`} /> {s.days}
+            <Odometer value={`+${String(days).padStart(2, "0")}`} />
+            {gap(lang)}
+            {s.days}
           </strong>
         </label>
         <input

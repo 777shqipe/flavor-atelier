@@ -98,4 +98,66 @@ export const storeMapStrings = defineStrings({
     showAll: "显示全部门店",
     all: "全部",
   },
+  it: {
+    mapLabel: "Mappa dei quattro negozi Cheaper Buy Miles nel cuore di Melbourne",
+    pinTitle: (name) => `Negozio ${name}`,
+    you: "Tu",
+    landmarks: {
+      cbd: "Centro",
+      qvm: "Mercato Queen Victoria",
+      zoo: "Zoo di Melbourne",
+      cup: "Ippodromo di Flemington",
+      star: "Melbourne Star",
+      reb: "Edificio delle Esposizioni",
+      park: "Parco Royal",
+    },
+    north: "N",
+    findNearest: "Trova il più vicino",
+    locating: "Ti localizzo…",
+    nearest: (name, km) => (
+      <>
+        Più vicino: <b>{name}</b> · a {km}
+      </>
+    ),
+    locateError: {
+      unsupported: "Questo browser non supporta la localizzazione.",
+      denied: "Hai negato l’accesso alla posizione.",
+      failed: "Non riusciamo a capire dove sei.",
+    },
+    zoomIn: "Ingrandisci",
+    zoomOut: "Riduci",
+    showAll: "Mostra tutti i negozi",
+    all: "Tutti",
+  },
+  ja: {
+    mapLabel: "メルボルン中心部にあるCheaper Buy Milesの4店舗の地図",
+    pinTitle: (name) => `${name}店`,
+    you: "あなた",
+    landmarks: {
+      cbd: "都心",
+      qvm: "クイーン・ヴィクトリア市場",
+      zoo: "メルボルン動物園",
+      cup: "フレミントン競馬場",
+      star: "メルボルン・スター",
+      reb: "王立展示館",
+      park: "ロイヤル公園",
+    },
+    north: "北",
+    findNearest: "最寄りの店舗を探す",
+    locating: "現在地を確認中…",
+    nearest: (name, km) => (
+      <>
+        最寄り：<b>{name}</b> · {km}先
+      </>
+    ),
+    locateError: {
+      unsupported: "このブラウザでは位置情報が使えません。",
+      denied: "位置情報の利用が許可されませんでした。",
+      failed: "現在地を特定できませんでした。",
+    },
+    zoomIn: "拡大",
+    zoomOut: "縮小",
+    showAll: "全店舗を表示",
+    all: "すべて",
+  },
 });

@@ -11,7 +11,7 @@ import {
 } from "react";
 import { contactPanelStrings } from "./i18n/strings/ContactPanel";
 import { supplierDealStrings } from "./i18n/strings/SupplierDeal";
-import { useT } from "./i18n";
+import { gap, useLang, useT } from "./i18n";
 import { STORES } from "./stores";
 import { useOpenStatus } from "./useOpenStatus";
 import "./contact.css";
@@ -379,6 +379,7 @@ export function ContactPanel({
   const status = useOpenStatus();
 
   const s = useT(contactPanelStrings);
+  const { lang } = useLang();
   // The proof points are the same ones Suppliers shows, so both pages say them the same way.
   const proof = useT(supplierDealStrings).proof;
   const current = s.topics[topic];
@@ -592,7 +593,9 @@ export function ContactPanel({
                 <div className="ct-docket-id">
                   <b>{s.docket}</b>
                   <small>
-                    {s.docketNo} {docketNo}
+                    {s.docketNo}
+                    {gap(lang)}
+                    {docketNo}
                   </small>
                 </div>
                 <div className="ct-docket-to">

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
-import { useT } from "./i18n";
+import { gap, useLang, useT } from "./i18n";
 import { timeMachineStrings } from "./i18n/strings/TimeMachine";
 import { CART_SVG } from "./mapArt";
+import { pauseWhenOffscreen } from "./offscreen";
 import "./timemachine.css";
 
 /**
@@ -90,6 +91,7 @@ const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matc
 
 export function TimeMachine() {
   const s = useT(timeMachineStrings);
+  const { lang } = useLang();
   const [index, setIndex] = useState(0);
   const [shown, setShown] = useState(ERAS[0].year);
   const [warp, setWarp] = useState(0);
@@ -140,7 +142,12 @@ export function TimeMachine() {
     if (!el) return;
     const io = new IntersectionObserver(([entry]) => setSeen(entry.isIntersecting), { threshold: 0.45 });
     io.observe(el);
-    return () => io.disconnect();
+    // The twinkling stars and the blinking LED only run while the section is near the screen.
+    const stopLoops = pauseWhenOffscreen(el);
+    return () => {
+      io.disconnect();
+      stopLoops();
+    };
   }, []);
 
   useEffect(() => {
@@ -190,7 +197,9 @@ export function TimeMachine() {
             </div>
             <p className="tm-row">
               <span>
-                {s.present} <b>{NOW}</b>
+                {s.present}
+                {gap(lang)}
+                <b>{NOW}</b>
               </span>
               <span className="tm-led" aria-hidden="true" />
             </p>

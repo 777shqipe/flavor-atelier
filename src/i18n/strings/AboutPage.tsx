@@ -136,4 +136,83 @@ export const aboutPageStrings = defineStrings({
     sealEst: "始于",
     sealPlace: "墨尔本",
   },
+  it: {
+    eyebrow: "Chi siamo",
+    title: (
+      <>
+        Contro lo{" "}
+        {mark("spreco alimentare")}{" "}
+        <em className="ah-italic">dal 1995.</em>
+      </>
+    ),
+    lead: "Tutto è nato da un’idea semplice: il cibo perfettamente buono non dovrebbe mai andare sprecato.",
+    storyOne:
+      "Compriamo da fornitori di tutta l’Australia merce vicina alla scadenza, già oltre il “preferibilmente entro”, o in eccesso, e la vendiamo a una frazione del prezzo. Stesse grandi marche, stessa grande qualità, solo che costano molto meno.",
+    storyTwo: (
+      <>
+        Da un piccolo negozio di marmellate siamo diventati quattro negozi amatissimi. Prezzi pazzeschi, una missione <em>seria</em>.
+      </>
+    ),
+    why: (
+      <>
+        <b>Perché conta:</b> il cibo sprecato rappresenta circa il 6% delle emissioni globali di gas serra, quasi tre volte
+        quelle di tutta l’aviazione.{" "}
+        <a href="https://ourworldindata.org/food-waste-emissions" target="_blank" rel="noreferrer">
+          Fonte: Our World in Data
+        </a>
+      </>
+    ),
+    pillars: [
+      ["Fino al -70%", "Spesa di grandi marche"],
+      ["Zero discariche", "Tutto finisce in tavola"],
+      ["4 negozi in centro", "Novità ogni giorno"],
+    ],
+    sealUnder: (
+      <>
+        Ancora
+        <br />
+        qui.
+      </>
+    ),
+    sealEst: "Dal",
+    sealPlace: "Melbourne",
+  },
+  ja: {
+    eyebrow: "私たちについて",
+    title: (
+      <>
+        {mark("食品ロス")}と戦う、<em className="ah-italic">1995年から。</em>
+      </>
+    ),
+    lead: "始まりは、ひとつのシンプルな考えでした。まだおいしく食べられる食品は、ムダにしません。",
+    storyOne:
+      "オーストラリア各地のサプライヤーから、賞味期限が近いものや、期限を過ぎたもの、余剰在庫を仕入れて、通常の何分の一かの価格でお売りしています。人気ブランドも品質もそのままで、お値段はぐっとお手ごろです。",
+    storyTwo: (
+      <>
+        ジャムを売る小さなお店から始まり、今では4店舗の人気店に成長しました。信じられないほどの安さと、<em>真剣</em>な使命。
+      </>
+    ),
+    why: (
+      <>
+        <b>なぜ大切なのか：</b>食品ロスは世界の温室効果ガス排出量の約6%を占めていて、これは航空業界全体のおよそ3倍にあたります。{" "}
+        <a href="https://ourworldindata.org/food-waste-emissions" target="_blank" rel="noreferrer">
+          出典：Our World in Data
+        </a>
+      </>
+    ),
+    pillars: [
+      ["最大70%オフ", "人気ブランドの食品"],
+      ["埋め立てゼロ", "おいしい食品は食べきられる"],
+      ["中心部に4店舗", "毎日、新商品が入荷"],
+    ],
+    sealUnder: (
+      <>
+        今も
+        <br />
+        健在。
+      </>
+    ),
+    sealEst: "創業",
+    sealPlace: "メルボルン",
+  },
 });

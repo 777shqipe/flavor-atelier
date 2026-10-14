@@ -135,4 +135,90 @@ export const showcaseStrings = defineStrings({
       find: "找门店",
     },
   },
+  it: {
+    products: {
+      fizz: { brand: "Blood orange", unit: "4 × 330ml", alt: "Quattro lattine di blood orange fizz" },
+      ramen: { brand: "Noodles istantanei", unit: "4 confezioni", alt: "Busta di ramen istantaneo piccante" },
+      choc: { brand: "Choc-biscuit", unit: "Edizione limitata", alt: "Barretta di biscotto al cioccolato" },
+    },
+    heading: (brand, name, price, unit) => `${brand} ${name}, ${price} — ${unit}`,
+    was: (price) => `era ${price}`,
+    save: (amount) => `risparmi ${amount}`,
+    crav: {
+      sticker: ["ALLERTA", "BOLLE"],
+      caption: "Quattro lattine di sole italiano per $4. Fa $1 a lattina: fai due conti.",
+      origin: "Fatta con arance italiane e imbottigliata dal 1932 senza un filo di scuse.",
+    },
+    bucks: {
+      chip: "Piccante gourmet",
+      sub: "Ecco i noodles che rendono il martedì meno triste.",
+      tasteTitle: "Profilo del gusto",
+      taste: ["Brodo ricco, in primo piano", "Il piccante sale piano piano", "Noodles elastici, coccole vere", "Piccante gourmet, niente paura"],
+      pairsTitle: "Si abbina con",
+      pairs: "Uovo alla coque, cipollotto, kimchi, una fetta di formaggio (fidati), pollo arrosto avanzato, scalogno croccante e un weekend lunghissimo.",
+      flame: "Piccante gourmet",
+      medal: "Premium",
+      pack: "4 confezioni",
+      pot: "Piatto unico",
+      find: "Trovalo in negozio",
+      bowl: "$1 a ciotola",
+    },
+    cookie: {
+      hashtag: "#ChocIncontraBiscotto",
+      inside: ["BISCOTTO", "DENTRO"],
+      limited: ["EDIZIONE", "LIMITATA"],
+      only: "SOLO",
+      sharing: ["CONDIVIDI", "SE VUOI"],
+      def: (
+        <>
+          <b>/bis·kòt·to/</b> (sostantivo)<br />un biscotto con grandi ambizioni al cioccolato.
+        </>
+      ),
+      blurb: "Cioccolato e biscotto: è stata una cosa seria. Prendine uno prima che finiscano.",
+      find: "Trova un negozio",
+    },
+  },
+  ja: {
+    products: {
+      fizz: { brand: "Blood orange", unit: "4 × 330ml", alt: "Blood orange fizzの4缶入り" },
+      ramen: { brand: "インスタント麺", unit: "4食入り", alt: "ピリ辛インスタントラーメンの袋" },
+      choc: { brand: "Choc-biscuit", unit: "限定", alt: "チョコビスケットバー" },
+    },
+    heading: (brand, name, price, unit) => `${brand} ${name}、${price} — ${unit}`,
+    was: (price) => `元値${price}`,
+    save: (amount) => `${amount}オフ`,
+    crav: {
+      sticker: ["シュワ", "注意報"],
+      caption: "イタリアの陽ざしを、4缶で$4。1缶あたり$1です。計算してみてください。",
+      origin: "イタリア産オレンジを使用。1932年から、堂々と瓶詰め。",
+    },
+    bucks: {
+      chip: "本格ピリ辛",
+      sub: "火曜日の憂うつを、少し和らげる麺です。",
+      tasteTitle: "味のプロフィール",
+      taste: ["コクのある旨みスープが主役", "辛さがじわじわ上昇", "もちもち麺、ほっとする安心感", "本格ピリ辛、でも怖くない"],
+      pairsTitle: "おすすめの組み合わせ",
+      pairs: "半熟卵、小ネギ、キムチ、チーズひと切れ（ほんとですよ）、ローストチキンの残り、カリカリのエシャロット、そして、とびきり長い週末。",
+      flame: "本格ピリ辛",
+      medal: "プレミアム",
+      pack: "4食入り",
+      pot: "鍋ひとつで",
+      find: "店舗で探す",
+      bowl: "1杯あたり$1",
+    },
+    cookie: {
+      hashtag: "#チョコ×ビスケット",
+      inside: ["ビスケット", "入り"],
+      limited: ["限定", "生産"],
+      only: "たったの",
+      sharing: ["シェアは", "お好みで"],
+      def: (
+        <>
+          <b>/bi·su·ketto/</b>（名詞）<br />チョコレートに夢を抱くビスケット。
+        </>
+      ),
+      blurb: "チョコとビスケット、運命の出会いでした。なくなる前に、ぜひどうぞ。",
+      find: "店舗を探す",
+    },
+  },
 });

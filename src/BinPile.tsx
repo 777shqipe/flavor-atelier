@@ -3,6 +3,7 @@ import type * as MatterNS from "matter-js";
 import { useLang, useT } from "./i18n";
 import { binPileStrings } from "./i18n/strings/BinPile";
 import { LogoMark } from "./Logo";
+import { pauseWhenOffscreen } from "./offscreen";
 import { Pack } from "./Pack";
 import { Apple, Banana, Bread } from "./Produce";
 import { ITEMS, PACK_BOX, type Shape } from "./products";
@@ -250,12 +251,11 @@ export function BinPile() {
     near.observe(el);
 
     // The till's laser and the bin's blink are SVG loops, which Chrome runs on the main thread: they only run near the screen.
-    const sight = new IntersectionObserver(([entry]) => el.toggleAttribute("data-off", !entry.isIntersecting), { rootMargin: "120px 0px" });
-    sight.observe(el);
+    const stopLoops = pauseWhenOffscreen(el, "120px 0px");
     return () => {
       disposed = true;
       near.disconnect();
-      sight.disconnect();
+      stopLoops();
       teardown();
     };
   }, []);

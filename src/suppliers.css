@@ -38,6 +38,7 @@
 /* The truck rides the line and pulls up just short of each pin (its nose 4px off the pin edge). */
 .route-truck { position: absolute; bottom: -3px; left: 0; z-index: 2; width: 56px; translate: calc(-100% - var(--pin) / 2 - 4px) 0; }
 .route-bob { display: block; animation: route-bob 0.5s ease-in-out infinite alternate; }
+.route[data-off] .route-bob { animation-play-state: paused; }
 .route-truck svg { display: block; width: 100%; height: auto; }
 .route-truck .wheel { transform-box: fill-box; transform-origin: center; }
 @keyframes route-bob { to { translate: 0 -1.5px; } }

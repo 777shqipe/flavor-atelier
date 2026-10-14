@@ -2,6 +2,7 @@ import { useEffect, useRef, type CSSProperties } from "react";
 import { useT } from "./i18n";
 import { suppliersStrings } from "./i18n/strings/Suppliers";
 import { supplierDealStrings } from "./i18n/strings/SupplierDeal";
+import { pauseWhenOffscreen } from "./offscreen";
 import { STOPS } from "./supplierDeal";
 import { TruckScene } from "./TruckScene";
 import "./suppliers.css";
@@ -45,7 +46,12 @@ function Deal({ onContact }: { onContact: () => void }) {
     if (!el || !last) return;
     const ro = new ResizeObserver(() => el.style.setProperty("--last", `${last.offsetHeight - 27}px`));
     ro.observe(last);
-    return () => ro.disconnect();
+    // The truck's bobbing only runs while the route is near the screen.
+    const stopLoops = pauseWhenOffscreen(el);
+    return () => {
+      ro.disconnect();
+      stopLoops();
+    };
   }, []);
 
   return (

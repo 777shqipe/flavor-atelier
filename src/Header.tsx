@@ -168,9 +168,9 @@ export function Header({
                   </span>
                 </span>
               </button>
-              <LangSwitch className="in-bar" />
             </div>
           </div>
+          <LangSwitch variant="menu" />
 
           <button
             className="peek-btn"
@@ -231,7 +231,7 @@ export function Header({
                 <path d="M3 8h10M9 4l4 4-4 4" />
               </svg>
             </button>
-            <LangSwitch className="in-drawer" tabIndex={open ? 0 : -1} />
+            <LangSwitch variant="list" tabIndex={open ? 0 : -1} />
             <p className="drawer-foot" style={{ "--i": LINKS.length + 1 } as CSSProperties}>
               {s.foot}
             </p>

@@ -51,6 +51,38 @@ export const storeStrings = defineStrings({
       closedNext: (opens, sunday) => `已打烊 · ${sunday ? "周日" : "明天"} ${opens}:00 开门`,
     },
   },
+  it: {
+    hours: "Lun–Sab 9:00–19:00 · Dom 10:00–18:00",
+    lines: {
+      footscray: "La nostra tappa a ovest. Grandi marche, piccoli prezzi.",
+      flemington: "Racecourse Rd. Una scommessa sicura per gli affari.",
+      fitzroy: "Johnston St. Prendi un caffè, poi un affare.",
+      brunswick: "Sydney Road. Scendi dal tram, riempi il cestino.",
+    },
+    status: {
+      openShort: "Aperto ora",
+      closedShort: "Chiuso",
+      openNow: (closes) => `Aperto ora · chiude alle ${closes}:00`,
+      closedToday: (opens) => `Chiuso · oggi apre alle ${opens}:00`,
+      closedNext: (opens, sunday) => `Chiuso · ${sunday ? "domenica" : "domani"} apre alle ${opens}:00`,
+    },
+  },
+  ja: {
+    hours: "月〜土 9:00〜19:00 · 日 10:00〜18:00",
+    lines: {
+      footscray: "西エリアの店舗。人気ブランドが、お手ごろ価格。",
+      flemington: "Racecourse Rd。掘り出し物なら、ここが当たり。",
+      fitzroy: "Johnston St。コーヒーを一杯、そのあとお買い得。",
+      brunswick: "Sydney Road。トラムを降りて、かごをいっぱいに。",
+    },
+    status: {
+      openShort: "営業中",
+      closedShort: "閉店中",
+      openNow: (closes) => `営業中 · ${closes}:00閉店`,
+      closedToday: (opens) => `閉店中 · 本日${opens}:00開店`,
+      closedNext: (opens, sunday) => `閉店中 · ${sunday ? "日曜" : "明日"}${opens}:00開店`,
+    },
+  },
 });
 
 /** English 12-hour clock: 7pm, 10am. */

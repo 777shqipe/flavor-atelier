@@ -3,7 +3,7 @@ import type * as L from "leaflet";
 import { loadLeaflet, type Lib } from "./leaflet";
 import { LANDMARKS, landmarkHtml, shopPinSvg } from "./mapArt";
 import { STORES, distanceKm, formatKm, type Store } from "./stores";
-import { useT } from "./i18n";
+import { useLang, useT } from "./i18n";
 import { storeMapStrings } from "./i18n/strings/StoreMap";
 import "./storemap.css";
 
@@ -91,6 +91,7 @@ export function StoreMap({
   const [ready, setReady] = useState(false);
   const [near, setNear] = useState<Near>({ status: "idle" });
   const s = useT(storeMapStrings);
+  const { locale } = useLang();
   // The map build and the geolocation callback run outside render, so they read the language from here.
   const text = useRef(s);
 
@@ -335,7 +336,7 @@ export function StoreMap({
             {near.status === "loading" ? s.locating : s.findNearest}
           </button>
           {near.status === "error" && <p className="finder-note">{s.locateError[near.reason]}</p>}
-          {near.status === "ok" && <p className="finder-note ok">{s.nearest(STORES[near.index].name, formatKm(near.km))}</p>}
+          {near.status === "ok" && <p className="finder-note ok">{s.nearest(STORES[near.index].name, formatKm(near.km, locale))}</p>}
         </div>
         <div className="finder-top right">
           <div className="zoom">
