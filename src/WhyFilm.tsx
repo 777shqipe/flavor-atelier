@@ -11,13 +11,13 @@ import "./whyfilm.css";
  * "Why it costs less" as one self-playing film, looping on its own: the
  * numbers (bags, Eureka Tower, a skyline of thirty towers, 70% still good),
  * then the label (a box of corn flakes ages past its best-before and gets
- * marked down while the milk past its use-by comes off sale), then the
- * receipt (that same box is scanned and prints as the first line of a
- * rescued basket). The tape rewinds and it starts again.
+ * cheaper), then the receipt (that same box is scanned and prints as the
+ * first line of a rescued basket). The tape rewinds and it starts again.
  *
- * One clock drives everything: React only flips the current beat, CSS
- * transitions do the moving, and the scrubber and timecode are painted
- * straight from the clock.
+ * One idea per frame: a chapter title, one number, one short line, and one
+ * thing moving on the stage. One clock drives everything: React only flips
+ * the current beat, CSS transitions do the moving, and the scrubber is
+ * painted straight from the clock.
  */
 
 const SOURCES = {
@@ -31,84 +31,69 @@ const SOURCES = {
 };
 
 const CHAPTERS = [
-  { label: "The numbers", eyebrow: "Why it matters", lead: "Good food, binned by the", hl: "tonne.", mark: "line" },
-  { label: "The label", eyebrow: "Read the date", lead: "Best before isn’t a", hl: "bin day.", mark: "line" },
-  { label: "The receipt", eyebrow: "The bin vs. your basket", lead: "Every receipt is a", hl: "rescue.", mark: "ring" },
+  { label: "The numbers", lead: "Good food, binned by the", hl: "tonne.", mark: "line" },
+  { label: "The label", lead: "Best before isn’t a", hl: "bin day.", mark: "line" },
+  { label: "The receipt", lead: "Every receipt is a", hl: "rescue.", mark: "ring" },
 ] as const;
 
 /** The corn flakes from the shelf scene ring up first, at their last markdown. */
 const RRP_FLAKES = 5.5;
 const MARKDOWNS = [
-  { days: 7, price: 4, rot: -10, top: "6%" },
-  { days: 30, price: 3, rot: 7, top: "19%" },
-  { days: 60, price: 2, rot: -4, top: "32%" },
+  { days: 7, price: 4 },
+  { days: 30, price: 3 },
+  { days: 60, price: 2 },
 ];
-const BASKET: Array<{ id: string; why: string; kg: number; price?: number; was?: number }> = [
-  { id: "cornflakes", why: "Past best before. Still crunchy.", kg: 0.73, price: 2, was: RRP_FLAKES },
-  { id: "dumplings", why: "Dented box. Dumplings fine.", kg: 0.75 },
-  { id: "cheddar", why: "Wonky cut. Still sharp.", kg: 0.5 },
-  { id: "oil", why: "Old label. Same olives.", kg: 0.69 },
+const BASKET: Array<{ id: string; kg: number; price?: number; was?: number }> = [
+  { id: "cornflakes", kg: 0.73, price: 2, was: RRP_FLAKES },
+  { id: "dumplings", kg: 0.75 },
+  { id: "cheddar", kg: 0.5 },
+  { id: "oil", kg: 0.69 },
 ];
 const LINES = BASKET.flatMap((entry) => {
   const item = ITEMS.find((candidate) => candidate.id === entry.id);
   if (!item) return [];
   const price = entry.price ?? item.price;
   const was = entry.was ?? item.was ?? item.price;
-  return [{ id: entry.id, why: entry.why, kg: entry.kg, name: item.name, price, was }];
+  return [{ id: entry.id, kg: entry.kg, name: item.name, price, was }];
 });
 const SAVED = LINES.reduce((sum, line) => sum + line.was - line.price, 0);
 const KG = LINES.reduce((sum, line) => sum + line.kg, 0);
 
 const money = (value: number) => value.toFixed(2);
-const DAY = 86_400_000;
 const PRINTED = new Date();
-const dayOf = (days: number) => new Date(PRINTED.getTime() + days * DAY);
-const fmt = (date: Date) => date.toLocaleDateString("en-AU", { day: "2-digit", month: "short" }).toUpperCase();
-const STAMP_DATE = `${String(PRINTED.getDate()).padStart(2, "0")}/${String(PRINTED.getMonth() + 1).padStart(2, "0")}/${String(PRINTED.getFullYear()).slice(2)}`;
+const BB_DATE = PRINTED.toLocaleDateString("en-AU", { day: "2-digit", month: "short" }).toUpperCase();
 
-type Copy = { num: string; unit: string; text: string; sub?: string; src?: { name: string; href: string }; note?: string };
+type Fine = { text: string; href?: string };
+type Copy = { num: string; unit: string; line: string; fine?: Fine };
 
-/** Every beat of the film: which chapter it belongs to, how long it holds, and what the copy says meanwhile. */
+const SAFETY: Fine = { text: "Use by is different: past that date, we never sell." };
+const SAMPLE: Fine = { text: "A sample basket. Prices are placeholders." };
+const cite = (source: { name: string; href: string }): Fine => ({ text: `Source: ${source.name}`, href: source.href });
+
+/** Every beat of the film: which chapter it belongs to, how long it holds, and its one number and one line. */
 const BEATS: Array<{ id: string; ch: 0 | 1 | 2; ms: number; copy: Copy }> = [
-  { id: "bags", ch: 0, ms: 3600, copy: { num: "1/5", unit: "bags of groceries", text: "One bag of groceries in five ends up in the bin, roughly.", src: SOURCES.bags } },
-  { id: "tower", ch: 0, ms: 3700, copy: { num: "250,000", unit: "tonnes a year", text: "Good food thrown out by Victorian households every year. Enough to fill Eureka Tower.", src: SOURCES.vic } },
-  { id: "sky", ch: 0, ms: 3700, copy: { num: "7.6", unit: "million tonnes", text: "Wasted across Australia every year, farm to fork. About $36.6 billion, or some 30 Eureka Towers.", src: SOURCES.fial } },
-  { id: "good", ch: 0, ms: 3600, copy: { num: "70", unit: "% still good", text: "Of all that food, seven tonnes in ten were still good to eat. That is the gap we work in.", src: SOURCES.edible } },
-  { id: "d0", ch: 1, ms: 3200, copy: { num: "+00", unit: "days past the date", text: "Corn flakes, best before today. Milk, use by today. Same date, different rules.", note: "Best before is about quality. Use by is about safety." } },
-  { id: "d7", ch: 1, ms: 2800, copy: { num: "+07", unit: "days past the date", text: "The milk is past its use-by: off our shelf, always. The corn flakes are still good, now $4.", note: "Best before is about quality. Use by is about safety." } },
-  { id: "d30", ch: 1, ms: 2600, copy: { num: "+30", unit: "days past the date", text: "A month on. Still crunchy, still perfectly safe. Now $3.", note: "Best before is about quality. Use by is about safety." } },
-  { id: "d60", ch: 1, ms: 3000, copy: { num: "+60", unit: "days past the date", text: "Quality may soften. Safety doesn’t change. So it stays on sale, for $2.", note: "Demo prices are placeholders." } },
-  { id: "scan", ch: 2, ms: 1900, copy: { num: "$00.00", unit: "saved on one basket", text: "Beep. The corn flakes from the shelf, $2 instead of $5.50.", sub: "0.0 kg kept out of the bin", note: "A sample basket. Prices and weights are placeholders." } },
-  ...LINES.map((line, i) => {
-    const upTo = LINES.slice(0, i + 1);
-    const saved = upTo.reduce((sum, l) => sum + l.was - l.price, 0);
-    const kg = upTo.reduce((sum, l) => sum + l.kg, 0);
-    return {
-      id: `l${i + 1}`,
-      ch: 2 as const,
-      ms: 1250,
-      copy: {
-        num: `$${money(saved).padStart(5, "0")}`,
-        unit: "saved on one basket",
-        text: `${line.name}. ${line.why}`,
-        sub: `${kg.toFixed(1)} kg kept out of the bin`,
-        note: "A sample basket. Prices and weights are placeholders.",
-      },
-    };
-  }),
-  {
-    id: "done",
-    ch: 2,
-    ms: 4200,
+  { id: "bags", ch: 0, ms: 3600, copy: { num: "1/5", unit: "bags", line: "of groceries end up in the bin.", fine: cite(SOURCES.bags) } },
+  { id: "tower", ch: 0, ms: 3800, copy: { num: "250,000", unit: "tonnes", line: "a year from Victorian homes. A whole Eureka Tower.", fine: cite(SOURCES.vic) } },
+  { id: "sky", ch: 0, ms: 3600, copy: { num: "7.6", unit: "million tonnes", line: "across Australia, every year. Thirty towers.", fine: cite(SOURCES.fial) } },
+  { id: "good", ch: 0, ms: 3400, copy: { num: "70", unit: "%", line: "of it was still good to eat.", fine: cite(SOURCES.edible) } },
+  { id: "d0", ch: 1, ms: 3000, copy: { num: "+00", unit: "days", line: "Best before today.", fine: SAFETY } },
+  { id: "d7", ch: 1, ms: 2400, copy: { num: "+07", unit: "days", line: "Still good. Now $4.", fine: SAFETY } },
+  { id: "d30", ch: 1, ms: 2400, copy: { num: "+30", unit: "days", line: "Still good. Now $3.", fine: SAFETY } },
+  { id: "d60", ch: 1, ms: 2800, copy: { num: "+60", unit: "days", line: "Still good. Now $2.", fine: SAFETY } },
+  { id: "scan", ch: 2, ms: 1800, copy: { num: "$00.00", unit: "saved", line: "Beep. Into the basket.", fine: SAMPLE } },
+  ...LINES.map((line, i) => ({
+    id: `l${i + 1}`,
+    ch: 2 as const,
+    ms: 1100,
     copy: {
-      num: `$${money(SAVED)}`,
-      unit: "saved on one basket",
-      text: "Good food kept out of the bin, and money kept in your pocket. One less bag tipped over.",
-      sub: `${KG.toFixed(1)} kg kept out of the bin`,
-      note: "A sample basket. Prices and weights are placeholders.",
+      num: `$${money(LINES.slice(0, i + 1).reduce((sum, l) => sum + l.was - l.price, 0)).padStart(5, "0")}`,
+      unit: "saved",
+      line: `${line.name}.`,
+      fine: SAMPLE,
     },
-  },
-  { id: "rewind", ch: 2, ms: 1300, copy: { num: "$00.00", unit: "saved on one basket", text: "Rewinding…", sub: "0.0 kg kept out of the bin" } },
+  })),
+  { id: "done", ch: 2, ms: 4000, copy: { num: `$${money(SAVED)}`, unit: "saved", line: `And ${KG.toFixed(1)} kg of good food rescued.`, fine: SAMPLE } },
+  { id: "rewind", ch: 2, ms: 1300, copy: { num: "$00.00", unit: "saved", line: "" } },
 ];
 
 const IDX = Object.fromEntries(BEATS.map((beat, i) => [beat.id, i])) as Record<string, number>;
@@ -126,9 +111,6 @@ const beatAt = (t: number) => {
   while (i < BEATS.length - 1 && t >= START[i + 1]) i += 1;
   return i;
 };
-const two = (n: number) => String(Math.floor(n)).padStart(2, "0");
-/** mm:ss:ff at 24 frames a second. */
-const timecode = (ms: number) => `${two(ms / 60000)}:${two((ms / 1000) % 60)}:${two(((ms % 1000) / 1000) * 24)}`;
 
 /* ---------- the numbers: one SVG world ----------------------------------- */
 
@@ -142,15 +124,12 @@ const SKYLINE = [
 const BIG_SLOT = 7;
 const at = (cx: number, base: number, s: number) => `translate(${cx - 60 * s}px, ${base - 396 * s}px) scale(${s})`;
 
-function TowerBody({ fill, good }: { fill?: boolean; good?: boolean }) {
+function TowerBody({ fill }: { fill?: boolean }) {
   return (
     <>
-      <path d={TOWER} fill="#0d2a21" stroke="rgb(246 240 219 / 0.55)" strokeWidth="1.6" />
-      <path d={TOWER} fill="url(#fw-floors)" />
+      <path d={TOWER} fill="#0d2a21" stroke="rgb(246 240 219 / 0.5)" strokeWidth="1.6" />
       <g clipPath="url(#fw-clip)">
         <rect x="38" y="44" width="44" height="58" fill="#e7b04a" opacity="0.9" />
-        <path d="M38 60H82M38 76H82M38 92H82" stroke="#b9822a" strokeWidth="1.2" />
-        <rect x="72" y="102" width="5" height="200" fill="#e3261b" />
         {fill ? (
           <g className="fw-fill">
             <path
@@ -163,9 +142,9 @@ function TowerBody({ fill, good }: { fill?: boolean; good?: boolean }) {
         ) : (
           <rect x="30" y="40" width="60" height="360" fill="url(#fw-food)" />
         )}
-        {good && <rect className="fw-good" x="30" y={GOOD_TOP} width="60" height={396 - GOOD_TOP + 4} fill="url(#fw-fresh)" />}
+        <rect className="fw-good" x="30" y={GOOD_TOP} width="60" height={396 - GOOD_TOP + 4} fill="url(#fw-fresh)" />
       </g>
-      <path d="M60 48V20" stroke="rgb(246 240 219 / 0.6)" strokeWidth="1.5" />
+      <path d="M60 48V20" stroke="rgb(246 240 219 / 0.5)" strokeWidth="1.5" />
     </>
   );
 }
@@ -186,10 +165,6 @@ function Bags() {
           </g>
         </g>
       ))}
-      <g className="fw-bin-tag" transform="translate(296 -34)">
-        <rect x="-34" y="-15" width="68" height="24" rx="5" fill="#e3261b" />
-        <text x="0" y="2" textAnchor="middle">BINNED</text>
-      </g>
     </g>
   );
 }
@@ -197,7 +172,6 @@ function Bags() {
 function World({ on, step }: { on: boolean; step: number }) {
   const flag = (id: string) => (step >= IDX[id] ? true : undefined);
   return (
-    <>
     <svg
       className="fw"
       viewBox="0 0 600 500"
@@ -211,22 +185,17 @@ function World({ on, step }: { on: boolean; step: number }) {
         <clipPath id="fw-clip">
           <path d={TOWER} />
         </clipPath>
-        <pattern id="fw-floors" width="44" height="9" patternUnits="userSpaceOnUse">
-          <path d="M0 8.5H44" stroke="rgb(246 240 219 / 0.12)" strokeWidth="1" />
-        </pattern>
         <pattern id="fw-food" width="22" height="22" patternUnits="userSpaceOnUse">
           <rect width="22" height="22" fill="#d9442b" />
           <circle cx="5" cy="6" r="3.2" fill="#f6b531" />
           <circle cx="16" cy="14" r="3.6" fill="#9f2416" />
           <circle cx="8" cy="18" r="2.2" fill="#5fae5a" />
-          <rect x="13" y="2" width="6" height="3" rx="1.5" fill="#f3d9a4" />
         </pattern>
         <pattern id="fw-fresh" width="22" height="22" patternUnits="userSpaceOnUse">
           <rect width="22" height="22" fill="#6fd3b0" />
           <circle cx="5" cy="6" r="3.2" fill="#f6b531" />
           <circle cx="16" cy="14" r="3.6" fill="#2f9a6b" />
           <circle cx="8" cy="18" r="2.2" fill="#fffaf0" />
-          <rect x="13" y="2" width="6" height="3" rx="1.5" fill="#fffaf0" />
         </pattern>
       </defs>
 
@@ -241,7 +210,7 @@ function World({ on, step }: { on: boolean; step: number }) {
           style={{ transform: at(slot.cx, slot.base, slot.s), "--d": Math.abs(slot.i - BIG_SLOT) } as CSSProperties}
         >
           <g className="fw-rise">
-            <TowerBody good />
+            <TowerBody />
           </g>
         </g>
       ))}
@@ -249,37 +218,14 @@ function World({ on, step }: { on: boolean; step: number }) {
       {/* Eureka Tower itself: rises, fills, then shrinks into the skyline */}
       <g className="fw-tower" style={{ "--to": at(300, 460, 0.46) } as CSSProperties}>
         <g className="fw-rise">
-          <TowerBody fill good />
-          <g className="fw-scale">
-            <path d="M118 396V48" />
-            {Array.from({ length: 8 }, (_, i) => (
-              <path key={i} d={`M114 ${396 - i * 49.7}h8`} />
-            ))}
-            <text x="126" y="52">297 m</text>
-          </g>
-          <g className="fw-full" transform="translate(-6 128) rotate(-12)">
-            <rect x="-4" y="-26" width="74" height="34" rx="6" />
-            <text x="33" y="0" textAnchor="middle">FULL.</text>
-          </g>
+          <TowerBody fill />
         </g>
       </g>
 
-      <g className="fw-times">
-        <text className="fw-x" x="300" y="150" textAnchor="middle">×30</text>
-        <text className="fw-xsub" x="300" y="182" textAnchor="middle">Eureka Towers of food, every year</text>
-      </g>
+      <text className="fw-x" x="300" y="190" textAnchor="middle">
+        ×30
+      </text>
     </svg>
-    <p className="fw-key" data-on={(on && flag("good")) || undefined}>
-      <span>
-        <i data-kind="good" />
-        Still good to eat · 70%
-      </span>
-      <span>
-        <i />
-        The rest · 30%
-      </span>
-    </p>
-    </>
   );
 }
 
@@ -299,26 +245,18 @@ export function WhyFilm() {
   const stage = useRef<HTMLDivElement>(null);
   const paper = useRef<HTMLDivElement>(null);
   const lens = useRef<HTMLSpanElement>(null);
-  const tc = useRef<HTMLSpanElement>(null);
   const clock = useRef(reduce ? START[LAST[0]] : 0);
   const shown = useRef(beat);
 
   const running = playing && inView && !hidden && !hold;
 
-  /** Scrubber fill and timecode come straight from the clock, no re-render. */
+  /** The scrubber fills straight from the clock, no re-render. */
   const paint = useCallback(() => {
     const t = clock.current;
     const b = beatAt(t);
-    if (b === REWIND) {
-      const back = START[REWIND] * (1 - (t - START[REWIND]) / BEATS[REWIND].ms);
-      lens.current?.style.setProperty("--p", "0");
-      if (tc.current) tc.current.textContent = timecode(Math.max(0, back));
-      return;
-    }
     const ch = BEATS[b].ch;
-    const p = (t - CH_START[ch]) / (CH_END[ch] - CH_START[ch]);
+    const p = b === REWIND ? 0 : (t - CH_START[ch]) / (CH_END[ch] - CH_START[ch]);
     lens.current?.style.setProperty("--p", Math.min(1, p).toFixed(4));
-    if (tc.current) tc.current.textContent = timecode(t);
   }, []);
 
   useEffect(() => {
@@ -399,7 +337,7 @@ export function WhyFilm() {
   const copy = standby ? { ...current.copy, num: current.copy.num.replace(/\d/g, "0") } : current.copy;
   const head = CHAPTERS[ch];
 
-  // The label scene.
+  // The label scene: one box, one price sticker that gets slapped again at every markdown.
   const days = reached("d60") ? 60 : reached("d30") ? 30 : reached("d7") ? 7 : 0;
   const price = MARKDOWNS.reduce((now, mark) => (days >= mark.days ? mark.price : now), RRP_FLAKES);
   const box = rewind || step < IDX.d0 ? "off" : step <= IDX.d60 ? "shelf" : step === IDX.scan ? "scan" : "slot";
@@ -435,18 +373,9 @@ export function WhyFilm() {
         data-ch={ch}
         data-state={state}
       >
-        <span className="film-frame" aria-hidden="true" />
-
-        <header className="film-hud">
-          <span className="film-rec">{state === "rewind" ? "◀◀ Rewind" : state === "rec" ? "Rec" : "Paused"}</span>
-          <h2 id="why-title" className="film-title">
-            Why it costs less
-          </h2>
-          <span className="film-tc" aria-hidden="true">
-            <span ref={tc}>00:00:00</span>
-            <small> / {timecode(START[REWIND])}</small>
-          </span>
-        </header>
+        <h2 id="why-title" className="film-title">
+          Why it costs less
+        </h2>
 
         <div
           className="film-copy"
@@ -455,9 +384,6 @@ export function WhyFilm() {
             if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHold(false);
           }}
         >
-          <p className="fc-eyebrow" key={`e${ch}`}>
-            <b>0{ch + 1}</b> {head.label} <span>· {head.eyebrow}</span>
-          </p>
           <h3 className="fc-head" key={`h${ch}`}>
             {words.map((word, i) => (
               <span className="fc-w" key={i} style={{ "--w": i } as CSSProperties}>
@@ -487,26 +413,22 @@ export function WhyFilm() {
             <Odometer value={copy.num} />
             <small>{copy.unit}</small>
           </div>
-          {/* always there, so the copy doesn't jump when the receipt adds its kilos line */}
-          <p className="fc-sub" aria-hidden="true">
-            {copy.sub ?? "\u00a0"}
+          <p className="fc-line" key={`t${current.id}`}>
+            {copy.line}
           </p>
-          <p className="fc-text" key={`t${current.id}`}>
-            {copy.text}
-          </p>
-          {copy.src ? (
+          {copy.fine?.href ? (
             <a
-              className="fc-cite"
-              href={copy.src.href}
+              className="fc-fine"
+              href={copy.fine.href}
               target="_blank"
               rel="noreferrer"
               onPointerEnter={() => setHold(true)}
               onPointerLeave={() => setHold(false)}
             >
-              Source: {copy.src.name}
+              {copy.fine.text}
             </a>
           ) : (
-            copy.note && <p className="fc-cite">{copy.note}</p>
+            <p className="fc-fine">{copy.fine?.text ?? " "}</p>
           )}
         </div>
 
@@ -514,57 +436,19 @@ export function WhyFilm() {
           <div className="fs-canvas">
             <World on={ch === 0 && !rewind} step={standby ? -1 : step} />
 
-            {/* the label: a shelf, a calendar, two packs with the same date */}
-            <div className="fsh" data-on={(ch === 1) || undefined} data-gone={reached("d7") || undefined}>
-              <div className="fsh-cal">
-                <span className="fsh-cal-rings" />
-                <span className="fsh-cal-month">{fmt(dayOf(days)).split(" ")[1]}</span>
-                <span className="fsh-cal-page" key={days}>
-                  <b>{fmt(dayOf(days)).split(" ")[0]}</b>
-                  <small>{days ? `+${days} days` : "Today"}</small>
-                </span>
-              </div>
-              <span className="fsh-tag" data-kind="bb">
-                Best before <i>=</i> quality
-              </span>
-              <span className="fsh-tag" data-kind="ub">
-                Use by <i>=</i> safety
-              </span>
-              <div className="fsh-milk">
-                <Pack shape="carton" color="#6bb8ff" label={["FRESH", "MILK"]} />
-                <span className="fsh-date">USE BY {fmt(PRINTED)}</span>
-                <Stamp on={reached("d7")} text="Not for sale" sub="Use by means use by" className="fsh-stamp" />
-              </div>
-              <span className="fsh-plank" />
-              <span className="fsh-ticket" data-kind="bb" data-cut={price < RRP_FLAKES || undefined}>
-                <small>Corn flakes 725g</small>
-                <Odometer value={`$${money(price)}`} />
-                <s>{price < RRP_FLAKES ? `$${money(RRP_FLAKES)}` : ""}</s>
-              </span>
-              <span className="fsh-ticket" data-kind="ub">
-                <small>Fresh milk 1L</small>
-                <b>{reached("d7") ? "Removed" : "$2.00"}</b>
-              </span>
-            </div>
+            {/* the label: just a shelf, the box sits on it */}
+            <span className="fsh" data-on={ch === 1 || undefined} />
 
             {/* the box of corn flakes, the one actor who crosses from the shelf to the till */}
             <div className="fbox" data-at={box}>
               <Pack shape="box" color="#f3b62f" label={["CORN", "FLAKES"]} />
-              <span className="fbox-date">BB {fmt(PRINTED)}</span>
-              {MARKDOWNS.map((mark) => (
-                <span
-                  key={mark.days}
-                  className="fbox-mark"
-                  data-on={days >= mark.days || undefined}
-                  data-last={mark.price === 2 || undefined}
-                  style={{ "--rot": `${mark.rot}deg`, top: mark.top } as CSSProperties}
-                >
-                  <small>Reduced</small>${mark.price}
+              <span className="fbox-date">BB {BB_DATE}</span>
+              {price < RRP_FLAKES && (
+                <span className="fbox-mark" key={price} data-last={price === 2 || undefined}>
+                  ${price}
                 </span>
-              ))}
-              <Stamp on={reached("d30")} text="Still good" sub="Best before ≠ bad after" tone="green" className="fbox-stamp" />
+              )}
               <span className="fbox-laser" />
-              <span className="fbox-beep">Beep</span>
             </div>
 
             {/* the receipt: the till prints the basket, line by line */}
@@ -575,32 +459,20 @@ export function WhyFilm() {
                     <header className="r-head">
                       <LogoMark className="r-logo" />
                       <strong>Cheaper Buy Miles</strong>
-                      <span>Tax invoice · {STAMP_DATE}</span>
                     </header>
                     <hr />
                     {LINES.map((line, i) => (
-                      <div className={i < printed ? "r-item on" : "r-item"} key={line.id}>
-                        <p className="r-row">
-                          <span>{line.name}</span>
-                          <span>{money(line.price)}</span>
-                        </p>
-                        <p className="r-row r-why">
-                          <span>↳ {line.why}</span>
-                          <s>{money(line.was)}</s>
-                        </p>
-                      </div>
+                      <p className={i < printed ? "r-item r-row on" : "r-item r-row"} key={line.id}>
+                        <span>{line.name}</span>
+                        <span>{money(line.price)}</span>
+                      </p>
                     ))}
                     <hr />
                     <p className="r-row r-total">
                       <span>You saved</span>
                       <span>${money(SAVED)}</span>
                     </p>
-                    <p className="r-row">
-                      <span>Kept out of landfill</span>
-                      <span>{KG.toFixed(1)} kg</span>
-                    </p>
-                    <p className="r-thanks">Thanks for rescuing.</p>
-                    <Stamp on={reached("done")} text="Rescued" sub={`${KG.toFixed(1)} kg · not wasted`} className="r-stamp" />
+                    <Stamp on={reached("done")} text="Rescued" className="r-stamp" />
                   </div>
                 </div>
               </div>
@@ -628,15 +500,10 @@ export function WhyFilm() {
                 </div>
                 <div className="reg-foot">
                   <LogoMark className="reg-logo" />
-                  <span>CBM · till 02 · thermal</span>
+                  <span>CBM · till 02</span>
                   <i className="reg-led" />
                 </div>
               </div>
-              {latest && phase === "printing" && (
-                <span className="r-pop" key={latest.id}>
-                  <small>Saved</small>${money(latest.was - latest.price)}
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -664,13 +531,6 @@ export function WhyFilm() {
           </nav>
         </div>
 
-        {!standby && !reduce && !rewind && (
-          <div className="film-card" key={`c${ch}`} aria-hidden="true">
-            <span>0{ch + 1}</span>
-            <b>{CHAPTERS[ch].label}</b>
-            <small>Chapter 0{ch + 1} / 03</small>
-          </div>
-        )}
         <span className="film-vhs" data-on={rewind || undefined} aria-hidden="true" />
       </div>
     </section>
