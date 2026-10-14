@@ -65,11 +65,10 @@ export function LangSwitch({ variant, className = "", tabIndex }: { variant: "me
         aria-label={`Language: ${LANG_NAMES[lang]}`}
         onClick={() => setOpen((value) => !value)}
       >
-        <svg viewBox="0 0 16 16" aria-hidden="true">
-          <circle cx="8" cy="8" r="6.2" />
-          <path d="M1.8 8h12.4M8 1.8c2 2 2.8 4 2.8 6.2S10 12.2 8 14.2C6 12.2 5.2 10.2 5.2 8S6 3.8 8 1.8z" />
-        </svg>
         <span>{SHORT[lang]}</span>
+        <svg className="caret" viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M2 3.5l3 3 3-3" />
+        </svg>
       </button>
       {open && (
         <div className="lang-pop" role="group" aria-label="Language · Ngôn ngữ · 语言 · Lingua · 言語">

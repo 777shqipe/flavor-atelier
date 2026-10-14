@@ -62,7 +62,7 @@ export const headerStrings = defineStrings({
     mainNav: "メインナビゲーション",
     mobileNav: "モバイルナビゲーション",
     contact: "お問い合わせ",
-    nowServing: "ただいまの番号",
+    nowServing: "ご案内中",
     you: "あなた",
     hideNav: "ナビを隠す",
     showNav: "ナビを表示",
