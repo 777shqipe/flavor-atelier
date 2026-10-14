@@ -1,23 +1,23 @@
 /* "Why it costs less" as one self-playing film. One idea per frame: a chapter
    title, one number, one short line on the left, one thing moving on the
-   600×500 stage on the right, and the chapter pill as the scrubber. */
+   wide 760×520 stage on the right, and three thin progress lines below. */
 
-.film { padding: clamp(56px, 7vw, 104px) var(--pad); }
+.film { padding: clamp(48px, 6vw, 96px) clamp(12px, 2.4vw, 40px); }
 
 .film-screen {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
   grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas: "copy stage" "ctrl ctrl";
-  height: clamp(580px, 84vh, 760px);
-  max-width: 1320px;
+  height: clamp(560px, 82vh, 760px);
+  max-width: 1480px;
   margin: 0 auto;
   overflow: hidden;
   isolation: isolate;
   border-radius: clamp(24px, 3vw, 40px);
   background:
-    radial-gradient(820px 520px at 74% 50%, rgb(0 88 66 / 0.5), transparent 70%),
+    radial-gradient(1000px 560px at 66% 50%, rgb(0 88 66 / 0.5), transparent 70%),
     #05241b;
   box-shadow: 0 0 0 1px rgb(0 40 30 / 0.25), 0 60px 90px -50px rgb(0 20 14 / 0.75), inset 0 1px 0 rgb(246 240 219 / 0.1);
 }
@@ -56,7 +56,7 @@
   position: absolute;
   z-index: 6;
   top: clamp(22px, 2.6vw, 34px);
-  left: clamp(26px, 4vw, 64px);
+  left: clamp(28px, 4.4vw, 72px);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -79,7 +79,7 @@
   flex-direction: column;
   justify-content: center;
   min-width: 0;
-  padding: 56px 0 0 clamp(26px, 4vw, 64px);
+  padding: 56px 0 0 clamp(28px, 4.4vw, 72px);
 }
 .fc-head {
   min-height: 2.1em;
@@ -132,14 +132,14 @@ a.fc-fine:focus-visible { opacity: 0.9; }
   z-index: 2;
   min-width: 0;
   min-height: 0;
-  margin: 0 clamp(16px, 2vw, 36px) 0 0;
+  margin: 0 clamp(8px, 1.4vw, 24px) 0 0;
   -webkit-mask: linear-gradient(transparent, #000 8%);
   mask: linear-gradient(transparent, #000 8%);
 }
-.fs-canvas { position: absolute; left: 50%; top: 52%; width: 600px; height: 500px; translate: -50% -50%; scale: var(--k, 1); }
+.fs-canvas { position: absolute; left: 50%; top: 50%; width: 760px; height: 520px; translate: -50% -50%; scale: var(--k, 1); }
 
 /* the numbers --------------------------------------------------------- */
-.fw { position: absolute; inset: 0; width: 600px; height: 500px; overflow: visible; opacity: 0; transition: opacity 0.6s; }
+.fw { position: absolute; inset: 0; width: 760px; height: 520px; overflow: visible; opacity: 0; transition: opacity 0.6s; }
 .fw[data-on] { opacity: 1; }
 .fw-ground { stroke: rgb(246 240 219 / 0.22); stroke-width: 1.5; }
 
@@ -151,7 +151,7 @@ a.fc-fine:focus-visible { opacity: 0.9; }
 @keyframes fw-tip { 0% { rotate: 0deg; } 25% { rotate: -7deg; } 100% { rotate: 82deg; } }
 
 /* the big tower: rises, fills, shrinks into slot 7 of the skyline */
-.fw-tower { transform: translate(234.6px, 28.4px) scale(1.09); transition: transform 1.2s var(--ease-out) 0.15s; }
+.fw-tower { transform: translate(311px, 24.6px) scale(1.15); transition: transform 1.2s var(--ease-out) 0.15s; }
 .fw[data-sky] .fw-tower { transform: var(--to); }
 .fw-rise { transform-box: fill-box; transform-origin: 50% 100%; scale: 1 0; transition: scale 0.9s var(--spring); }
 .fw[data-tower] .fw-tower .fw-rise { scale: 1 1; transition-delay: 0.25s; }
@@ -169,16 +169,16 @@ a.fc-fine:focus-visible { opacity: 0.9; }
 .fw-tower .fw-good { transition-delay: 0.3s; }
 .fw[data-good] .fw-good { scale: 1 1; }
 
-.fw-x { fill: var(--sun); font: 400 120px var(--font-display); letter-spacing: 0.02em; opacity: 0; translate: 0 14px; transition: opacity 0.5s, translate 0.7s var(--ease-out); }
+.fw-x { fill: var(--sun); font: 400 130px var(--font-display); letter-spacing: 0.02em; opacity: 0; translate: 0 14px; transition: opacity 0.5s, translate 0.7s var(--ease-out); }
 .fw[data-sky] .fw-x { opacity: 1; translate: 0 0; transition-delay: 1.4s; }
 .fw[data-good] .fw-x { opacity: 0; translate: 0 -14px; transition-delay: 0s; }
 
-/* the label: a shelf and one box ---------------------------------------- */
+/* the label: one shelf, the milk at the back, the box in front -------------- */
 .fsh {
   position: absolute;
-  left: 110px;
-  right: 110px;
-  top: 400px;
+  left: 120px;
+  right: 120px;
+  top: 440px;
   height: 12px;
   border-radius: 6px;
   background: linear-gradient(#efe7cd, #c9bb93);
@@ -189,48 +189,90 @@ a.fc-fine:focus-visible { opacity: 0.9; }
 }
 .fsh[data-on] { opacity: 1; scale: 1; }
 
-.fbox {
-  --tx: 0px;
-  --ty: -380px;
+.pk { display: block; width: 100%; height: auto; overflow: visible; }
+.pk-caps { font: 700 15px var(--font-cond); letter-spacing: 5px; }
+.pk-caps-sm { font-size: 12px; letter-spacing: 4px; }
+.pk-word { font: 400 40px var(--font-fun); }
+.pk-word-sm { font-size: 32px; }
+.pk-small { font: 700 10px var(--font-cond); letter-spacing: 1.5px; }
+/* the printed date, like an inkjet stamp on the pack */
+.pk-date {
   position: absolute;
-  z-index: 3;
-  left: 195px;
-  top: 106px;
-  width: 210px;
-  opacity: 0;
-  translate: var(--tx) var(--ty);
-  rotate: -12deg;
-  filter: drop-shadow(0 18px 14px rgb(0 0 0 / 0.38));
-  transition: translate 0.8s var(--bounce), rotate 0.8s var(--bounce), scale 0.6s var(--ease-out), opacity 0.3s;
-}
-.fbox svg { display: block; width: 100%; height: auto; }
-.fbox[data-at="shelf"] { --ty: 0px; opacity: 1; rotate: -2deg; transition-delay: 0.3s; }
-.fbox[data-at="scan"] { --ty: -84px; opacity: 1; rotate: 0deg; scale: 0.72; transition-timing-function: var(--ease-out); }
-.fbox[data-at="slot"] {
-  --ty: 119px;
-  opacity: 0;
-  rotate: 0deg;
-  scale: 0.1;
-  transition: translate 0.45s cubic-bezier(0.55, 0, 0.8, 0.2), scale 0.45s cubic-bezier(0.55, 0, 0.8, 0.2), opacity 0.15s 0.32s;
-}
-.fbox-date {
-  position: absolute;
-  left: 50%;
-  bottom: 9%;
-  translate: -50% 0;
+  left: 14%;
+  bottom: 12%;
   padding: 5px 7px 4px;
   border: 1.5px solid #141414;
   background: #fff;
   color: #141414;
   font: 700 11px / 1 var(--font-mono);
   white-space: nowrap;
+  transition: background-color 0.3s, color 0.3s;
 }
-/* one price sticker, slapped again (and cheaper) at every markdown */
+
+.fbox,
+.fmilk {
+  --tx: 0px;
+  --ty: -400px;
+  position: absolute;
+  opacity: 0;
+  translate: var(--tx) var(--ty);
+  filter: drop-shadow(0 20px 16px rgb(0 0 0 / 0.4));
+  transition: translate 0.8s var(--bounce), rotate 0.8s var(--bounce), scale 0.6s var(--ease-out), opacity 0.3s;
+}
+.fbox { z-index: 3; left: 180px; top: 154px; width: 220px; rotate: -12deg; }
+.fbox[data-at="shelf"] { --ty: 0px; opacity: 1; rotate: -2deg; transition-delay: 0.3s; }
+.fbox[data-at="solo"] { --tx: 90px; --ty: 0px; opacity: 1; rotate: -2deg; transition: translate 0.9s var(--ease-out) 0.5s, rotate 0.8s var(--bounce), scale 0.6s var(--ease-out), opacity 0.3s; }
+.fbox .pk-date { left: auto; right: 30%; bottom: 3%; }
+.fbox[data-at="scan"] { --tx: 90px; --ty: -118px; opacity: 1; rotate: 0deg; scale: 0.62; transition-timing-function: var(--ease-out); }
+.fbox[data-at="slot"] {
+  --tx: 90px;
+  --ty: 80px;
+  opacity: 0;
+  rotate: 0deg;
+  scale: 0.08;
+  transition: translate 0.45s cubic-bezier(0.55, 0, 0.8, 0.2), scale 0.45s cubic-bezier(0.55, 0, 0.8, 0.2), opacity 0.15s 0.32s;
+}
+
+/* the milk: same date, but a use-by. Pulled the day after, then off the shelf. */
+.fmilk { z-index: 2; left: 452px; top: 172px; width: 150px; rotate: 10deg; }
+.fmilk .pk-date { left: 12%; bottom: 25%; }
+.fmilk svg { transition: filter 0.6s; }
+.fmilk[data-at="shelf"],
+.fmilk[data-at="pulled"] { --ty: 0px; opacity: 1; rotate: 2deg; transition-delay: 0.55s; }
+.fmilk[data-at="pulled"] { transition-delay: 0s; }
+.fmilk[data-at="pulled"] svg { filter: grayscale(0.9) brightness(0.78); }
+.fmilk[data-at="pulled"] .pk-date { background: var(--tomato); color: #fff; }
+.fmilk[data-at="gone"] {
+  --tx: 260px;
+  --ty: -30px;
+  opacity: 0;
+  rotate: 22deg;
+  transition: translate 0.8s cubic-bezier(0.55, 0, 0.8, 0.2), rotate 0.8s ease-in, opacity 0.35s 0.45s;
+}
+.fmilk-tag {
+  position: absolute;
+  left: -10%;
+  top: 40%;
+  padding: 7px 10px 6px;
+  border: 2px solid #141414;
+  border-radius: 8px;
+  background: var(--tomato);
+  box-shadow: 3px 3px 0 #141414;
+  color: #fff;
+  font: 400 19px / 1 var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  rotate: -12deg;
+  animation: fbox-slap 0.5s var(--bounce) 0.35s both;
+}
+
+/* one price sticker on the box, slapped again (and cheaper) at every markdown */
 .fbox-mark {
   position: absolute;
   z-index: 2;
-  top: 6%;
-  right: -22%;
+  top: 13%;
+  right: -8%;
   padding: 10px 14px 9px;
   border: 2px solid #141414;
   border-radius: 12px;
@@ -241,6 +283,7 @@ a.fc-fine:focus-visible { opacity: 0.9; }
   rotate: -8deg;
   animation: fbox-slap 0.5s var(--bounce) both;
 }
+.fbox[data-at="shelf"] .fbox-mark { animation-delay: 0.25s; }
 .fbox-mark[data-last] { background: var(--tomato); color: #fff; }
 @keyframes fbox-slap { from { opacity: 0; scale: 1.9; rotate: -24deg; } }
 .fbox-laser {
@@ -274,6 +317,7 @@ a.fc-fine:focus-visible { opacity: 0.9; }
   transition: opacity 0.5s;
 }
 .fst[data-on] { opacity: 1; }
+.fst { scale: 1.12; transform-origin: 50% 100%; }
 .fst .paper { padding: 18px 18px 22px; font-size: 12px; transition: translate 0.55s steps(9, end); }
 .film-screen[data-beat="rewind"] .fst .paper { transition: translate 1.1s cubic-bezier(0.5, 0, 0.5, 1); }
 .fst .r-head { gap: 0; margin-bottom: 6px; }
@@ -284,86 +328,50 @@ a.fc-fine:focus-visible { opacity: 0.9; }
 .fst .r-stamp { top: 54%; font-size: 44px; }
 .fst .reg-face { height: 80px; }
 
-/* ---------- controls ---------------------------------------------------- */
+/* ---------- controls: pause, and three thin progress lines (one per chapter) ---------- */
 .film-ctrl {
   grid-area: ctrl;
   position: relative;
   z-index: 6;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 10px 20px clamp(20px, 2.6vw, 30px);
+  gap: 18px;
+  padding: 0 clamp(28px, 4.4vw, 72px) clamp(20px, 2.4vw, 30px);
 }
 .film-play {
   display: grid;
   flex: none;
   place-items: center;
-  width: 54px;
-  height: 54px;
+  width: 40px;
+  height: 40px;
   border: 0;
   border-radius: 50%;
-  background: var(--cream);
-  color: var(--green-900);
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.14), 0 10px 20px -10px rgb(0 0 0 / 0.6);
+  background: rgb(246 240 219 / 0.12);
+  color: var(--cream);
   cursor: pointer;
-  transition: scale 0.3s var(--spring), background-color 0.3s;
+  transition: scale 0.3s var(--spring), background-color 0.3s, color 0.3s;
 }
-.film-play svg { width: 22px; height: 22px; fill: currentColor; }
-.film-play:hover { background: var(--sun); scale: 1.06; }
+.film-play svg { width: 16px; height: 16px; fill: currentColor; }
+.film-play:hover { background: var(--sun); color: var(--green-900); scale: 1.06; }
 .film-play:active { scale: 0.94; }
 .film-play:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
 
-.film-bar {
-  --pad-in: 5px;
+.film-prog { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.film-prog button {
+  --f: 0;
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 100%;
-  padding: var(--pad-in);
-  border-radius: 999px;
-  background: rgb(246 240 219 / 0.07);
-  box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.14);
-}
-/* the old tab lens, now also the playhead: a thin line fills along its bottom while its chapter plays */
-.film-lens {
-  --p: 0;
-  position: absolute;
-  top: var(--pad-in);
-  bottom: var(--pad-in);
-  left: var(--pad-in);
-  width: calc((100% - var(--pad-in) * 2) / 3);
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--sun);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 6px 14px -8px rgb(0 0 0 / 0.6);
-  translate: calc(var(--i) * 100%) 0;
-  transition: translate 0.6s var(--spring);
-}
-.film-lens::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--p) * 100%); background: var(--green-900); opacity: 0.45; }
-.film-bar button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 22px;
+  height: 24px;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
   background: none;
-  color: var(--cream);
-  font: 700 12px / 1 var(--font-sans);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
   cursor: pointer;
-  transition: color 0.3s;
 }
-.film-bar button small { font: 700 10px / 1 var(--font-mono); opacity: 0.55; }
-.film-bar button:hover { color: var(--sun); }
-.film-bar button[aria-current] { color: var(--green-900); }
-.film-bar button:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+.film-prog button::before,
+.film-prog button::after { content: ""; position: absolute; left: 0; top: 50%; height: 3px; margin-top: -1.5px; border-radius: 3px; }
+.film-prog button::before { right: 0; background: rgb(246 240 219 / 0.16); transition: background-color 0.3s; }
+.film-prog button::after { width: calc(var(--f) * 100%); background: var(--sun); }
+.film-prog button:hover::before { background: rgb(246 240 219 / 0.32); }
+.film-prog button:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------- rewind ------------------------------------------------------ */
 .film-vhs {
@@ -390,17 +398,18 @@ a.fc-fine:focus-visible { opacity: 0.9; }
     height: auto;
   }
   .film-copy { padding: 64px 24px 0; }
+  .film-ctrl { padding: 4px 24px 22px; }
   .fc-head { font-size: clamp(28px, 7vw, 42px); }
   .fc-num { margin-top: 24px; font-size: clamp(64px, 16vw, 96px); }
-  .film-stage { height: min(80vw, 440px); margin: 0 12px; }
+  .film-stage { aspect-ratio: 760 / 520; margin: 8px 8px 0; }
+}
+@media (max-width: 599px) {
+  .film-stage { aspect-ratio: 680 / 520; }
 }
 @media (max-width: 560px) {
   .film { padding-inline: 12px; }
   .film-title { left: 24px; }
-  .film-ctrl { gap: 8px; padding: 6px 12px 18px; }
-  .film-play { width: 46px; height: 46px; }
-  .film-bar button { padding: 0 11px; font-size: 10.5px; letter-spacing: 0.04em; }
-  .film-bar button small { display: none; }
+  .film-ctrl { gap: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -409,10 +418,12 @@ a.fc-fine:focus-visible { opacity: 0.9; }
   .fc-line,
   .fw-wave,
   .fbox-mark,
+  .fmilk-tag,
   .film-vhs[data-on] { animation: none !important; }
   .fw *,
   .fsh,
   .fbox,
+  .fmilk,
   .fst .paper,
   .fc-hl path { transition-duration: 0s !important; transition-delay: 0s !important; }
   .fw[data-tip] .fw-bag { animation-duration: 0s !important; animation-delay: 0s !important; }

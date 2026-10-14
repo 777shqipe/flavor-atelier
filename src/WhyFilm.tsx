@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { LogoMark } from "./Logo";
 import { Odometer } from "./Odometer";
-import { Pack } from "./Pack";
+import { CerealBox, MilkCarton } from "./FilmPacks";
 import { ITEMS } from "./products";
 import { Stamp } from "./Stamp";
 import "./receipt.css";
@@ -10,8 +10,8 @@ import "./whyfilm.css";
 /**
  * "Why it costs less" as one self-playing film, looping on its own: the
  * numbers (bags, Eureka Tower, a skyline of thirty towers, 70% still good),
- * then the label (a box of corn flakes ages past its best-before and gets
- * cheaper), then the receipt (that same box is scanned and prints as the
+ * then the label (corn flakes and milk share a date; the milk past its use-by
+ * comes off the shelf, the flakes past best-before just get cheaper), then the receipt (that same box is scanned and prints as the
  * first line of a rescued basket). The tape rewinds and it starts again.
  *
  * One idea per frame: a chapter title, one number, one short line, and one
@@ -66,7 +66,7 @@ const BB_DATE = PRINTED.toLocaleDateString("en-AU", { day: "2-digit", month: "sh
 type Fine = { text: string; href?: string };
 type Copy = { num: string; unit: string; line: string; fine?: Fine };
 
-const SAFETY: Fine = { text: "Use by is different: past that date, we never sell." };
+const SAFETY: Fine = { text: "Best before is about quality. Use by is about safety." };
 const SAMPLE: Fine = { text: "A sample basket. Prices are placeholders." };
 const cite = (source: { name: string; href: string }): Fine => ({ text: `Source: ${source.name}`, href: source.href });
 
@@ -76,8 +76,8 @@ const BEATS: Array<{ id: string; ch: 0 | 1 | 2; ms: number; copy: Copy }> = [
   { id: "tower", ch: 0, ms: 3800, copy: { num: "250,000", unit: "tonnes", line: "a year from Victorian homes. A whole Eureka Tower.", fine: cite(SOURCES.vic) } },
   { id: "sky", ch: 0, ms: 3600, copy: { num: "7.6", unit: "million tonnes", line: "across Australia, every year. Thirty towers.", fine: cite(SOURCES.fial) } },
   { id: "good", ch: 0, ms: 3400, copy: { num: "70", unit: "%", line: "of it was still good to eat.", fine: cite(SOURCES.edible) } },
-  { id: "d0", ch: 1, ms: 3000, copy: { num: "+00", unit: "days", line: "Best before today.", fine: SAFETY } },
-  { id: "d7", ch: 1, ms: 2400, copy: { num: "+07", unit: "days", line: "Still good. Now $4.", fine: SAFETY } },
+  { id: "d0", ch: 1, ms: 3000, copy: { num: "+00", unit: "days", line: "Same date on both. Different rules.", fine: SAFETY } },
+  { id: "d7", ch: 1, ms: 3000, copy: { num: "+07", unit: "days", line: "Use by passed: the milk goes. The flakes stay, at $4.", fine: SAFETY } },
   { id: "d30", ch: 1, ms: 2400, copy: { num: "+30", unit: "days", line: "Still good. Now $3.", fine: SAFETY } },
   { id: "d60", ch: 1, ms: 2800, copy: { num: "+60", unit: "days", line: "Still good. Now $2.", fine: SAFETY } },
   { id: "scan", ch: 2, ms: 1800, copy: { num: "$00.00", unit: "saved", line: "Beep. Into the basket.", fine: SAMPLE } },
@@ -118,8 +118,8 @@ const TOWER = "M38 396V74l8-26h28l8 26v322Z";
 const GOOD_TOP = 396 - 0.7 * 348;
 /** A skyline of thirty Eureka Towers: fifteen in front, fifteen further back. The big one lands in front, slot 7. */
 const SKYLINE = [
-  ...Array.from({ length: 15 }, (_, i) => ({ cx: 20 + 40 * i, base: 460, s: 0.46, back: false, i })),
-  ...Array.from({ length: 15 }, (_, i) => ({ cx: 34 + 38 * i, base: 404, s: 0.36, back: true, i })),
+  ...Array.from({ length: 15 }, (_, i) => ({ cx: 25.33 + 50.67 * i, base: 480, s: 0.52, back: false, i })),
+  ...Array.from({ length: 15 }, (_, i) => ({ cx: 44 + 48 * i, base: 420, s: 0.4, back: true, i })),
 ];
 const BIG_SLOT = 7;
 const at = (cx: number, base: number, s: number) => `translate(${cx - 60 * s}px, ${base - 396 * s}px) scale(${s})`;
@@ -151,8 +151,8 @@ function TowerBody({ fill }: { fill?: boolean }) {
 
 function Bags() {
   return (
-    <g className="fw-bags" transform="translate(72 313) scale(1.4)">
-      {[0, 64, 128, 192, 262].map((x, i) => (
+    <g className="fw-bags" transform="translate(131 338) scale(1.35)">
+      {[0, 76, 152, 228, 304].map((x, i) => (
         <g key={i} className={`fw-bag${i === 4 ? " tips" : ""}`} style={{ "--i": i } as CSSProperties}>
           <g transform={`translate(${x} 0)`}>
             <rect x="16" y="6" width="9" height="34" rx="4.5" fill="#e0a458" stroke="#141414" strokeWidth="2" transform="rotate(-14 20 20)" />
@@ -174,7 +174,7 @@ function World({ on, step }: { on: boolean; step: number }) {
   return (
     <svg
       className="fw"
-      viewBox="0 0 600 500"
+      viewBox="0 0 760 520"
       data-on={on || undefined}
       data-tip={flag("bags")}
       data-tower={flag("tower")}
@@ -199,7 +199,7 @@ function World({ on, step }: { on: boolean; step: number }) {
         </pattern>
       </defs>
 
-      <path className="fw-ground" d="M0 460.5H600" />
+      <path className="fw-ground" d="M0 480.5H760" />
       <Bags />
 
       {/* the skyline: everyone but the big tower, rising out from the middle */}
@@ -216,13 +216,13 @@ function World({ on, step }: { on: boolean; step: number }) {
       ))}
 
       {/* Eureka Tower itself: rises, fills, then shrinks into the skyline */}
-      <g className="fw-tower" style={{ "--to": at(300, 460, 0.46) } as CSSProperties}>
+      <g className="fw-tower" style={{ "--to": at(380, 480, 0.52) } as CSSProperties}>
         <g className="fw-rise">
           <TowerBody fill />
         </g>
       </g>
 
-      <text className="fw-x" x="300" y="190" textAnchor="middle">
+      <text className="fw-x" x="380" y="214" textAnchor="middle">
         ×30
       </text>
     </svg>
@@ -244,19 +244,21 @@ export function WhyFilm() {
   const screen = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const paper = useRef<HTMLDivElement>(null);
-  const lens = useRef<HTMLSpanElement>(null);
+  const segs = useRef<Array<HTMLButtonElement | null>>([]);
   const clock = useRef(reduce ? START[LAST[0]] : 0);
   const shown = useRef(beat);
 
   const running = playing && inView && !hidden && !hold;
 
-  /** The scrubber fills straight from the clock, no re-render. */
+  /** The three progress lines fill straight from the clock, no re-render; the rewind drains them all. */
   const paint = useCallback(() => {
     const t = clock.current;
     const b = beatAt(t);
-    const ch = BEATS[b].ch;
-    const p = b === REWIND ? 0 : (t - CH_START[ch]) / (CH_END[ch] - CH_START[ch]);
-    lens.current?.style.setProperty("--p", Math.min(1, p).toFixed(4));
+    const back = 1 - (t - START[REWIND]) / BEATS[REWIND].ms;
+    segs.current.forEach((seg, i) => {
+      const f = b === REWIND ? back : (t - CH_START[i]) / (CH_END[i] - CH_START[i]);
+      seg?.style.setProperty("--f", Math.min(1, Math.max(0, f)).toFixed(4));
+    });
   }, []);
 
   useEffect(() => {
@@ -292,11 +294,15 @@ export function WhyFilm() {
     };
   }, [paint]);
 
-  // The stage is drawn on a fixed 600×500 canvas and scaled to whatever room it gets.
+  // The stage is drawn on a fixed 760×520 canvas and scaled to whatever room it gets.
   useLayoutEffect(() => {
     const el = stage.current;
     if (!el) return;
-    const fit = () => el.style.setProperty("--k", Math.min(el.clientWidth / 600, el.clientHeight / 500).toFixed(4));
+    // On a phone the canvas may lose a little of its far edges, so the packs and the till come out bigger.
+    const fit = () => {
+      const w = el.clientWidth < 600 ? 680 : 760;
+      el.style.setProperty("--k", Math.min(el.clientWidth / w, el.clientHeight / 520).toFixed(4));
+    };
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(el);
@@ -340,7 +346,11 @@ export function WhyFilm() {
   // The label scene: one box, one price sticker that gets slapped again at every markdown.
   const days = reached("d60") ? 60 : reached("d30") ? 30 : reached("d7") ? 7 : 0;
   const price = MARKDOWNS.reduce((now, mark) => (days >= mark.days ? mark.price : now), RRP_FLAKES);
-  const box = rewind || step < IDX.d0 ? "off" : step <= IDX.d60 ? "shelf" : step === IDX.scan ? "scan" : "slot";
+  // Once the milk is gone, the box slides over to the middle of the shelf.
+  const box =
+    rewind || step < IDX.d0 ? "off" : step < IDX.d30 ? "shelf" : step <= IDX.d60 ? "solo" : step === IDX.scan ? "scan" : "slot";
+  // The milk shares the date, but it is a use-by: pulled a day after, then gone from the shelf.
+  const milk = rewind || step < IDX.d0 ? "off" : step < IDX.d7 ? "shelf" : step < IDX.d30 ? "pulled" : "gone";
 
   // The receipt scene.
   const printed = reached("done") ? LINES.length : LINES.findLastIndex((_, i) => reached(`l${i + 1}`)) + 1;
@@ -360,7 +370,6 @@ export function WhyFilm() {
           : ["READY", "SCAN A BASKET"];
 
   const state = rewind ? "rewind" : running ? "rec" : "paused";
-  const lensCh = rewind ? 0 : ch;
   const words = head.lead.split(" ");
 
   return (
@@ -436,13 +445,18 @@ export function WhyFilm() {
           <div className="fs-canvas">
             <World on={ch === 0 && !rewind} step={standby ? -1 : step} />
 
-            {/* the label: just a shelf, the box sits on it */}
+            {/* the label: a shelf, the milk at the back of it, the box in front */}
             <span className="fsh" data-on={ch === 1 || undefined} />
+            <div className="fmilk" data-at={milk}>
+              <MilkCarton />
+              <span className="pk-date">USE BY {BB_DATE}</span>
+              {milk === "pulled" && <span className="fmilk-tag">Not for sale</span>}
+            </div>
 
             {/* the box of corn flakes, the one actor who crosses from the shelf to the till */}
             <div className="fbox" data-at={box}>
-              <Pack shape="box" color="#f3b62f" label={["CORN", "FLAKES"]} />
-              <span className="fbox-date">BB {BB_DATE}</span>
+              <CerealBox />
+              <span className="pk-date">BB {BB_DATE}</span>
               {price < RRP_FLAKES && (
                 <span className="fbox-mark" key={price} data-last={price === 2 || undefined}>
                   ${price}
@@ -520,15 +534,20 @@ export function WhyFilm() {
               {playing ? <path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" /> : <path d="M8 5.5v13l10.5-6.5z" />}
             </svg>
           </button>
-          <nav className="film-bar" aria-label="Chapters" style={{ "--i": lensCh } as CSSProperties}>
-            <span className="film-lens" ref={lens} aria-hidden="true" />
+          <div className="film-prog" role="group" aria-label="Chapters">
             {CHAPTERS.map((chapter, i) => (
-              <button key={chapter.label} type="button" aria-current={i === lensCh ? "step" : undefined} onClick={() => seek(i)}>
-                <small>0{i + 1}</small>
-                {chapter.label}
-              </button>
+              <button
+                key={chapter.label}
+                ref={(el) => {
+                  segs.current[i] = el;
+                }}
+                type="button"
+                aria-label={`Chapter ${i + 1}: ${chapter.label}`}
+                aria-current={!rewind && i === ch ? "step" : undefined}
+                onClick={() => seek(i)}
+              />
             ))}
-          </nav>
+          </div>
         </div>
 
         <span className="film-vhs" data-on={rewind || undefined} aria-hidden="true" />
