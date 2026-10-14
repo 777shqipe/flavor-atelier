@@ -75,15 +75,15 @@ const STARS = Array.from({ length: 44 }, (_, i) => ({
   delay: (i * 71) % 900,
 }));
 
-/** Seven-segment LED, like a "now serving" sign: which of the segments a–g each digit lights. */
+/** Seven-segment LED, like a "now serving" sign: thin rounded strokes, and which of a–g each digit lights. */
 const SEGMENTS = {
-  a: "7.5,6 13,0.5 47,0.5 52.5,6 47,11.5 13,11.5",
-  b: "54,7.5 59.5,13 59.5,45 54,50.5 48.5,45 48.5,13",
-  c: "54,53.5 59.5,59 59.5,91 54,96.5 48.5,91 48.5,59",
-  d: "7.5,98 13,92.5 47,92.5 52.5,98 47,103.5 13,103.5",
-  e: "6,53.5 11.5,59 11.5,91 6,96.5 0.5,91 0.5,59",
-  f: "6,7.5 11.5,13 11.5,45 6,50.5 0.5,45 0.5,13",
-  g: "7.5,52 13,46.5 47,46.5 52.5,52 47,57.5 13,57.5",
+  a: "M16 8H48",
+  b: "M56 16V48",
+  c: "M56 64V96",
+  d: "M16 104H48",
+  e: "M8 64V96",
+  f: "M8 16V48",
+  g: "M16 56H48",
 };
 const LIT = ["abcdef", "bc", "abdeg", "abcdg", "bcfg", "acdfg", "acdefg", "abc", "abcdefg", "abcdfg"];
 
@@ -91,9 +91,9 @@ function Led({ value }: { value: string }) {
   return (
     <span className="tm-led-digits" role="img" aria-label={value}>
       {[...value].map((char, column) => (
-        <svg key={column} viewBox="0 0 60 104" aria-hidden="true">
-          {Object.entries(SEGMENTS).map(([name, points]) => (
-            <polygon key={name} points={points} data-on={LIT[Number(char)]?.includes(name) || undefined} />
+        <svg key={column} viewBox="0 0 64 112" aria-hidden="true">
+          {Object.entries(SEGMENTS).map(([name, d]) => (
+            <path key={name} d={d} data-on={LIT[Number(char)]?.includes(name) || undefined} />
           ))}
         </svg>
       ))}
@@ -216,7 +216,7 @@ export function TimeMachine() {
             <span className="tm-track" aria-hidden="true">
               <i />
             </span>
-            <span className="tm-cart" data-dir={heading} aria-hidden="true" dangerouslySetInnerHTML={{ __html: CART_SVG }} />
+            <span className="tm-cart" data-dir={heading} data-load={index} aria-hidden="true" dangerouslySetInnerHTML={{ __html: CART_SVG }} />
             {ERAS.map((item, i) => (
               <button
                 key={item.year}
@@ -270,9 +270,6 @@ export function TimeMachine() {
                 ))}
               </ul>
               <div className="tm-copy" aria-live="polite">
-                <span className="tm-stopno">
-                  Stop 0{index + 1} / 0{ERAS.length}
-                </span>
                 <h3>{era.title}</h3>
                 <p>{era.text}</p>
               </div>

@@ -62,13 +62,18 @@ export function shopPinSvg(store: Store) {
 }
 
 /* ---------- the travelling trolley ----------------------------------------- */
-// Anchor: between the wheels, x 30, y 47 of 60 x 50.
+// Anchor: between the wheels, x 30, y 47 of 60 x 60 (the box starts at y -10 to
+// leave room for a full load). Every item is in the drawing; the groups l1–l3
+// are shown as the years go by, so the trolley fills up as the story moves on.
 export const CART_SVG = `
-  <svg viewBox="0 0 60 50" aria-hidden="true" focusable="false">
+  <svg viewBox="0 -10 60 60" aria-hidden="true" focusable="false">
     ${sticker(
-      `<rect x="13" y="1" width="8" height="24" rx="4" fill="#e0a458" transform="rotate(-18 17 13)"/>
-       <path d="M27 17C22 7 30 1 33 9C37 0 45 6 39 17Z" fill="${LEAF}"/>
-       <circle cx="44" cy="11" r="5.6" fill="${TOMATO}"/>
+      `<g class="l1"><rect x="13" y="1" width="8" height="24" rx="4" fill="#e0a458" transform="rotate(-18 17 13)"/></g>
+       <g class="l3"><path d="M41 16V-1L43.5 -5.5H47.5L50 -1V16Z" fill="#6bb8ff"/><rect x="41" y="1.5" width="9" height="5" fill="${CREAM}"/></g>
+       <g class="l2"><path d="M21 17C16 7 24 1 27 9C31 0 39 6 33 17Z" fill="${LEAF}"/></g>
+       <g><rect x="30" y="4.5" width="11" height="4" rx="1.5" fill="${SUN}"/><rect x="31" y="8" width="9" height="9" rx="2.5" fill="#c2304b"/></g>
+       <g class="l2"><circle cx="45" cy="11" r="5.6" fill="${TOMATO}"/></g>
+       <g class="l3"><circle cx="22" cy="12" r="4.8" fill="#ff9a3d"/></g>
        <path d="M9 14H52L47 34H14Z" fill="${CREAM}"/>
        <path d="M2 9H9L15 38H47" fill="none" stroke-width="3"/>
        <circle cx="19" cy="43" r="4.2" fill="${INK}"/>
@@ -76,7 +81,7 @@ export const CART_SVG = `
        <rect x="0" y="6.5" width="6" height="5" rx="2" fill="${SUN}"/>`,
       `<path d="M14 21H50M15.5 27.5H48.5M22 14L23 34M31 14V34M40 14L39 34" stroke="#9cad9b" stroke-width="1.4" fill="none"/>
        <circle cx="19" cy="43" r="1.4" fill="${CREAM}"/><circle cx="43" cy="43" r="1.4" fill="${CREAM}"/>
-       <path d="M44 6.5q1.5-3 4-3" stroke="${INK}" stroke-width="1.6" fill="none"/>`,
+       <g class="l2"><path d="M45 6.5q1.5-3 4-3" stroke="${INK}" stroke-width="1.6" fill="none"/></g>`,
     )}
   </svg>`;
 
