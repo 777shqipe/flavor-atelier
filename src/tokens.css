@@ -43,6 +43,7 @@
   --font-cond: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-mark: "Playfair Display", "Libre Caslon Display", Georgia, serif;
   --font-mono: "Space Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-kid: "Gochi Hand", "Comic Sans MS", cursive;
 
   --fs-display: clamp(52px, 6.3vw, 100px);
   --fs-h2: clamp(40px, 4.8vw, 76px);

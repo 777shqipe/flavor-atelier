@@ -7,6 +7,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from "react";
 import { STORES } from "./stores";
 import { PROOF } from "./supplierDeal";
@@ -75,27 +76,154 @@ const VOLUMES = [
 
 const STEPS = ["Your need", "Details", "Reply to", "Review"];
 
-/** One small icon per step, shown on the stepper's stickers: tag, pencil, envelope, checked clipboard. */
-const STEP_ICONS = [
-  <>
-    <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7 7a1 1 0 0 1-1.4 0z" />
-    <circle cx="8.5" cy="8.5" r="1.6" />
-  </>,
-  <>
-    <path d="M4 20h4L19.3 8.7a1.4 1.4 0 0 0 0-2l-2-2a1.4 1.4 0 0 0-2 0L4 16z" />
-    <path d="M13.5 6.5l4 4" />
-  </>,
-  <>
-    <rect x="3" y="5.5" width="18" height="13" rx="2" />
-    <path d="M3.5 7l8.5 6 8.5-6" />
-  </>,
-  <>
-    <path d="M9 3.5h6v3H9z" />
-    <path d="M7.5 5H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-1.5" />
-    <path d="M9 13.5l2 2 4-4.5" />
-  </>,
+const INK = "#141414";
+const CREAM = "#fff6e6";
+const r1 = (n: number) => Math.round(n * 10) / 10;
+
+/** Postage-stamp outline: a rectangle with round perforation bites along every edge. */
+function stampPath(x0: number, y0: number, x1: number, y1: number, r: number, across: number, down: number) {
+  let d = `M${x0} ${y0}`;
+  const edge = (ax: number, ay: number, bx: number, by: number, n: number) => {
+    const len = Math.hypot(bx - ax, by - ay);
+    const [ux, uy] = [(bx - ax) / len, (by - ay) / len];
+    for (let i = 0; i < n; i += 1) {
+      const t = (i + 0.5) / n;
+      const [cx, cy] = [ax + (bx - ax) * t, ay + (by - ay) * t];
+      d += `L${r1(cx - ux * r)} ${r1(cy - uy * r)}A${r} ${r} 0 0 0 ${r1(cx + ux * r)} ${r1(cy + uy * r)}`;
+    }
+    d += `L${bx} ${by}`;
+  };
+  edge(x0, y0, x1, y0, across);
+  edge(x1, y0, x1, y1, down);
+  edge(x1, y1, x0, y1, across);
+  edge(x0, y1, x0, y0, down);
+  return `${d}Z`;
+}
+
+/** Flower outline: round petals bulging out between points on a circle. */
+function flowerPath(cx: number, cy: number, R: number, r: number, petals: number) {
+  const at = (k: number) => {
+    const a = (k / petals) * Math.PI * 2 - Math.PI / 2;
+    return `${r1(cx + R * Math.cos(a))} ${r1(cy + R * Math.sin(a))}`;
+  };
+  let d = `M${at(0)}`;
+  for (let k = 1; k <= petals; k += 1) d += `A${r} ${r} 0 1 1 ${at(k)}`;
+  return `${d}Z`;
+}
+
+/**
+ * The stepper's stickers, one die-cut shape per step: price tag, round sticker,
+ * postage stamp, flower. `d` is the outline (it also draws the white border,
+ * the back of the sticker and its mark on the liner); `art` is printed on top.
+ */
+type StepStickerArt = { d: string; turn?: number; fill: string; art: ReactNode };
+
+const STEP_STICKERS: StepStickerArt[] = [
+  {
+    d: "M12 50L32 28H82Q86 28 86 32V68Q86 72 82 72H32Z",
+    turn: -40,
+    fill: "#e3261b",
+    art: (
+      <>
+        <circle cx="30" cy="50" r="5.5" fill={CREAM} stroke={INK} strokeWidth="2.4" />
+        <path
+          d="M60 61C49 54 45 48 47.5 43.5C50 39 56 39.5 60 44.5C64 39.5 70 39 72.5 43.5C75 48 71 54 60 61Z"
+          fill={CREAM}
+          transform="rotate(40 60 50)"
+        />
+      </>
+    ),
+  },
+  {
+    d: "M10 50a40 40 0 1 0 80 0a40 40 0 1 0 -80 0Z",
+    fill: "#a98bf3",
+    art: (
+      <g transform="rotate(-45 50 50)" stroke={INK} strokeWidth="2.2">
+        <path d="M33 43H67V57H33Z" fill="#f6b531" />
+        <path d="M33 50H67" strokeOpacity="0.3" />
+        <path d="M67 43H72V57H67Z" fill="#d7dbe0" />
+        <path d="M72 43H76Q79 43 79 46V54Q79 57 76 57H72Z" fill="#ff8fb1" />
+        <path d="M33 43L21 50L33 57Z" fill="#f3d9a4" />
+        <path d="M25.3 47.5L21 50L25.3 52.5Z" fill={INK} />
+      </g>
+    ),
+  },
+  {
+    d: stampPath(18, 14, 82, 86, 3.4, 6, 7),
+    fill: "#6bb8ff",
+    art: (
+      <>
+        <rect x="26" y="22" width="48" height="56" rx="2" fill="none" stroke={CREAM} strokeWidth="2" />
+        <rect x="32" y="38" width="36" height="25" rx="2.5" fill={CREAM} stroke={INK} strokeWidth="2.2" />
+        <path d="M33 40L50 53L67 40" fill="none" stroke={INK} strokeWidth="2.2" />
+        <circle cx="50" cy="53" r="3.6" fill="#e3261b" stroke={INK} strokeWidth="1.6" />
+      </>
+    ),
+  },
+  {
+    d: flowerPath(50, 50, 26, 11, 8),
+    fill: "#f6b531",
+    art: (
+      <>
+        <circle cx="50" cy="50" r="15" fill={CREAM} stroke={INK} strokeWidth="2.4" />
+        <path d="M38 50Q50 40 62 50Q50 60 38 50Z" fill="#fff" stroke={INK} strokeWidth="2.2" />
+        <circle cx="50" cy="50" r="4.2" fill={INK} />
+        <circle cx="51.6" cy="48.4" r="1.3" fill="#fff" />
+      </>
+    ),
+  },
 ];
 const LAST = STEPS.length - 1;
+
+/**
+ * One stop on the stepper. While the step is ahead or current it is a sticker;
+ * once done it peels off from the bottom-right corner and flies away, leaving
+ * its outline on the liner with a tick. The CSS drives it all from data-state.
+ */
+function StepSticker({ art, id }: { art: StepStickerArt; id: string }) {
+  const turn = art.turn ? `rotate(${art.turn} 50 50)` : undefined;
+  return (
+    <span className="ct-sticker" aria-hidden="true">
+      <svg className="ct-sticker-liner" viewBox="0 0 100 100">
+        <path className="ct-sticker-ghost" d={art.d} transform={turn} />
+        <path className="ct-sticker-cut" d={art.d} transform={turn} />
+        <path className="ct-sticker-tick" d="M30 52l13 13 27-30" pathLength={1} />
+      </svg>
+      <span className="ct-sticker-art">
+        <span className="ct-sticker-face">
+          <svg viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id={`${id}-shade`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#fff" stopOpacity="0.32" />
+                <stop offset="0.42" stopColor="#fff" stopOpacity="0" />
+                <stop offset="0.62" stopColor={INK} stopOpacity="0" />
+                <stop offset="1" stopColor={INK} stopOpacity="0.2" />
+              </linearGradient>
+              <linearGradient id={`${id}-back`} x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#ffffff" />
+                <stop offset="0.55" stopColor="#f1ede3" />
+                <stop offset="1" stopColor="#d6cfbf" />
+              </linearGradient>
+            </defs>
+            <g transform={turn} strokeLinejoin="round" strokeLinecap="round">
+              <path d={art.d} fill="#fff" stroke="#fff" strokeWidth="14" />
+              <path d={art.d} fill={art.fill} stroke={INK} strokeWidth="2.6" />
+              <path d={art.d} fill={`url(#${id}-shade)`} />
+              {art.art}
+            </g>
+          </svg>
+        </span>
+        <span className="ct-sticker-lift">
+          <span className="ct-sticker-flap">
+            <svg viewBox="0 0 100 100">
+              <path d={art.d} transform={turn} fill={`url(#${id}-back)`} stroke={`url(#${id}-back)`} strokeWidth="14" strokeLinejoin="round" />
+            </svg>
+          </span>
+        </span>
+      </span>
+    </span>
+  );
+}
 
 type Fields = {
   name: string;
@@ -495,6 +623,15 @@ export function ContactPanel({
           <Clip className="ct-clip" />
           <div className="ct-sheet">
             <div className="ct-sheet-body">
+              {/* Wax crayon: rough edges, plus speckles where the paper grain shows through. */}
+              <svg className="ct-defs" aria-hidden="true">
+                <filter id="ct-crayon" x="-10%" y="-25%" width="120%" height="150%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="grain" />
+                  <feDisplacementMap in="SourceGraphic" in2="grain" scale="2.6" xChannelSelector="R" yChannelSelector="G" result="rough" />
+                  <feColorMatrix in="grain" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -2.6 0 0 0 2.25" result="wax" />
+                  <feComposite in="rough" in2="wax" operator="in" />
+                </filter>
+              </svg>
               <div className="ct-docket-bar">
                 <div className="ct-docket-id">
                   <b>DISPATCH DOCKET</b>
@@ -502,7 +639,22 @@ export function ContactPanel({
                 </div>
                 <div className="ct-docket-to">
                   <span>TO</span>
-                  <strong key={current.id}>{current.desk}</strong>
+                  <strong className="ct-crayon" key={current.id}>
+                    <span className="sr-only">{current.desk}</span>
+                    <svg className="ct-crayon-fill" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true">
+                      <path
+                        d="M4 33L9 7L14 33L19 7L24 33L29 7L34 33L39 7L44 33L49 7L54 33L59 7L64 33L69 7L74 33L79 7L84 33L89 7L94 33L99 7L104 33L109 7L114 33"
+                        pathLength={1}
+                      />
+                    </svg>
+                    <span className="ct-crayon-word" aria-hidden="true">
+                      {[...current.desk].map((ch, i) => (
+                        <span key={i} className={ch === " " ? "ct-crayon-gap" : undefined} style={{ "--k": i } as CSSProperties}>
+                          {ch}
+                        </span>
+                      ))}
+                    </span>
+                  </strong>
                 </div>
               </div>
 
@@ -545,9 +697,7 @@ export function ContactPanel({
                             disabled={index > reached || index === step}
                             aria-current={index === step ? "step" : undefined}
                           >
-                            <span className="ct-steps-dot" aria-hidden="true">
-                              <svg viewBox="0 0 24 24">{STEP_ICONS[index]}</svg>
-                            </span>
+                            <StepSticker art={STEP_STICKERS[index]} id={`ct-st${index}`} />
                             <span className="ct-steps-label">{label}</span>
                           </button>
                         </li>
