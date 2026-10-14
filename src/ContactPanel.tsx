@@ -152,26 +152,45 @@ function Clip({ className = "" }: { className?: string }) {
   );
 }
 
+/** Little illustrated stickers for the three desks: boxes on a pallet, a shopfront, a chat bubble. */
 function TopicIcon({ id }: { id: Topic }) {
   if (id === "stock") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3 8l9-5 9 5v8l-9 5-9-5V8z" />
-        <path d="M3 8l9 5 9-5M12 13v8" />
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M5 38h38v4H5z" fill="#b98a52" />
+        <path d="M8 42v3M24 42v3M40 42v3" />
+        <path d="M7 24h17v14H7z" fill="#e7c48d" />
+        <path d="M24 24h17v14H24z" fill="#d9ad6c" />
+        <path d="M14.5 24v6M31.5 24v6" stroke="#9b6c33" />
+        <path d="M14 9h20v15H14z" fill="#f6d9a0" />
+        <path d="M24 9v6" stroke="#9b6c33" />
+        <path d="M27 17.5l5-2.5 3.5 5.5-5 2.5z" fill="#e3261b" />
+        <circle cx="30.4" cy="17.6" r="0.9" fill="#fffdf6" stroke="none" />
       </svg>
     );
   }
   if (id === "shop") {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3 10h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z" />
-        <path d="M3 10l2.5-6h13L21 10M9 21v-6h6v6" />
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M9 20h30v22H9z" fill="#fffdf6" />
+        <path d="M6 12h36l-1 7a3.5 3.5 0 0 1-7 0 3.5 3.5 0 0 1-7 0 3.5 3.5 0 0 1-6 0 3.5 3.5 0 0 1-7 0 3.5 3.5 0 0 1-7 0z" fill="#e3261b" />
+        <path d="M13 12l-1 7.2M20 12l-.5 7.4M28 12l.5 7.4M35 12l1 7.2" stroke="#fffdf6" strokeWidth="3" />
+        <path d="M6 12h36l-1 7a3.5 3.5 0 0 1-7 0 3.5 3.5 0 0 1-7 0 3.5 3.5 0 0 1-6 0 3.5 3.5 0 0 1-7 0 3.5 3.5 0 0 1-7 0z" fill="none" />
+        <path d="M8 6h32l2 6H6z" fill="#00593f" />
+        <path d="M13 27h8v7h-8z" fill="#bfdde4" />
+        <path d="M26 27h9v15h-9z" fill="#9cad9b" />
+        <circle cx="32.5" cy="35" r="0.9" fill="#00382a" stroke="none" />
       </svg>
     );
   }
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z" />
+    <svg viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M27 22h13a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-2v5l-6-5h-5a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" fill="#c9d6c8" />
+      <path d="M8 8h23a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H18l-8 7v-7H8a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z" fill="#f6b531" />
+      <circle cx="12.5" cy="18" r="2" fill="#00382a" stroke="none" />
+      <circle cx="19.5" cy="18" r="2" fill="#00382a" stroke="none" />
+      <circle cx="26.5" cy="18" r="2" fill="#00382a" stroke="none" />
+      <path d="M41 6v6M38 9h6" stroke="#f6b531" strokeWidth="2.4" />
     </svg>
   );
 }
@@ -567,8 +586,10 @@ export function ContactPanel({
                                 <span className="ct-topic-icon" aria-hidden="true">
                                   <TopicIcon id={item.id} />
                                 </span>
-                                <b>{item.label}</b>
-                                <small>{item.sub}</small>
+                                <span className="ct-topic-text">
+                                  <b>{item.label}</b>
+                                  <small>{item.sub}</small>
+                                </span>
                               </button>
                             );
                           })}
