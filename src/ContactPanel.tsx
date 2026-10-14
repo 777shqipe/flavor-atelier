@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { STORES } from "./stores";
 import { PROOF } from "./supplierDeal";
 import { useOpenStatus } from "./useOpenStatus";
@@ -65,6 +74,27 @@ const VOLUMES = [
 ];
 
 const STEPS = ["Your need", "Details", "Reply to", "Review"];
+
+/** One small icon per step, shown on the stepper's stickers: tag, pencil, envelope, checked clipboard. */
+const STEP_ICONS = [
+  <>
+    <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7 7a1 1 0 0 1-1.4 0z" />
+    <circle cx="8.5" cy="8.5" r="1.6" />
+  </>,
+  <>
+    <path d="M4 20h4L19.3 8.7a1.4 1.4 0 0 0 0-2l-2-2a1.4 1.4 0 0 0-2 0L4 16z" />
+    <path d="M13.5 6.5l4 4" />
+  </>,
+  <>
+    <rect x="3" y="5.5" width="18" height="13" rx="2" />
+    <path d="M3.5 7l8.5 6 8.5-6" />
+  </>,
+  <>
+    <path d="M9 3.5h6v3H9z" />
+    <path d="M7.5 5H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-1.5" />
+    <path d="M9 13.5l2 2 4-4.5" />
+  </>,
+];
 const LAST = STEPS.length - 1;
 
 type Fields = {
@@ -147,45 +177,48 @@ function TopicIcon({ id }: { id: Topic }) {
 }
 
 const STICKERS = [
-  { look: "sun", kicker: "No minimum", big: "0", line: "A few boxes or a full truckload." },
-  { look: "paper", kicker: "Answers & pick-ups", big: "Same day", line: "Fast decisions, so stock never sits." },
-  { look: "green", kicker: "Paid upfront", big: "100%", line: "No invoices to chase." },
-  { look: "sage", kicker: "We collect", big: "Door to door", line: "Your surplus gets a second life." },
+  { look: "sun", kicker: "No minimum", big: "0", line: "A few boxes or a full truckload.", under: "One pallet? We’ll still take it." },
+  { look: "lilac", kicker: "Answers & pick-ups", big: "Same day", line: "Fast decisions, so stock never sits.", under: "A clear offer from our buying team, same day." },
+  { look: "holo", kicker: "Paid upfront", big: "100%", line: "No invoices to chase.", under: "Paid before it leaves your dock." },
+  { look: "tomato", kicker: "We collect", big: "Door to door", line: "Your surplus gets a second life.", under: "We bring the truck. Every pallet tracked." },
 ] as const;
 
-/** One supplier perk as a sticker: it can be peeled off and dropped anywhere. */
+/** One supplier perk as a foil sticker: the shine follows the pointer, a click peels it back to show a note. */
 function Sticker({ item, index }: { item: (typeof STICKERS)[number]; index: number }) {
-  const [at, setAt] = useState({ x: 0, y: 0 });
-  const [held, setHeld] = useState(false);
-  const grab = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
+  const [peeled, setPeeled] = useState(false);
+
+  const shine = (event: ReactPointerEvent<HTMLLIElement>) => {
+    const box = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty("--mx", ((event.clientX - box.left) / box.width).toFixed(3));
+    event.currentTarget.style.setProperty("--my", ((event.clientY - box.top) / box.height).toFixed(3));
+  };
+  const rest = (event: ReactPointerEvent<HTMLLIElement>) => {
+    event.currentTarget.style.removeProperty("--mx");
+    event.currentTarget.style.removeProperty("--my");
+  };
 
   return (
     <li
-      style={{ "--i": index, "--dx": `${at.x}px`, "--dy": `${at.y}px` } as CSSProperties}
-      data-held={held || undefined}
-      onPointerDown={(event) => {
-        event.currentTarget.setPointerCapture(event.pointerId);
-        grab.current = { px: event.clientX, py: event.clientY, x: at.x, y: at.y };
-        setHeld(true);
-      }}
-      onPointerMove={(event) => {
-        const g = grab.current;
-        if (g) setAt({ x: g.x + event.clientX - g.px, y: g.y + event.clientY - g.py });
-      }}
-      onPointerUp={() => {
-        grab.current = null;
-        setHeld(false);
-      }}
-      onPointerCancel={() => {
-        grab.current = null;
-        setHeld(false);
-      }}
+      data-look={item.look}
+      data-peeled={peeled || undefined}
+      style={{ "--i": index } as CSSProperties}
+      onPointerMove={shine}
+      onPointerLeave={rest}
     >
-      <div className={`ct-sticker is-${item.look}`}>
-        <small>{item.kicker}</small>
-        <strong>{item.big}</strong>
-        <p>{item.line}</p>
-      </div>
+      <p className="ct-reveal" aria-hidden={!peeled}>
+        <small>Psst</small>
+        {item.under}
+      </p>
+      <button className="ct-peel" type="button" aria-pressed={peeled} onClick={() => setPeeled((p) => !p)}>
+        <span className="ct-face">
+          <small>{item.kicker}</small>
+          <strong>{item.big}</strong>
+          <span className="ct-face-line">{item.line}</span>
+        </span>
+        <span className="ct-flap-wrap" aria-hidden="true">
+          <span className="ct-flap" />
+        </span>
+      </button>
     </li>
   );
 }
@@ -453,9 +486,6 @@ export function ContactPanel({
               ) : (
                 <form className="ct-form" onSubmit={submit} noValidate>
                   <nav className="ct-steps" aria-label="Form steps" style={{ "--p": step / LAST } as CSSProperties}>
-                    <p className="ct-steps-count">
-                      Step <b>{String(step + 1).padStart(2, "0")}</b> / {String(STEPS.length).padStart(2, "0")}
-                    </p>
                     <ol>
                       {STEPS.map((label, index) => (
                         <li key={label} data-state={index < step ? "done" : index === step ? "now" : "todo"}>
@@ -466,13 +496,7 @@ export function ContactPanel({
                             aria-current={index === step ? "step" : undefined}
                           >
                             <span className="ct-steps-dot" aria-hidden="true">
-                              {index < step ? (
-                                <svg viewBox="0 0 24 24">
-                                  <path d="M5 12.5l4.5 4.5L19 7.5" />
-                                </svg>
-                              ) : (
-                                index + 1
-                              )}
+                              <svg viewBox="0 0 24 24">{STEP_ICONS[index]}</svg>
                             </span>
                             <span className="ct-steps-label">{label}</span>
                           </button>
@@ -763,6 +787,9 @@ export function ContactPanel({
             <Sticker key={item.big} item={item} index={index} />
           ))}
         </ul>
+        <p className="ct-peel-hint" aria-hidden="true">
+          Psst, peel a sticker
+        </p>
 
         <p className="sr-only" role="status">
           {sent ? "Message noted. Thanks." : `Step ${step + 1} of ${STEPS.length}: ${STEPS[step]}`}
