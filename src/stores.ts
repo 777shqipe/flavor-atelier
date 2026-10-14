@@ -23,7 +23,7 @@ export const STORES: Store[] = [
   {
     id: "footscray",
     name: "Footscray",
-    address: "20 Paisley St, Footscray, 3011",
+    address: "20 Paisley St, Footscray VIC 3011",
     phone: "03 8351 5336",
     hours: HOURS,
     src: "/media/footscray.jpg",
@@ -37,7 +37,7 @@ export const STORES: Store[] = [
   {
     id: "flemington",
     name: "Flemington",
-    address: "325–327 Racecourse Rd, Flemington",
+    address: "325–327 Racecourse Rd, Flemington VIC 3031",
     phone: "03 9994 2417",
     hours: HOURS,
     src: "/media/flemington.jpg",
@@ -51,7 +51,7 @@ export const STORES: Store[] = [
   {
     id: "fitzroy",
     name: "Fitzroy",
-    address: "125 Johnston St, Fitzroy",
+    address: "125 Johnston St, Fitzroy VIC 3065",
     phone: "03 9969 7919",
     hours: HOURS,
     src: "/media/fitzroy.jpg",
@@ -65,8 +65,8 @@ export const STORES: Store[] = [
   {
     id: "brunswick",
     name: "Brunswick",
-    address: "109 Sydney Road, Brunswick",
-    phone: "03 9969 7919",
+    address: "109 Sydney Road, Brunswick VIC 3056",
+    phone: "03 8529 9376",
     hours: HOURS,
     src: "/media/brunswick.jpg",
     pos: "50% 38%",

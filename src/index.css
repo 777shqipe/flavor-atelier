@@ -260,6 +260,9 @@ p { line-height: 1.6; }
 
 .manifesto-copy { max-width: 480px; }
 .manifesto-copy p { margin: 0 0 22px; color: var(--fg-body); font-size: 17px; font-weight: 550; }
+.manifesto-copy .mani-promise { display: flex; align-items: center; gap: 10px; margin: -6px 0 24px; padding: 10px 14px; border: 1.5px dashed rgb(0 88 66 / 0.35); border-radius: 14px; background: var(--paper); color: var(--green-900); font-size: 14.5px; font-weight: 500; rotate: -0.6deg; }
+.mani-promise span { display: grid; flex: none; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--green); color: var(--cream); font-size: 14px; font-weight: 700; }
+.mani-promise b { font-weight: 700; }
 .mani-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* ---------- home: products + ticker ----------------------------------- */
@@ -391,6 +394,8 @@ footer[data-surface="deep"] { position: relative; isolation: isolate; }
 }
 .socials a:active span,
 .socials button:active span { scale: 0.94; transition-duration: 0.08s; }
+.footer-bottom a { color: inherit; text-underline-offset: 3px; }
+.footer-bottom a:hover { color: var(--sun); }
 .footer-bottom {
   display: flex;
   justify-content: space-between;

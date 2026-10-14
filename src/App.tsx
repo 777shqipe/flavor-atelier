@@ -140,6 +140,11 @@ function Home({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onC
             We love food, and we hate waste. We’ve saved millions of kilograms of good food from being dumped—while
             giving you huge savings.
           </p>
+          {/* Short dates make some people wary, so the promise sits right under the pitch. */}
+          <p className="mani-promise">
+            <span aria-hidden="true">✓</span>
+            <b>100% money-back guarantee.</b> Not happy with something? Bring it back.
+          </p>
           <div className="mani-actions">
             <button className="button" type="button" onClick={() => onNavigate("about")}>
               Our story
@@ -239,6 +244,9 @@ function Footer({ onNavigate, onContact }: { onNavigate: (page: Page, anchor?: s
             <a href="https://www.facebook.com/cheaperbuymiles/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
               <span>fb</span>
             </a>
+            <a href="https://twitter.com/CheaperBuyMiles" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+              <span>tw</span>
+            </a>
             <button type="button" onClick={() => onNavigate("stores")} aria-label="Our 4 Melbourne stores">
               <span>4×</span>
             </button>
@@ -251,7 +259,17 @@ function Footer({ onNavigate, onContact }: { onNavigate: (page: Page, anchor?: s
       <div className="footer-bottom">
         <span>Melbourne, Australia · Est. 1995</span>
         <span>Good food shouldn’t go to waste.</span>
-        <span>© {YEAR} Cheaper Buy Miles</span>
+        <span>
+          © {YEAR} Cheaper Buy Miles ·{" "}
+          {/* The policies live on the current site until they move here. */}
+          <a href="https://www.cheaperbuymiles.com/privacy-policy" target="_blank" rel="noopener noreferrer">
+            Privacy
+          </a>{" "}
+          ·{" "}
+          <a href="https://www.cheaperbuymiles.com/cookie-policy" target="_blank" rel="noopener noreferrer">
+            Cookies
+          </a>
+        </span>
       </div>
     </footer>
   );

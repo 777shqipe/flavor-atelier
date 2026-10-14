@@ -32,6 +32,13 @@ export function AboutPage({ onContact }: { onContact: () => void }) {
                 What began as a small shop selling jam has grown into four much-loved stores. Ridiculous prices, a{" "}
                 <em>serious</em> purpose.
               </p>
+              <p className="ah-why">
+                <b>Why it matters:</b> wasted food makes up about 6% of the world’s greenhouse gas emissions, roughly three
+                times all of aviation.{" "}
+                <a href="https://ourworldindata.org/food-waste-emissions" target="_blank" rel="noreferrer">
+                  Source: Our World in Data
+                </a>
+              </p>
             </div>
             <ul className="story-pillars">
               <li>

@@ -16,8 +16,8 @@ export const STOPS = [
   },
   {
     title: "Seal it, collect it",
-    tag: "Door to door",
-    text: "Deals are sealed and stock collected, often the same day.",
+    tag: "Anywhere in Australia",
+    text: "Deals are sealed and we pick up from anywhere in Australia, often the same day.",
     gain: "Your surplus gets a second life instead of a skip bin.",
   },
   {
