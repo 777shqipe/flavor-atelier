@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
-import { Clip } from "./ContactPanel";
-import { ImpactArt, MinArt, PayArt, SecondArt, SpeedArt, TrackArt } from "./SupplierArt";
+import { Mix } from "./Mix";
+import { ImpactArt, MinArt, SecondArt } from "./SupplierArt";
 import { TruckScene } from "./TruckScene";
 import "./suppliers.css";
 
@@ -27,10 +27,8 @@ const STEPS = [
   },
 ] as const;
 
+/** Payment, speed and tracking are already in the steps, so the bento keeps what they don't say. */
 const BENEFITS = [
-  { id: "pay", kicker: "Cash", text: "We pay upfront, no delays.", art: <PayArt /> },
-  { id: "speed", kicker: "Speed", text: "Deals can be sealed and stock collected the same day.", art: <SpeedArt /> },
-  { id: "track", kicker: "Tracking", text: "Every pallet is tracked door to door.", art: <TrackArt /> },
   { id: "second", kicker: "Second life", text: "Your surplus gets a second life instead of a skip bin.", art: <SecondArt /> },
   { id: "min", kicker: "Any size", text: "No minimum order size, from a few pallets to a full truckload.", art: <MinArt /> },
   { id: "waste", kicker: "Impact", text: "Every sale means less good food thrown away.", art: <ImpactArt /> },
@@ -67,7 +65,7 @@ function HowItWorks() {
   }, []);
 
   return (
-    <section className="how" id="how" data-surface="paper" aria-labelledby="how-title">
+    <section className="how" data-surface="paper" aria-labelledby="how-title">
       <header className="section-head how-head rv">
         <p className="eyebrow">Simple from start to finish</p>
         <h2 id="how-title">A deal that works for everyone.</h2>
@@ -151,95 +149,28 @@ function Bento() {
   );
 }
 
-/** The page ends on a docket you can't miss. Clicking it opens the contact panel. */
-function QuoteCta({ onContact }: { onContact: () => void }) {
-  const rows: Array<[string, string]> = [
-    ["From", "Your company"],
-    ["On the pallet", "Drinks, snacks"],
-    ["How much", "Half a truck"],
-  ];
+/** The supplier half of About: the pitch, what we buy, then how it works or why us. */
+export function Suppliers({ onContact }: { onContact: () => void }) {
   return (
-    <section className="quote" id="contact" data-surface="green" aria-labelledby="quote-title">
-      <div className="quote-copy rv">
-        <p className="eyebrow light">Start a conversation</p>
-        <h2 id="quote-title">Good food deserves a second chance.</h2>
-        <p className="lead">Tell us what you have and our buying team will get back to you.</p>
-        <ul className="quote-points">
-          {["Fast decisions", "Flexible volumes", "Paid upfront"].map((point, i) => (
-            <li key={point} style={{ "--i": i } as CSSProperties}>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12.5l4.5 4.5L19 7.5" />
-              </svg>
-              {point}
-            </li>
-          ))}
-        </ul>
-        <button className="button quote-open" type="button" onClick={onContact}>
-          Contact the buying team
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 12h15M13 6l6 6-6 6" />
-          </svg>
-        </button>
-      </div>
-
-      <button className="qd rv" type="button" onClick={onContact} style={{ "--rv": "140ms" } as CSSProperties}>
-        <span className="sr-only">Open the contact form</span>
-        <span className="qd-board" aria-hidden="true">
-          <Clip className="qd-clip" />
-          <span className="qd-sheet">
-            <span className="qd-head">
-              <b>Docket</b>
-              <small>Nº ____</small>
-            </span>
-            <span className="qd-to">
-              To <b>Buying team</b>
-            </span>
-            {rows.map(([label, value], i) => (
-              <span key={label} className="qd-row" style={{ "--i": i } as CSSProperties}>
-                <small>{label}</small>
-                <i>{value}</i>
-              </span>
-            ))}
-            <span className="qd-crates">
-              {Array.from({ length: 12 }, (_, i) => (
-                <i key={i} data-on={i < 6 || undefined} style={{ "--k": i } as CSSProperties} />
-              ))}
-            </span>
-            <span className="qd-go">
-              Your turn
-              <svg viewBox="0 0 16 16">
-                <path d="M3 8h10M9 4l4 4-4 4" />
-              </svg>
-            </span>
-          </span>
-        </span>
-      </button>
-    </section>
-  );
-}
-
-export function SuppliersPage({ onContact }: { onContact: () => void }) {
-
-  return (
-    <main>
-      <section className="page-hero sp-hero" data-surface="green" aria-labelledby="suppliers-title">
+    <>
+      <section className="page-hero sp-hero" id="suppliers" data-surface="green" aria-labelledby="suppliers-title">
         <div className="aurora" aria-hidden="true" />
         <div className="page-hero-inner">
           <header className="page-head">
             <p className="eyebrow light">For suppliers</p>
-            <h1 id="suppliers-title">
+            <h2 id="suppliers-title">
               Surplus stock?
               <br />
               Let’s make it useful.
-            </h1>
+            </h2>
             <p className="lead">Fast decisions, flexible volumes and a better outcome for good food.</p>
             <div className="hero-actions">
               <button className="button cream" type="button" onClick={onContact}>
                 Get a quote
               </button>
-              <a className="text-link" href="#how" onClick={(event) => {
+              <a className="text-link" href="#supply" onClick={(event) => {
                 event.preventDefault();
-                document.getElementById("how")?.scrollIntoView({ behavior: "smooth" });
+                document.getElementById("supply")?.scrollIntoView({ behavior: "smooth" });
               }}>
                 How it works <span>↓</span>
               </a>
@@ -264,9 +195,14 @@ export function SuppliersPage({ onContact }: { onContact: () => void }) {
         </div>
       </div>
 
-      <HowItWorks />
-      <Bento />
-      <QuoteCta onContact={onContact} />
-    </main>
+      <Mix
+        id="supply"
+        label="Working with us"
+        tabs={[
+          { id: "how", label: "How it works", render: () => <HowItWorks /> },
+          { id: "why", label: "Why us", render: () => <Bento /> },
+        ]}
+      />
+    </>
   );
 }

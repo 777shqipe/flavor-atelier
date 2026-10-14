@@ -6,11 +6,10 @@ import { Stamp } from "./Stamp";
 import "./receipt.css";
 
 /**
- * "Every receipt is a rescue": a till receipt that prints as you scroll, one
- * line per item, each with the reason it would have been binned elsewhere.
- * The savings and the kilos kept out of landfill roll up as lines print, then
- * the receipt is torn off and stamped. On narrow screens it prints by itself
- * once it is in view.
+ * "Every receipt is a rescue": a till receipt that prints by itself once it
+ * is in view, one line per item, each with the reason it would have been
+ * binned elsewhere. The savings and the kilos kept out of landfill roll up as
+ * lines print, then the receipt is torn off and stamped.
  */
 
 /** Why each item would have been thrown out somewhere else. Weights in kg. */
@@ -44,7 +43,6 @@ const BARS = "3112213121411312221321121131222113".split("").map(Number);
 export function Receipt() {
   const root = useRef<HTMLElement>(null);
   const paper = useRef<HTMLDivElement>(null);
-  const fit = useRef<HTMLDivElement>(null);
   const roll = useRef<HTMLSpanElement>(null);
   const [printed, setPrinted] = useState(0);
   const [phase, setPhase] = useState<"idle" | "printing" | "done">("idle");
@@ -54,28 +52,19 @@ export function Receipt() {
   useEffect(() => {
     const el = root.current;
     const pp = paper.current;
-    const box = fit.current;
     const spool = roll.current;
-    if (!el || !pp || !box || !spool) return;
+    if (!el || !pp || !spool) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const wide = window.matchMedia("(min-width: 900px)");
     let height = 0;
     let rowEnds: number[] = [];
     let count = -1;
     let state = "";
-    let frame = 0;
     let clock = 0;
     let started = 0;
 
     const measure = () => {
       height = pp.offsetHeight;
       rowEnds = Array.from(pp.querySelectorAll<HTMLElement>(".r-item")).map((row) => row.offsetTop + row.offsetHeight);
-      // Scale the printer so the whole receipt fits the pinned stage.
-      // scrollHeight would count the paper still hidden in the printer, so add the parts up.
-      const room = (box.parentElement?.clientHeight ?? 0) - 12;
-      const need = height + (box.querySelector<HTMLElement>(".register")?.offsetHeight ?? 0) + 20;
-      const scale = el.dataset.mode === "scroll" && room && need > room ? room / need : 1;
-      box.style.setProperty("--fit", scale.toFixed(3));
     };
 
     const show = (progress: number) => {
@@ -103,17 +92,6 @@ export function Receipt() {
       }
     };
 
-    const fromScroll = () => {
-      frame = 0;
-      const rect = el.getBoundingClientRect();
-      const travel = rect.height - window.innerHeight;
-      show(travel > 0 ? clamp(-rect.top / travel) : 1);
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(fromScroll);
-    };
-
-    // Narrow screens: print on a clock once the receipt is in view.
     const run = (now: number) => {
       if (!started) started = now;
       const p = clamp((now - started) / 5200);
@@ -122,37 +100,25 @@ export function Receipt() {
     };
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || el.dataset.mode !== "time" || started || clock) return;
+        if (!entry.isIntersecting || reduce || started || clock) return;
         clock = requestAnimationFrame(run);
       },
       { threshold: 0.35 },
     );
 
-    const setMode = () => {
-      el.dataset.mode = reduce ? "still" : wide.matches ? "scroll" : "time";
-      measure();
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        if (el.dataset.mode === "scroll") fromScroll();
-        else if (el.dataset.mode === "still") show(1);
-        else show(started ? clamp((performance.now() - started) / 5200) : 0);
-      });
-    };
-
-    setMode();
+    measure();
+    show(reduce ? 1 : 0);
     io.observe(el);
-    const ro = new ResizeObserver(measure);
+    // Re-measure on resize; the clock repaints on its own while it runs.
+    const ro = new ResizeObserver(() => {
+      measure();
+      if (!clock) show(reduce || started ? 1 : 0);
+    });
     ro.observe(el);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    wide.addEventListener("change", setMode);
     return () => {
-      cancelAnimationFrame(frame);
       cancelAnimationFrame(clock);
       io.disconnect();
       ro.disconnect();
-      window.removeEventListener("scroll", onScroll);
-      wide.removeEventListener("change", setMode);
     };
   }, []);
 
@@ -214,7 +180,7 @@ export function Receipt() {
         </div>
 
         <div className="rcpt-stage">
-          <div className="rcpt-fit" ref={fit}>
+          <div className="rcpt-fit">
             <div className="rcpt-window">
               <div className="rcpt-tear">
                 <div className="paper" ref={paper}>

@@ -1,4 +1,4 @@
-/* Suppliers: truck scene hero, scroll-filled steps, bento of benefits, docket that opens the contact panel. */
+/* Suppliers (the second half of About): truck scene intro, then a mix of scroll-filled steps and a bento of benefits. */
 
 /* ---------- hero scene ------------------------------------------------ */
 .truck-scene { width: 100%; height: auto; filter: drop-shadow(0 34px 40px rgb(0 20 14 / 0.3)); }
@@ -106,7 +106,6 @@
 .tile-kicker span { margin-right: 8px; color: var(--sun); }
 .tile-art { position: relative; display: grid; flex: 1; place-items: center; min-height: 120px; }
 .art { display: block; width: 100%; height: auto; max-height: 230px; overflow: visible; }
-.t-pay .art { max-height: 380px; color: var(--green); }
 .art * { animation-play-state: var(--play, paused); }
 .tile.in .art { --play: running; }
 .tile {
@@ -114,16 +113,7 @@
   transition: transform 0.35s ease-out, translate 0.5s var(--spring), background-color 0.3s, border-color 0.3s, opacity 0.7s, box-shadow 0.4s;
 }
 .tile::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; background: radial-gradient(460px circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.13), transparent 55%); opacity: var(--glare, 0); transition: opacity 0.35s; pointer-events: none; }
-.t-pay::after { background: radial-gradient(460px circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.55), transparent 55%); }
-.t-pay { grid-column: span 6; grid-row: span 2; border-color: transparent; background: var(--cream); color: var(--green); }
-.t-pay:hover { background: var(--cream); border-color: transparent; }
-.t-pay h3 { max-width: 12ch; font-size: clamp(36px, 4.2vw, 64px); line-height: 1.04; }
-.t-pay .tile-kicker span { color: var(--tomato); }
-.t-speed { grid-column: span 6; }
-.t-track { grid-column: span 3; }
-.t-second { grid-column: span 3; }
-.t-min { grid-column: span 7; }
-.t-waste { grid-column: span 5; }
+.t-second, .t-min, .t-waste { grid-column: span 4; }
 .tile:hover .art { scale: 1.035; }
 .art { transition: scale 0.6s var(--spring); }
 
@@ -193,121 +183,36 @@
 .impact .art-spark { animation-name: spark-late; }
 @keyframes spark-late { 0%, 66% { scale: 0; } 72% { scale: 1.3; rotate: 25deg; } 82%, 100% { scale: 0; rotate: 60deg; } }
 
-/* ---------- quote: a docket you can't miss, it opens the contact panel ---- */
-.quote { display: grid; grid-template-columns: 1fr 0.9fr; gap: clamp(32px, 6vw, 100px); align-items: center; padding: var(--section-y) var(--pad); }
-.quote-copy .lead { max-width: 440px; }
-.quote-points { display: grid; gap: 14px; margin: 30px 0 0; padding: 0; list-style: none; }
-.quote-points li { display: flex; align-items: center; gap: 14px; font: 600 17px / 1 var(--font-sans); }
-.quote-points svg { flex: none; width: 30px; height: 30px; padding: 6px; border-radius: 50%; background: var(--cream); fill: none; stroke: var(--green); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-.quote-open { gap: 12px; margin-top: 38px; }
-.quote-open svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: translate 0.4s var(--spring); }
-.quote-open:hover svg { translate: 4px 0; }
-
-.qd { justify-self: center; width: min(100%, 430px); padding: 26px 0 0; border: 0; background: none; color: inherit; cursor: pointer; }
-.qd-board {
-  position: relative;
-  display: block;
-  padding: 34px 14px 16px;
-  border-radius: 22px;
-  background:
-    repeating-linear-gradient(97deg, rgb(255 255 255 / 0.04) 0 2px, transparent 2px 9px),
-    linear-gradient(180deg, #cf9f60, #b9884b);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15), inset 0 2px 0 rgb(255 255 255 / 0.25), 0 40px 60px -30px rgb(0 0 0 / 0.75);
-  rotate: -4deg;
-  transition: rotate 0.7s var(--spring), translate 0.7s var(--spring);
-}
-.qd:hover .qd-board,
-.qd:focus-visible .qd-board { rotate: -1.5deg; translate: 0 -8px; }
-.qd:focus-visible { outline: none; }
-.qd:focus-visible .qd-board { outline: 3px solid var(--sun); outline-offset: 6px; }
-.qd-clip { position: absolute; top: -20px; left: 50%; z-index: 2; width: 132px; margin-left: -66px; filter: drop-shadow(0 6px 5px rgb(0 0 0 / 0.3)); transition: translate 0.4s var(--bounce); }
-.qd:hover .qd-clip { translate: 0 -5px; }
-.qd-sheet {
-  display: grid;
-  gap: 14px;
-  padding: 44px 22px 22px;
-  border-radius: 4px 4px 6px 6px;
-  background: var(--paper);
-  box-shadow: 4px 7px 0 -1px #f8e3a0;
-  color: var(--green-900);
-  text-align: left;
-}
-.qd-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; border-bottom: 2px solid var(--green-900); }
-.qd-head b { font: 400 34px / 0.9 var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
-.qd-head small,
-.qd-to,
-.qd-row small { color: var(--ink-soft); font: 700 10.5px / 1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; }
-.qd-head small { color: var(--tomato); }
-.qd-to { display: flex; align-items: baseline; gap: 14px; }
-.qd-to b { padding: 5px 10px 4px; border-radius: 4px; background: var(--green-900); color: var(--cream); font: 400 17px / 1 var(--font-display); letter-spacing: 0.04em; rotate: -1.5deg; }
-.qd-row { display: grid; grid-template-columns: 112px 1fr; align-items: end; gap: 10px; padding-bottom: 7px; border-bottom: 1.5px solid rgb(0 56 42 / 0.28); }
-.qd-row i {
-  color: var(--green);
-  font: 400 23px / 1 var(--font-serif);
-  font-style: normal;
-  letter-spacing: -0.02em;
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 0.9s var(--ease-out) calc(0.5s + var(--i) * 0.35s);
-}
-.qd.in .qd-row i { clip-path: inset(0 -10% 0 0); }
-.qd-crates { display: grid; grid-template-columns: repeat(12, 1fr); gap: 5px; }
-.qd-crates i { aspect-ratio: 1.25; border-radius: 3px; background: rgb(0 56 42 / 0.09); }
-.qd-crates i[data-on] {
-  background: linear-gradient(transparent 46%, rgb(20 20 20 / 0.5) 46% 54%, transparent 54%), linear-gradient(90deg, transparent 46%, rgb(20 20 20 / 0.35) 46% 54%, transparent 54%), #d8b37a;
-  box-shadow: inset 0 0 0 1.5px #141414;
-  scale: 0;
-  transition: scale 0.5s var(--bounce) calc(1.6s + var(--k) * 60ms);
-}
-.qd.in .qd-crates i[data-on] { scale: 1; }
-.qd-go {
-  display: inline-flex;
-  align-items: center;
-  justify-self: end;
-  gap: 10px;
-  height: 44px;
-  padding: 0 6px 0 18px;
-  border-radius: 999px;
-  background: var(--green);
-  color: var(--cream);
-  font: 700 12px / 1 var(--font-sans);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.qd-go svg { width: 32px; height: 32px; padding: 8px; border-radius: 50%; background: var(--sun); color: var(--green-900); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.qd:hover .qd-go svg { animation: arrow-through 0.55s var(--ease-out); }
-
 @media (max-width: 980px) {
-  .how, .quote { grid-template-columns: 1fr; }
+  .how { grid-template-columns: 1fr; }
   .how-head { position: static; }
   .bento { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .t-pay, .t-speed, .t-min, .t-waste { grid-column: span 6; grid-row: auto; }
-  .t-track, .t-second { grid-column: span 3; }
+  .t-second, .t-min { grid-column: span 3; }
+  .t-waste { grid-column: span 6; }
 }
 @media (max-width: 640px) {
   .step { grid-template-columns: 54px 1fr; gap: 18px; }
   .step-num { width: 54px; height: 54px; font-size: 21px; }
   .steps-line { left: 26px; }
-  .t-track, .t-second { grid-column: span 6; }
-  .qd-row { grid-template-columns: 92px 1fr; }
-  .qd-row i { font-size: 20px; }
+  .t-second, .t-min { grid-column: span 6; }
 }
 @media (prefers-reduced-motion: reduce) {
   .truck-scene *, .art *, .marquee-track { animation: none !important; }
   .art .lab.l3, .pay .coin, .pay .row, .pay .stamp, .min .pal, .impact .it, .impact .leaf { opacity: 1; }
   .impact .stem { stroke-dashoffset: 0; }
   .impact .leaf { scale: 1; }
-  .qd-row i { clip-path: none; transition: none; }
-  .qd-crates i[data-on] { scale: 1; transition: none; }
 }
 
 /* ---------- glow-up pass: editorial hero, living truck, numbered steps, accent tiles, CTA shine ---------- */
-.sp-hero .page-head h1 { max-width: 13ch; font-size: clamp(54px, 7vw, 112px); line-height: 0.98; letter-spacing: -0.03em; }
+/* Mid-page now, so no room for the header on top. */
+.sp-hero { padding-top: var(--section-y); }
+.sp-hero .page-head h2 { max-width: 13ch; font-size: clamp(54px, 7vw, 112px); line-height: 0.98; letter-spacing: -0.03em; }
 .sp-mark { position: relative; display: inline-block; color: var(--sun); font-style: italic; }
 .sp-mark::after { content: ""; position: absolute; right: 0.12em; bottom: 0.03em; left: 0; height: 0.07em; border-radius: 2px; background: var(--sun); transform-origin: left; scale: 0 1; animation: sp-rule 0.9s var(--ease-out) 0.8s forwards; }
 @keyframes sp-rule { to { scale: 1 1; } }
-.hero-actions .button, .quote-open { position: relative; overflow: hidden; }
-.hero-actions .button::after, .quote-open::after { content: ""; position: absolute; top: -40%; bottom: -40%; left: -30%; width: 34%; rotate: 18deg; background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.8), transparent); translate: -220% 0; pointer-events: none; }
-.hero-actions .button:hover::after, .quote-open:hover::after { animation: shine 0.8s var(--ease-out); }
+.hero-actions .button { position: relative; overflow: hidden; }
+.hero-actions .button::after { content: ""; position: absolute; top: -40%; bottom: -40%; left: -30%; width: 34%; rotate: 18deg; background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.8), transparent); translate: -220% 0; pointer-events: none; }
+.hero-actions .button:hover::after { animation: shine 0.8s var(--ease-out); }
 @keyframes shine { to { translate: 520% 0; } }
 
 /* truck scene: it arrives, hills drift behind, exhaust puffs, crisper wheels */
@@ -338,28 +243,18 @@
 
 /* bento: one accent per benefit, idle float on the art, deeper hover */
 .tile { --accent: var(--sun); }
-.t-pay { --accent: var(--tomato); }
-.t-track { --accent: var(--sky); }
 .t-second { --accent: var(--mint); }
 .t-min { --accent: var(--orange); }
 .t-waste { --accent: var(--lilac); }
 .tile::before { content: ""; position: absolute; top: 0; left: clamp(22px, 2.4vw, 34px); z-index: 2; width: 48px; height: 5px; border-radius: 0 0 4px 4px; background: var(--accent); transition: width 0.5s var(--spring); }
 .tile:hover::before { width: 88px; }
 .tile-kicker { font: 700 11px / 1 var(--font-mono); letter-spacing: 0.16em; }
-.tile-kicker span, .t-pay .tile-kicker span { color: var(--accent); }
+.tile-kicker span { color: var(--accent); }
 .tile:hover { box-shadow: 0 30px 50px -30px rgb(0 0 0 / 0.6); }
 .tile-art { animation: idle-float 6s ease-in-out infinite alternate; animation-delay: calc(var(--rv, 0ms) * 4); }
 @keyframes idle-float { to { translate: 0 -6px; } }
 
-/* quote: more light, bigger headline, points cascade in, lined docket */
-.quote { position: relative; isolation: isolate; overflow: hidden; background: radial-gradient(70vw 60vw at 85% 115%, rgb(246 181 49 / 0.18), transparent 60%), radial-gradient(50vw 40vw at 0% 0%, rgb(31 160 127 / 0.4), transparent 60%), var(--green); }
-.quote h2 { max-width: 14ch; font-size: clamp(44px, 5.4vw, 86px); line-height: 0.98; letter-spacing: -0.03em; }
-.quote-points li { opacity: 0; translate: -10px 0; transition: opacity 0.6s, translate 0.7s var(--spring); transition-delay: calc(0.3s + var(--i, 0) * 0.12s); }
-.quote-copy.in .quote-points li { opacity: 1; translate: 0 0; }
-.qd-sheet { background: repeating-linear-gradient(0deg, transparent 0 31px, rgb(0 88 66 / 0.05) 31px 32px), var(--paper); }
-
 @media (prefers-reduced-motion: reduce) {
   .sp-mark::after { animation: none; scale: 1 1; }
-  .truck-scene, .tile-art, .step[data-on] .step-num::after, .step[data-on] .step-tag, .hero-actions .button::after, .quote-open::after, .marquee span i { animation: none !important; }
-  .quote-points li { opacity: 1; translate: none; transition: none; }
+  .truck-scene, .tile-art, .step[data-on] .step-num::after, .step[data-on] .step-tag, .hero-actions .button::after, .marquee span i { animation: none !important; }
 }

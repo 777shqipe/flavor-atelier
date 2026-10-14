@@ -85,7 +85,7 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
     };
   }, []);
 
-  const toFinds = () => document.getElementById("in-store")?.scrollIntoView({ behavior: "smooth" });
+  const toFinds = () => document.getElementById("finds")?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <section className="hero" ref={root} data-surface="green" data-ready={ready || undefined} aria-labelledby="hero-title">

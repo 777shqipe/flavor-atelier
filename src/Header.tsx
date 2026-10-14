@@ -2,13 +2,12 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
 import { Logo } from "./Logo";
 import "./header.css";
 
-export type Page = "home" | "stores" | "about" | "suppliers";
+export type Page = "home" | "stores" | "about";
 
 const LINKS: Array<[Page, string]> = [
   ["home", "Home"],
   ["stores", "Stores"],
   ["about", "About us"],
-  ["suppliers", "Suppliers"],
 ];
 
 /** Label whose letters roll up one after another on hover. */

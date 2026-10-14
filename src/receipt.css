@@ -1,4 +1,4 @@
-/* "Every receipt is a rescue": a till receipt printed by scrolling. */
+/* "Every receipt is a rescue": a till receipt that prints once it is in view. */
 
 .rcpt { position: relative; }
 .rcpt-pin {
@@ -8,10 +8,6 @@
   align-items: center;
   padding: var(--section-y) var(--pad);
 }
-.rcpt[data-mode="scroll"] { height: 260vh; }
-.rcpt[data-mode="scroll"] .rcpt-pin { position: sticky; top: 0; height: 100vh; grid-template-rows: minmax(0, 1fr); padding-block: 104px 30px; }
-.rcpt[data-mode="scroll"] .rcpt-stage { height: 100%; }
-.rcpt[data-mode="scroll"] .rcpt-fit { position: absolute; bottom: 0; left: 50%; translate: -50% 0; }
 
 /* ---------- copy ------------------------------------------------------ */
 .rcpt-copy h2 { font-size: clamp(44px, 5.4vw, 88px); }
@@ -32,7 +28,7 @@
 
 /* ---------- printer --------------------------------------------------- */
 .rcpt-stage { position: relative; display: grid; align-items: end; justify-items: center; align-self: stretch; min-height: 0; }
-.rcpt-fit { --paper-w: 324px; scale: var(--fit, 1); transform-origin: 50% 100%; }
+.rcpt-fit { --paper-w: 324px; }
 
 /* Clips only the bottom edge, at the printer's slot, so paper rises out of it. */
 .rcpt-window { position: relative; z-index: 2; clip-path: inset(-400px -200px 5px -200px); }

@@ -73,8 +73,8 @@ const EMPTY: Fields = { name: "", email: "", phone: "", message: "", volume: "",
 
 const emailOk = (value: string) => /^\S+@\S+\.\S+$/.test(value);
 
-/** Bulldog clip, used by the suppliers page. */
-export function Clip({ className = "" }: { className?: string }) {
+/** Bulldog clip that holds the contact sheet. */
+function Clip({ className = "" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 132 64" aria-hidden="true">
       <g strokeLinejoin="round" strokeLinecap="round">

@@ -174,7 +174,6 @@ export function JamShelf() {
     >
       <header className="section-head split jams-head rv">
         <div>
-          <span className="chapter" aria-hidden="true">02</span>
           <p className="eyebrow">Thirty years, four batches</p>
           <h2 id="jams-title">Our story, preserved.</h2>
         </div>

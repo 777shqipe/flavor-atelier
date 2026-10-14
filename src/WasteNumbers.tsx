@@ -154,7 +154,6 @@ export function WasteNumbers() {
     <section className="waste" data-surface="green" aria-labelledby="waste-title">
       <header className="section-head split rv">
         <div>
-          <span className="chapter" aria-hidden="true">03</span>
           <p className="eyebrow">Why it matters</p>
           <h2 id="waste-title">Good food, binned by the tonne.</h2>
         </div>

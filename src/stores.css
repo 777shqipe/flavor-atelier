@@ -1,5 +1,5 @@
 /* Stores: everything about the selected shop in one screen (facts, photo, the four
-   picks), then the finder map. */
+   picks), or the finder map, swapped from the Mix dock. */
 
 .stores-hero {
   position: relative;
@@ -10,6 +10,8 @@
   min-height: 100svh;
   padding: clamp(104px, 10vw, 124px) var(--pad) clamp(36px, 4vw, 56px);
 }
+/* Room under the picks for the dock. */
+.mix .stores-hero { padding-bottom: calc(clamp(36px, 4vw, 56px) + 80px); }
 .sh {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
@@ -220,7 +222,8 @@
 .sh-picks button[aria-selected="true"] .pick-glyph { opacity: 1; scale: 1; rotate: 0deg; }
 
 /* ---------- find section --------------------------------------------- */
-.stores-find { padding: var(--section-y) var(--pad); }
+/* The map opens at the top of the page, so it clears the header like any page hero. */
+.stores-find { padding: clamp(124px, 14vw, 172px) var(--pad) var(--section-y); }
 .stores-find .section-head { max-width: 640px; margin: 0 auto 44px; text-align: center; }
 .stores-find .eyebrow { display: inline-flex; align-items: center; gap: 10px; }
 .stores-find .eyebrow::before, .stores-find .eyebrow::after { content: ""; width: 22px; height: 2px; border-radius: 2px; background: var(--sun); }

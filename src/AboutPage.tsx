@@ -1,13 +1,10 @@
-import type { CSSProperties } from "react";
-import { DateCheck } from "./DateCheck";
 import { JamShelf } from "./JamShelf";
 import { Peel } from "./Peel";
-import { WasteNumbers } from "./WasteNumbers";
+import { Suppliers } from "./Suppliers";
 import "./about.css";
 
-const YEARS = new Date().getFullYear() - 1995;
-
-export function AboutPage() {
+/** Our story up top, the jam-jar history, then the supplier side of the business. */
+export function AboutPage({ onContact }: { onContact: () => void }) {
   return (
     <main>
       <section className="page-hero about-hero" data-surface="green" aria-labelledby="about-title">
@@ -26,20 +23,30 @@ export function AboutPage() {
               <em className="ah-italic">since 1995.</em>
             </h1>
             <p className="lead">It started with a simple idea: perfectly good food should never go to waste.</p>
-            <dl className="ah-facts">
-              <div>
-                <dt>Years at it</dt>
-                <dd>{YEARS}</dd>
-              </div>
-              <div>
-                <dt>Stores</dt>
-                <dd>4</dd>
-              </div>
-              <div>
-                <dt>Food rescued</dt>
-                <dd>Millions of kg</dd>
-              </div>
-            </dl>
+            <div className="ah-story">
+              <p>
+                We buy close-to-date, past best-before and surplus stock from suppliers all over Australia, then sell it
+                for a fraction of the price. Same great brands, same great quality, just a lot cheaper.
+              </p>
+              <p>
+                What began as a small shop selling jam has grown into four much-loved stores. Ridiculous prices, a{" "}
+                <em>serious</em> purpose.
+              </p>
+            </div>
+            <ul className="story-pillars">
+              <li>
+                <b>Up to 70% off</b>
+                <span>Big-brand groceries</span>
+              </li>
+              <li>
+                <b>Zero landfill</b>
+                <span>Good food gets eaten</span>
+              </li>
+              <li>
+                <b>4 inner-Melb shops</b>
+                <span>New stock daily</span>
+              </li>
+            </ul>
           </header>
           <div className="ah-art">
             <span className="ah-glow" aria-hidden="true" />
@@ -68,54 +75,8 @@ export function AboutPage() {
         </div>
       </section>
 
-      <section className="story" data-surface="cream" aria-labelledby="story-title">
-        <div className="story-lead rv">
-          <div className="story-card">
-            <span className="sc-kicker">SINCE 1995</span>
-            <span className="sc-num" aria-hidden="true">
-              {YEARS}
-            </span>
-            <p>years of bargains, challenges and positive change.</p>
-            <span className="sc-stamp" aria-hidden="true">
-              STILL SAVING
-            </span>
-          </div>
-        </div>
-        <div className="story-copy rv" style={{ "--rv": "120ms" } as CSSProperties}>
-          <span className="chapter" aria-hidden="true">01</span>
-          <p className="eyebrow">Our story</p>
-          <h2 id="story-title">
-            Ridiculous prices.
-            <br />A <em>serious</em> purpose.
-          </h2>
-          <p>
-            Cheaper Buy Miles has been fighting food waste since 1995. We buy close-to-date, past best-before and
-            surplus stock from suppliers all over Australia, then sell it for a fraction of the price.
-          </p>
-          <p>
-            Same great brands, same great quality, just a lot cheaper. What began as a small shop selling jam has grown
-            into four much-loved stores.
-          </p>
-          <ul className="story-pillars">
-            <li>
-              <b>Up to 70% off</b>
-              <span>Big-brand groceries</span>
-            </li>
-            <li>
-              <b>Zero landfill</b>
-              <span>Good food gets eaten</span>
-            </li>
-            <li>
-              <b>4 inner-Melb shops</b>
-              <span>New stock daily</span>
-            </li>
-          </ul>
-        </div>
-      </section>
-
       <JamShelf />
-      <WasteNumbers />
-      <DateCheck />
+      <Suppliers onContact={onContact} />
     </main>
   );
 }

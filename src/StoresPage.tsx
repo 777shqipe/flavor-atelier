@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { glyphSvg } from "./glyphs";
 import { bow, bowControl, type XY } from "./mapArt";
+import { Mix } from "./Mix";
 import { RingBadge } from "./RingBadge";
 import { StoreMap } from "./StoreMap";
 import { ROUTE, STORES, directionsLink } from "./stores";
@@ -154,7 +155,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
       const target = event.target as HTMLElement | null;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
       if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-      if (target?.closest(".leaflet-container")) return;
+      if (target?.closest(".leaflet-container, .mix-bar")) return;
       event.preventDefault();
       onSelect((active + (event.key === "ArrowRight" ? 1 : -1) + STORES.length) % STORES.length);
     };
@@ -187,133 +188,147 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
 
   const store = STORES[active];
 
-  return (
-    <main>
-      <section className="stores-hero" data-surface="green" aria-labelledby="stores-title">
-        <div className="aurora" aria-hidden="true" />
-        <div className="sh">
-          <header className="sh-head">
-            <p className="eyebrow">Around Melbourne</p>
-            <h1 id="stores-title">Our stores</h1>
-          </header>
+  const shop = () => (
+    <section className="stores-hero" data-surface="green" aria-labelledby="stores-title">
+      <div className="aurora" aria-hidden="true" />
+      <div className="sh">
+        <header className="sh-head">
+          <p className="eyebrow">Around Melbourne</p>
+          <h1 id="stores-title">Our stores</h1>
+        </header>
 
-          <article className="sh-facts" style={{ "--c": store.color } as CSSProperties}>
-            <p className="sh-count" aria-hidden="true">
-              <b>0{active + 1}</b>
-              <span className="sh-bars">
-                {STORES.map((item, index) => (
-                  <i key={item.id} data-on={index <= active || undefined} />
+        <article className="sh-facts" style={{ "--c": store.color } as CSSProperties}>
+          <p className="sh-count" aria-hidden="true">
+            <b>0{active + 1}</b>
+            <span className="sh-bars">
+              {STORES.map((item, index) => (
+                <i key={item.id} data-on={index <= active || undefined} />
+              ))}
+            </span>
+            <em>04</em>
+          </p>
+          <h2 className="sh-name" key={store.id} aria-label={store.name} aria-live="polite">
+            {[...store.name].map((letter, index) => (
+              <span key={index} aria-hidden="true" style={{ "--i": index } as CSSProperties}>
+                {letter}
+              </span>
+            ))}
+          </h2>
+          <p className={`status${status.open ? " open" : ""}`}>
+            <i /> {status.label}
+          </p>
+          <p className="sh-line" key={`line-${store.id}`}>
+            {store.line}
+          </p>
+          <ul className="sh-info" key={`info-${store.id}`}>
+            <li>
+              <Icon d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" circle />
+              {store.address}
+            </li>
+            <li className="hours">
+              <Icon d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5V12l3 2" />
+              <span>
+                {store.hours.split(" · ").map((part) => (
+                  <span key={part}>{part}</span>
                 ))}
               </span>
-              <em>04</em>
-            </p>
-            <h2 className="sh-name" key={store.id} aria-label={store.name} aria-live="polite">
-              {[...store.name].map((letter, index) => (
-                <span key={index} aria-hidden="true" style={{ "--i": index } as CSSProperties}>
-                  {letter}
-                </span>
-              ))}
-            </h2>
-            <p className={`status${status.open ? " open" : ""}`}>
-              <i /> {status.label}
-            </p>
-            <p className="sh-line" key={`line-${store.id}`}>
-              {store.line}
-            </p>
-            <ul className="sh-info" key={`info-${store.id}`}>
-              <li>
-                <Icon d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" circle />
-                {store.address}
-              </li>
-              <li className="hours">
-                <Icon d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5V12l3 2" />
-                <span>
-                  {store.hours.split(" · ").map((part) => (
-                    <span key={part}>{part}</span>
-                  ))}
-                </span>
-              </li>
-              <li>
-                <Icon d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
-                <a href={`tel:${store.phone.replaceAll(" ", "")}`}>{store.phone}</a>
-              </li>
-            </ul>
-            <div className="sh-actions">
-              <a className="go" href={directionsLink(store)} target="_blank" rel="noreferrer">
-                Directions
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M7 17L17 7M8 7h9v9" />
-                </svg>
-              </a>
-              <button type="button" onClick={copy}>
-                {copied ? "Copied ✓" : "Copy address"}
-              </button>
-            </div>
-          </article>
-
-          <div className="sh-visual" ref={frame} onPointerMove={look} onPointerLeave={rest}>
-            <div className="sh-photo">
-              {STORES.map((item, index) => (
-                <img
-                  key={item.id}
-                  className={index === active ? "active" : index === pair.before ? "before" : undefined}
-                  src={item.src}
-                  alt={index === active ? `${item.name} storefront` : ""}
-                  style={{ objectPosition: item.pos }}
-                  draggable={false}
-                />
-              ))}
-              <span className="sh-chip" key={`chip-${store.id}`}>
-                <span className="sc-glyph" style={{ "--c": store.color } as CSSProperties} dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
-                Store 0{active + 1} · {store.name}
-              </span>
-              <button className="round-btn sh-arrow prev" type="button" onClick={() => go(-1)} aria-label="Previous store">
-                {arrow("left")}
-              </button>
-              <button className="round-btn sh-arrow next" type="button" onClick={() => go(1)} aria-label="Next store">
-                {arrow("right")}
-              </button>
-              <div className="sh-mini">
-                <MiniMap active={active} />
-              </div>
-            </div>
-            <RingBadge className="sh-badge" text="OPEN 7 DAYS • FIGHT FOOD WASTE •" center="7" label="Open seven days a week" />
+            </li>
+            <li>
+              <Icon d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
+              <a href={`tel:${store.phone.replaceAll(" ", "")}`}>{store.phone}</a>
+            </li>
+          </ul>
+          <div className="sh-actions">
+            <a className="go" href={directionsLink(store)} target="_blank" rel="noreferrer">
+              Directions
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 17L17 7M8 7h9v9" />
+              </svg>
+            </a>
+            <button type="button" onClick={copy}>
+              {copied ? "Copied ✓" : "Copy address"}
+            </button>
           </div>
+        </article>
 
-          <div className="sh-picks" role="tablist" aria-label="Choose a store" style={{ "--i": active } as CSSProperties}>
-            <span className="pick-lens" aria-hidden="true" />
+        <div className="sh-visual" ref={frame} onPointerMove={look} onPointerLeave={rest}>
+          <div className="sh-photo">
             {STORES.map((item, index) => (
-              <button
+              <img
                 key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={index === active}
-                tabIndex={index === active ? 0 : -1}
-                style={{ "--c": item.color, "--i": index } as CSSProperties}
-                onClick={() => onSelect(index)}
-              >
-                <img src={item.src} alt="" style={{ objectPosition: item.pos }} />
-                <span className="pick-text">
-                  <small>0{index + 1}</small>
-                  <b>{item.name}</b>
-                </span>
-                <span className="pick-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(item.glyph) }} />
-              </button>
+                className={index === active ? "active" : index === pair.before ? "before" : undefined}
+                src={item.src}
+                alt={index === active ? `${item.name} storefront` : ""}
+                style={{ objectPosition: item.pos }}
+                draggable={false}
+              />
             ))}
+            <span className="sh-chip" key={`chip-${store.id}`}>
+              <span className="sc-glyph" style={{ "--c": store.color } as CSSProperties} dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
+              Store 0{active + 1} · {store.name}
+            </span>
+            <button className="round-btn sh-arrow prev" type="button" onClick={() => go(-1)} aria-label="Previous store">
+              {arrow("left")}
+            </button>
+            <button className="round-btn sh-arrow next" type="button" onClick={() => go(1)} aria-label="Next store">
+              {arrow("right")}
+            </button>
+            <div className="sh-mini">
+              <MiniMap active={active} />
+            </div>
           </div>
+          <RingBadge className="sh-badge" text="OPEN 7 DAYS • FIGHT FOOD WASTE •" center="7" label="Open seven days a week" />
         </div>
-      </section>
 
-      <section className="stores-find" data-surface="cream" aria-labelledby="find-title">
-        <header className="section-head centered rv">
-          <p className="eyebrow">Find us</p>
-          <h2 id="find-title">Four shops, one loop.</h2>
-          <p className="lead">Pick a pin and the cart drives over. Or let us find the one closest to you.</p>
-        </header>
-        <div className="rv" style={{ "--rv": "100ms" } as CSSProperties}>
-          <StoreMap active={active} onSelect={onSelect} variant="full" />
+        <div className="sh-picks" role="tablist" aria-label="Choose a store" style={{ "--i": active } as CSSProperties}>
+          <span className="pick-lens" aria-hidden="true" />
+          {STORES.map((item, index) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={index === active}
+              tabIndex={index === active ? 0 : -1}
+              style={{ "--c": item.color, "--i": index } as CSSProperties}
+              onClick={() => onSelect(index)}
+            >
+              <img src={item.src} alt="" style={{ objectPosition: item.pos }} />
+              <span className="pick-text">
+                <small>0{index + 1}</small>
+                <b>{item.name}</b>
+              </span>
+              <span className="pick-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(item.glyph) }} />
+            </button>
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+
+  const map = () => (
+    <section className="stores-find" data-surface="cream" aria-labelledby="find-title">
+      <header className="section-head centered rv">
+        <p className="eyebrow">Find us</p>
+        <h2 id="find-title">Four shops, one loop.</h2>
+        <p className="lead">Pick a pin and the cart drives over. Or let us find the one closest to you.</p>
+      </header>
+      <div className="rv" style={{ "--rv": "100ms" } as CSSProperties}>
+        <StoreMap active={active} onSelect={onSelect} variant="full" />
+      </div>
+    </section>
+  );
+
+  // One screen: the shop up close, or all four on the map. Both follow the same pick.
+  return (
+    <main>
+      <Mix
+        id="stores"
+        label="Our stores"
+        tabs={[
+          { id: "shop", label: "Storefront", render: shop },
+          { id: "map", label: "Map & nearest", render: map },
+        ]}
+      />
     </main>
   );
 }

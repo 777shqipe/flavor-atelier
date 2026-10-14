@@ -15,7 +15,6 @@ const LABELS: Record<Page, [string, string]> = {
   home: ["Home", "Fresh finds, every week."],
   stores: ["Our stores", "Four shops. One map."],
   about: ["About us", "Rescuing good food since 1995."],
-  suppliers: ["Suppliers", "Surplus in. Savings out."],
 };
 
 const BAND = "Cheaper Buy Miles ✦ Reduced to clear ✦ ";
