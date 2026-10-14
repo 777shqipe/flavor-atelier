@@ -1,24 +1,5 @@
 /* Suppliers (the second half of About): truck scene intro, what-we-buy marquee, then the deal route. */
 
-/* ---------- hero scene ------------------------------------------------ */
-.truck-scene { width: 100%; height: auto; filter: drop-shadow(0 34px 40px rgb(0 20 14 / 0.3)); }
-.truck-scene .sun { transform-box: fill-box; transform-origin: center; animation: sun-pulse 4s ease-in-out infinite alternate; }
-@keyframes sun-pulse { to { scale: 1.08; } }
-.truck-scene .cloud.c1 { animation: drift 24s ease-in-out infinite alternate; }
-.truck-scene .cloud.c2 { animation: drift 30s ease-in-out infinite alternate-reverse; }
-@keyframes drift { to { translate: 70px 0; } }
-.truck-scene .road-dash { animation: dash-run 0.9s linear infinite; }
-@keyframes dash-run { to { stroke-dashoffset: -52; } }
-.truck-scene .truck { animation: truck-bob 0.5s ease-in-out infinite alternate; }
-@keyframes truck-bob { to { translate: 0 -1.5px; } }
-.truck-scene .wheel { animation: wheel 0.7s linear infinite; }
-@keyframes wheel { to { rotate: 360deg; } }
-.truck-scene .crate { animation: crate-run 3.75s linear infinite; }
-@keyframes crate-run {
-  0% { translate: 0 0; opacity: 0; }
-  8% { opacity: 1; }
-  100% { translate: 120px 0; opacity: 1; }
-}
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 34px; }
 
 /* ---------- what we buy marquee -------------------------------------- */
@@ -189,16 +170,6 @@
 .hero-actions .button:hover::after { animation: shine 0.8s var(--ease-out); }
 @keyframes shine { to { translate: 520% 0; } }
 
-/* truck scene: it arrives, hills drift behind, exhaust puffs, crisper wheels */
-.truck-scene { animation: fade-up 1s 0.15s var(--ease-out) both; }
-.truck-scene .truck-arrive { animation: truck-arrive 1.4s var(--ease-out) 0.2s both; }
-@keyframes truck-arrive { from { translate: 180px 0; } }
-.truck-scene .hills { animation: drift 44s ease-in-out infinite alternate-reverse; }
-.truck-scene .wheel { animation-duration: 0.6s; }
-.truck-scene .road-dash { animation-duration: 0.8s; }
-.truck-scene .puff { transform-box: fill-box; transform-origin: center; opacity: 0; animation: puff 2.4s ease-out infinite; animation-delay: calc(var(--i) * 0.8s); }
-@keyframes puff { 0% { opacity: 0; translate: 0 0; scale: 0.4; } 15% { opacity: 0.5; } 100% { opacity: 0; translate: 36px -48px; scale: 1.7; } }
-
 /* marquee: alternate italics, spinning stars, pause on hover */
 .marquee-track > div > span:nth-child(even) { color: var(--green-700); font-style: italic; }
 .marquee span i { display: inline-block; animation: spin 9s linear infinite; }
@@ -206,9 +177,9 @@
 
 
 @media (prefers-reduced-motion: reduce) {
-  .truck-scene *, .marquee-track { animation: none !important; }
+  .marquee-track { animation: none !important; }
   .sp-mark::after { animation: none; scale: 1 1; }
-  .truck-scene, .hero-actions .button::after, .marquee span i, .route-truck svg { animation: none !important; }
+  .hero-actions .button::after, .marquee span i, .route-truck svg { animation: none !important; }
   .route .route-truck { left: 100%; animation: none !important; }
   .route .route-fill { scale: 1 1; animation: none !important; }
   .route .stop-card { opacity: 1; translate: none; animation: none !important; }
