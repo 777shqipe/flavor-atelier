@@ -1,4 +1,4 @@
-/* Suppliers (the second half of About): truck scene intro, then a mix of scroll-filled steps and a bento of benefits. */
+/* Suppliers (the second half of About): truck scene intro, what-we-buy marquee, then the deal route. */
 
 /* ---------- hero scene ------------------------------------------------ */
 .truck-scene { width: 100%; height: auto; filter: drop-shadow(0 34px 40px rgb(0 20 14 / 0.3)); }
@@ -28,182 +28,156 @@
 .marquee span { padding-right: 44px; color: var(--green); font: 400 clamp(26px, 3.4vw, 44px) / 1 var(--font-serif); letter-spacing: -0.02em; white-space: nowrap; }
 .marquee span i { margin-left: 44px; color: var(--sun); font-style: normal; }
 
-/* ---------- how it works --------------------------------------------- */
-.how {
-  display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
-  gap: clamp(32px, 6vw, 100px);
+
+/* ---------- the deal: how it works + why us, as one route ------------- */
+/* A truck drives a dotted route through four stops (4s, pausing at each);
+   every stop lights up on arrival and shows the step and what the supplier gets. */
+.deal {
+  --g: clamp(14px, 1.8vw, 26px);
+  --pin: 54px;
   padding: var(--section-y) var(--pad);
   background:
     radial-gradient(rgb(0 88 66 / 0.07) 1.3px, transparent 1.6px) 0 0 / 22px 22px,
     var(--paper);
 }
-.how-head { position: sticky; top: 132px; align-self: start; }
-.steps { position: relative; display: grid; gap: clamp(22px, 3vw, 34px); margin: 0; padding: 0; list-style: none; }
-.steps-line { position: absolute; top: 35px; bottom: 35px; left: 34px; width: 3px; overflow: hidden; border-radius: 3px; background: var(--line); }
-.steps-line i { display: block; width: 100%; height: calc(var(--prog) * 100%); background: var(--green); }
-.step { position: relative; display: grid; grid-template-columns: 70px 1fr; gap: 24px; align-items: center; opacity: 0.42; translate: 16px 0; transition: opacity 0.5s, translate 0.7s var(--spring); }
-.step[data-on] { opacity: 1; translate: 0 0; }
-.step-num {
+.deal .section-head h2 em { font-style: normal; text-decoration: underline 0.07em var(--sun); text-underline-offset: 0.12em; text-decoration-skip-ink: none; }
+.route { position: relative; }
+.route.rv { opacity: 1; translate: none; }
+
+.route-track {
+  position: absolute;
+  top: calc(var(--pin) / 2 - 1.5px);
+  right: calc((100% - 3 * var(--g)) / 4 - var(--pin) / 2);
+  left: calc(var(--pin) / 2);
+  height: 3px;
+  border-radius: 3px;
+  background: radial-gradient(circle, rgb(0 88 66 / 0.28) 1.2px, transparent 1.5px) 0 50% / 9px 3px repeat-x;
+}
+.route-fill { position: absolute; inset: 0; border-radius: inherit; background: var(--green); transform-origin: left; scale: 0 1; }
+/* The truck rides the line and pulls up just short of each pin (its nose 4px off the pin edge). */
+.route-truck { position: absolute; bottom: -3px; left: 0; z-index: 2; width: 56px; translate: calc(-100% - var(--pin) / 2 - 4px) 0; }
+.route-truck svg { display: block; width: 100%; height: auto; animation: route-bob 0.5s ease-in-out infinite alternate; }
+.route-truck .wheel { transform-box: fill-box; transform-origin: center; }
+@keyframes route-bob { to { translate: 0 -1.5px; } }
+
+.route.in .route-fill { animation: route-fill 4s 0.3s both; }
+.route.in .route-truck { animation: route-drive 4s 0.3s both; }
+/* Holds at 0–8%, 30–38%, 60–68% and 92–100%: the stops. ARRIVALS in Suppliers.tsx follow these. */
+@keyframes route-drive {
+  0%, 8% { left: 0; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  30%, 38% { left: 33.333%; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  60%, 68% { left: 66.666%; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  92%, 100% { left: 100%; }
+}
+@keyframes route-fill {
+  0%, 8% { scale: 0 1; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  30%, 38% { scale: 0.3333 1; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  60%, 68% { scale: 0.6666 1; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  92%, 100% { scale: 1 1; }
+}
+
+.route-stops { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--g); margin: 0; padding: 0; list-style: none; }
+.stop { display: grid; grid-template-rows: auto 1fr; gap: 22px; }
+.stop-pin {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
-  width: 70px;
-  height: 70px;
-  border: 2px solid var(--green);
+  width: var(--pin);
+  height: var(--pin);
   border-radius: 50%;
   background: var(--paper);
-  color: var(--green);
-  font: 400 26px / 1 var(--font-serif);
-  transition: background-color 0.4s, color 0.4s, scale 0.6s var(--bounce), box-shadow 0.4s;
+  box-shadow: inset 0 0 0 2px rgb(0 88 66 / 0.22);
+  color: rgb(0 88 66 / 0.55);
+  font: 700 16px / 1 var(--font-mono);
+  letter-spacing: 0.04em;
+  transition: background-color 0.4s, color 0.4s, box-shadow 0.4s, scale 0.5s var(--bounce);
 }
-.step[data-on] .step-num { background: var(--green); color: var(--cream); scale: 1.06; box-shadow: 0 12px 22px -10px rgb(0 56 42 / 0.55); }
-.step-card {
-  padding: 20px 24px 22px;
-  border: 1.5px solid rgb(0 56 42 / 0.14);
-  border-radius: 20px;
-  background: var(--cream);
-  transition: border-color 0.4s, background-color 0.4s, box-shadow 0.4s, translate 0.4s var(--spring);
-}
-.step[data-on] .step-card {
-  border-color: rgb(0 56 42 / 0.28);
-  background: #fff;
-  box-shadow: 0 18px 34px -22px rgb(0 40 30 / 0.4);
-}
-.step:hover .step-card { translate: 4px 0; }
-.step-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-.step h3 { margin: 0; font: 400 clamp(24px, 2.4vw, 34px) / 1.1 var(--font-serif); letter-spacing: -0.02em; }
-.step-tag {
-  padding: 5px 11px 4px;
-  border-radius: 99px;
-  background: var(--sun);
-  color: #17140c;
-  font: 700 10.5px / 1 var(--font-mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.step p { max-width: 48ch; margin: 0; color: var(--fg-body); font-size: var(--fs-lead); }
+.stop-pin::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--green); opacity: 0; }
+.stop:last-child .stop-pin::after { border-color: var(--sun); }
 
-/* ---------- bento ----------------------------------------------------- */
-.bento-wrap { padding: var(--section-y) var(--pad); }
-.bento-wrap .section-head { max-width: 760px; margin-bottom: 48px; }
-.bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-rows: minmax(220px, auto); gap: 16px; }
-.tile {
-  position: relative;
+.stop-card {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: clamp(18px, 1.8vw, 26px);
+  border-radius: var(--r-2);
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(0 88 66 / 0.1), var(--shadow-1);
+  transition: translate 0.5s var(--spring), box-shadow 0.4s;
+}
+.stop-card:hover { translate: 0 -4px; box-shadow: 0 0 0 1px rgb(0 88 66 / 0.16), 0 26px 40px -24px rgb(0 40 30 / 0.45); }
+.stop-tag { padding: 6px 10px; border-radius: 99px; background: rgb(0 88 66 / 0.08); color: var(--green); font: 700 10.5px / 1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.stop h3 { margin: 4px 0 0; font: 400 clamp(22px, 1.9vw, 30px) / 1.08 var(--font-serif); letter-spacing: -0.02em; }
+.stop-card > p { margin: 0; color: var(--ink-soft); font-size: 15.5px; line-height: 1.55; }
+.stop-card .stop-gain { position: relative; display: grid; gap: 6px; width: 100%; margin-top: auto; padding-top: 14px; border-top: 1px dashed rgb(0 88 66 / 0.2); color: var(--ink); font-weight: 500; }
+.stop-gain b { justify-self: start; position: relative; isolation: isolate; color: var(--green); font: 700 10.5px / 1.4 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; }
+.stop-gain b::before { content: ""; position: absolute; inset: 0.15em -0.3em -0.05em; z-index: -1; border-radius: 3px; background: rgb(246 181 49 / 0.55); transform-origin: left; scale: 0 1; }
+
+/* Before the truck arrives a stop is a dim outline; on arrival it lights up in sequence. */
+.route .stop-card { opacity: 0.35; translate: 0 14px; }
+.route.in .stop-card { animation: stop-card 0.7s var(--ease-out) var(--t) forwards; }
+.route.in .stop-pin { animation: stop-pin 0.6s var(--bounce) var(--t) forwards; }
+.route.in .stop-pin::after { animation: stop-ring 0.9s var(--ease-out) var(--t); }
+.route.in .stop-gain b::before { animation: stop-mark 0.6s var(--ease-out) calc(var(--t) + 0.45s) forwards; }
+.route.in .stop:last-child .stop-pin { animation-name: stop-pin-last; }
+@keyframes stop-card { to { opacity: 1; translate: 0 0; } }
+@keyframes stop-pin { 40% { scale: 1.18; } to { background: var(--green); color: var(--cream); box-shadow: inset 0 0 0 2px var(--green), 0 10px 18px -8px rgb(0 56 42 / 0.6); } }
+@keyframes stop-pin-last { 40% { scale: 1.18; } to { background: var(--sun); color: var(--green-900); box-shadow: inset 0 0 0 2px var(--sun), 0 10px 18px -8px rgb(150 90 0 / 0.6); } }
+@keyframes stop-ring { from { opacity: 0.9; } to { opacity: 0; scale: 1.8; } }
+@keyframes stop-mark { to { scale: 1 1; } }
+/* Once it has arrived the card keeps its hover lift. */
+.route.in .stop-card:hover { translate: 0 -4px; }
+
+/* Proof strip: the three promises at a glance, then the ask. */
+.deal-proof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  overflow: hidden;
-  padding: clamp(22px, 2.4vw, 34px);
-  border: 1px solid var(--line);
+  gap: 20px 32px;
+  margin-top: clamp(36px, 4vw, 56px);
+  padding: clamp(20px, 2.2vw, 28px) clamp(22px, 2.6vw, 36px);
   border-radius: var(--r-3);
-  background: rgb(246 240 219 / 0.05);
-  transition: translate 0.5s var(--spring), background-color 0.3s, border-color 0.3s, opacity 0.7s, box-shadow 0.4s;
+  background: var(--green);
+  box-shadow: var(--shadow-2);
+  color: var(--cream);
+  --rv: 200ms;
 }
-.tile:hover { translate: 0 -4px; border-color: rgb(246 240 219 / 0.45); background: rgb(246 240 219 / 0.09); }
-.tile h3 { max-width: 20ch; margin: 0; font: 400 clamp(24px, 2.2vw, 34px) / 1.12 var(--font-serif); letter-spacing: -0.02em; }
-.tile-kicker { margin: 0; font: 700 12px / 1 var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
-.tile-kicker span { margin-right: 8px; color: var(--sun); }
-.tile-art { position: relative; display: grid; flex: 1; place-items: center; min-height: 120px; }
-.art { display: block; width: 100%; height: auto; max-height: 230px; overflow: visible; }
-.art * { animation-play-state: var(--play, paused); }
-.tile.in .art { --play: running; }
-.tile {
-  transform: perspective(1100px) rotateX(calc(var(--ty, 0) * -4deg)) rotateY(calc(var(--tx, 0) * 5deg));
-  transition: transform 0.35s ease-out, translate 0.5s var(--spring), background-color 0.3s, border-color 0.3s, opacity 0.7s, box-shadow 0.4s;
-}
-.tile::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; background: radial-gradient(460px circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.13), transparent 55%); opacity: var(--glare, 0); transition: opacity 0.35s; pointer-events: none; }
-.t-second, .t-min, .t-waste { grid-column: span 4; }
-.tile:hover .art { scale: 1.035; }
-.art { transition: scale 0.6s var(--spring); }
+.deal-proof ul { display: flex; flex-wrap: wrap; gap: 18px clamp(22px, 4vw, 56px); margin: 0; padding: 0; list-style: none; }
+.deal-proof li { display: grid; gap: 4px; }
+.deal-proof li + li { padding-left: clamp(22px, 4vw, 56px); border-left: 1px solid rgb(246 240 219 / 0.2); }
+.deal-proof strong { font: 400 clamp(28px, 2.6vw, 40px) / 1 var(--font-serif); letter-spacing: -0.02em; }
+.deal-proof li:last-child strong { color: var(--sun); }
+.deal-proof span { color: rgb(246 240 219 / 0.72); font: 700 11px / 1.3 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; }
 
-/* 1. receipt, stamp, coins */
-.pay .row { transform-box: fill-box; transform-origin: left center; animation: row-in 7s ease-out infinite backwards; animation-delay: calc(var(--i) * 0.16s); }
-@keyframes row-in { 0% { scale: 0 1; opacity: 1; } 7% { scale: 1 1; } 84% { scale: 1 1; opacity: 1; } 94%, 100% { scale: 1 1; opacity: 0; } }
-.pay .stamp { transform-box: fill-box; transform-origin: center; animation: stamp-slam 7s infinite backwards; }
-@keyframes stamp-slam {
-  0%, 40% { opacity: 0; scale: 2.8; rotate: -22deg; }
-  46% { opacity: 1; scale: 0.9; rotate: -9deg; }
-  49% { scale: 1.06; }
-  52%, 86% { opacity: 1; scale: 1; rotate: -9deg; }
-  94%, 100% { opacity: 0; scale: 1; rotate: -9deg; }
+/* Stacked: the route runs down the left edge and the truck drives down it. */
+@media (max-width: 900px) {
+  .route-stops { grid-template-columns: 1fr; gap: 26px; }
+  .stop { grid-template-columns: var(--pin) 1fr; grid-template-rows: none; gap: 18px; align-items: start; }
+  .route-track { top: calc(var(--pin) / 2); right: auto; bottom: var(--last, 200px); left: calc(var(--pin) / 2 - 1.5px); width: 3px; height: auto; background: radial-gradient(circle, rgb(0 88 66 / 0.28) 1.2px, transparent 1.5px) 50% 0 / 3px 9px repeat-y; }
+  .route-fill { transform-origin: top; scale: 1 0; }
+  .route-truck { bottom: auto; left: 50%; width: 46px; translate: -50% calc(-50% - 23px - var(--pin) / 2 - 4px); rotate: 90deg; }
+  .route.in .route-fill { animation-name: route-fill-y; }
+  .route.in .route-truck { animation-name: route-drive-y; }
+  .deal-proof li + li { padding-left: 0; border-left: 0; }
+  .deal-proof ul { flex-direction: column; }
 }
-.pay .receipt { animation: shake 7s infinite; }
-@keyframes shake { 0%, 45%, 53%, 100% { translate: 0 0; } 47% { translate: -4px 2px; } 49% { translate: 4px -2px; } 51% { translate: -2px 1px; } }
-.pay .coin { animation: coin-drop 7s infinite backwards; animation-delay: calc(var(--i) * 0.1s); }
-@keyframes coin-drop {
-  0%, 47% { translate: 0 -190px; opacity: 0; }
-  52% { opacity: 1; }
-  58% { translate: 0 8px; }
-  62% { translate: 0 -5px; }
-  66%, 86% { translate: 0 0; opacity: 1; }
-  94%, 100% { translate: 0 0; opacity: 0; }
+@keyframes route-drive-y {
+  0%, 8% { top: 0; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  30%, 38% { top: 33.333%; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  60%, 68% { top: 66.666%; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  92%, 100% { top: 100%; }
 }
-.art-spark { transform-box: fill-box; transform-origin: center; animation: spark-pop 7s infinite backwards; }
-.art-spark.b, .art-spark.d { animation-delay: 0.3s; }
-@keyframes spark-pop { 0%, 54% { scale: 0; rotate: 0deg; } 60% { scale: 1.3; rotate: 25deg; } 70%, 100% { scale: 0; rotate: 60deg; } }
-
-/* 2. truck wheels (the rest is SMIL) */
-.speed-art .wheel { transform-box: fill-box; transform-origin: center; animation: wheel 0.5s linear infinite; }
-@keyframes wheel { to { rotate: 360deg; } }
-
-/* 5. pallets fill the truck, label follows the load */
-.min .pal { animation: pal-drop 10s infinite backwards; animation-delay: calc(var(--k) * 0.34s); }
-@keyframes pal-drop {
-  0% { translate: 0 -120px; opacity: 0; }
-  5% { opacity: 1; }
-  11% { translate: 0 5px; }
-  14% { translate: 0 0; }
-  72% { translate: 0 0; opacity: 1; }
-  80%, 100% { translate: 0 0; opacity: 0; }
-}
-.min .lab { opacity: 0; animation: lab 10s infinite; }
-.min .l1 { animation-name: lab1; }
-.min .l2 { animation-name: lab2; }
-.min .l3 { animation-name: lab3; }
-@keyframes lab1 { 0% { opacity: 0; translate: 0 6px; } 3%, 14% { opacity: 1; translate: 0 0; } 18%, 100% { opacity: 0; } }
-@keyframes lab2 { 0%, 16% { opacity: 0; translate: 0 6px; } 20%, 36% { opacity: 1; translate: 0 0; } 40%, 100% { opacity: 0; } }
-@keyframes lab3 { 0%, 40% { opacity: 0; translate: 0 6px; } 44%, 78% { opacity: 1; translate: 0 0; } 84%, 100% { opacity: 0; } }
-
-/* 6. the basket catches it, something grows */
-.impact .it { animation-duration: 7s; animation-iteration-count: infinite; animation-fill-mode: backwards; }
-.impact .apple { animation-name: drop-a; }
-.impact .milk { animation-name: drop-b; }
-.impact .loaf { animation-name: drop-c; }
-@keyframes drop-a { 0%, 6% { translate: 0 -170px; opacity: 0; } 9% { opacity: 1; } 17% { translate: 0 8px; } 19.5% { translate: 0 -6px; } 22%, 88% { translate: 0 0; opacity: 1; } 96%, 100% { translate: 0 0; opacity: 0; } }
-@keyframes drop-b { 0%, 22% { translate: 0 -170px; opacity: 0; } 25% { opacity: 1; } 33% { translate: 0 8px; } 35.5% { translate: 0 -6px; } 38%, 88% { translate: 0 0; opacity: 1; } 96%, 100% { translate: 0 0; opacity: 0; } }
-@keyframes drop-c { 0%, 38% { translate: 0 -170px; opacity: 0; } 41% { opacity: 1; } 49% { translate: 0 8px; } 51.5% { translate: 0 -6px; } 54%, 88% { translate: 0 0; opacity: 1; } 96%, 100% { translate: 0 0; opacity: 0; } }
-.impact .basket { animation: catch 7s infinite; }
-@keyframes catch { 0%, 16%, 21%, 32%, 37%, 48%, 53%, 100% { translate: 0 0; } 18%, 34%, 50% { translate: 0 6px; } }
-.impact .stem { stroke-dasharray: 1; stroke-dashoffset: 1; animation: grow 7s infinite; }
-@keyframes grow { 0%, 56% { stroke-dashoffset: 1; opacity: 1; } 68%, 88% { stroke-dashoffset: 0; opacity: 1; } 96%, 100% { stroke-dashoffset: 0; opacity: 0; } }
-.impact .leaf { transform-box: fill-box; transform-origin: center; scale: 0; animation: leaf 7s infinite; }
-.impact .leaf.b { animation-delay: 0.2s; }
-@keyframes leaf { 0%, 64% { scale: 0; } 70% { scale: 1.25; } 74%, 88% { scale: 1; } 96%, 100% { scale: 0; } }
-.impact .art-spark { animation-name: spark-late; }
-@keyframes spark-late { 0%, 66% { scale: 0; } 72% { scale: 1.3; rotate: 25deg; } 82%, 100% { scale: 0; rotate: 60deg; } }
-
-@media (max-width: 980px) {
-  .how { grid-template-columns: 1fr; }
-  .how-head { position: static; }
-  .bento { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .t-second, .t-min { grid-column: span 3; }
-  .t-waste { grid-column: span 6; }
-}
-@media (max-width: 640px) {
-  .step { grid-template-columns: 54px 1fr; gap: 18px; }
-  .step-num { width: 54px; height: 54px; font-size: 21px; }
-  .steps-line { left: 26px; }
-  .t-second, .t-min { grid-column: span 6; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .truck-scene *, .art *, .marquee-track { animation: none !important; }
-  .art .lab.l3, .pay .coin, .pay .row, .pay .stamp, .min .pal, .impact .it, .impact .leaf { opacity: 1; }
-  .impact .stem { stroke-dashoffset: 0; }
-  .impact .leaf { scale: 1; }
+@keyframes route-fill-y {
+  0%, 8% { scale: 1 0; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  30%, 38% { scale: 1 0.3333; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  60%, 68% { scale: 1 0.6666; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }
+  92%, 100% { scale: 1 1; }
 }
 
-/* ---------- glow-up pass: editorial hero, living truck, numbered steps, accent tiles, CTA shine ---------- */
+/* ---------- glow-up pass: editorial hero, living truck, CTA shine ---------- */
 /* Mid-page now, so no room for the header on top. */
 .sp-hero { padding-top: var(--section-y); }
 .sp-hero .page-head h2 { max-width: 13ch; font-size: clamp(54px, 7vw, 112px); line-height: 0.98; letter-spacing: -0.03em; }
@@ -230,31 +204,17 @@
 .marquee span i { display: inline-block; animation: spin 9s linear infinite; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
 
-/* steps: Space Mono numbers, a ring when a step lights up, notched cards */
-.step-num { position: relative; font: 700 17px / 1 var(--font-mono); letter-spacing: 0.06em; }
-.step[data-on] .step-num::after { content: ""; position: absolute; inset: -2px; border: 2px solid var(--green); border-radius: 50%; animation: step-ring 0.9s var(--ease-out) both; }
-@keyframes step-ring { to { scale: 1.6; opacity: 0; } }
-.step-card { position: relative; }
-.step-card::before { content: ""; position: absolute; top: 50%; left: -8px; width: 14px; height: 14px; translate: 0 -50%; rotate: 45deg; border-bottom: 1.5px solid rgb(0 56 42 / 0.14); border-left: 1.5px solid rgb(0 56 42 / 0.14); background: var(--cream); transition: border-color 0.4s, background-color 0.4s; }
-.step[data-on] .step-card::before { border-color: rgb(0 56 42 / 0.28); background: #fff; }
-.step:hover .step-card { translate: 4px -2px; box-shadow: 0 24px 40px -24px rgb(0 40 30 / 0.45); }
-.step[data-on] .step-tag { animation: tag-pop 0.5s var(--bounce) 0.15s both; }
-@keyframes tag-pop { from { scale: 0.6; opacity: 0; } }
-
-/* bento: one accent per benefit, idle float on the art, deeper hover */
-.tile { --accent: var(--sun); }
-.t-second { --accent: var(--mint); }
-.t-min { --accent: var(--orange); }
-.t-waste { --accent: var(--lilac); }
-.tile::before { content: ""; position: absolute; top: 0; left: clamp(22px, 2.4vw, 34px); z-index: 2; width: 48px; height: 5px; border-radius: 0 0 4px 4px; background: var(--accent); transition: width 0.5s var(--spring); }
-.tile:hover::before { width: 88px; }
-.tile-kicker { font: 700 11px / 1 var(--font-mono); letter-spacing: 0.16em; }
-.tile-kicker span { color: var(--accent); }
-.tile:hover { box-shadow: 0 30px 50px -30px rgb(0 0 0 / 0.6); }
-.tile-art { animation: idle-float 6s ease-in-out infinite alternate; animation-delay: calc(var(--rv, 0ms) * 4); }
-@keyframes idle-float { to { translate: 0 -6px; } }
 
 @media (prefers-reduced-motion: reduce) {
+  .truck-scene *, .marquee-track { animation: none !important; }
   .sp-mark::after { animation: none; scale: 1 1; }
-  .truck-scene, .tile-art, .step[data-on] .step-num::after, .step[data-on] .step-tag, .hero-actions .button::after, .marquee span i { animation: none !important; }
+  .truck-scene, .hero-actions .button::after, .marquee span i, .route-truck svg { animation: none !important; }
+  .route .route-truck { left: 100%; animation: none !important; }
+  .route .route-fill { scale: 1 1; animation: none !important; }
+  .route .stop-card { opacity: 1; translate: none; animation: none !important; }
+  .route .stop-pin { background: var(--green); color: var(--cream); animation: none !important; }
+  .route .stop-gain b::before { scale: 1 1; animation: none !important; }
+}
+@media (prefers-reduced-motion: reduce) and (max-width: 900px) {
+  .route .route-truck { top: 100%; left: 50%; }
 }

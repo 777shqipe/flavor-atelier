@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
 import { glyphSvg } from "./glyphs";
 import { STORES } from "./stores";
+import { PROOF, STOPS } from "./supplierDeal";
 import { useOpenStatus } from "./useOpenStatus";
 import "./contact.css";
 
 /**
- * Contact panel on a wooden clipboard: pick what you need, write a line,
- * leave a name and email. Nothing else is required.
+ * Contact panel on a wooden clipboard, filled in one step at a time:
+ * need → details → reply-to → review. On wide screens the empty space
+ * beside it carries a compact "Why us" for suppliers.
  */
 
 export type Topic = "stock" | "shop" | "other";
@@ -16,6 +18,7 @@ type TopicMeta = {
   label: string;
   sub: string;
   desk: string;
+  ask: string;
   hint: string;
   placeholder: string;
   suggestions: string[];
@@ -27,6 +30,7 @@ const TOPICS: TopicMeta[] = [
     label: "I have stock to sell",
     sub: "Suppliers · Buying team",
     desk: "Buying team",
+    ask: "Tell us about the stock",
     hint: "Overstock or short-dated food? We pay upfront and collect fast.",
     placeholder: "Example: 20 boxes of pasta, best before June, in Footscray…",
     suggestions: ["Short-dated food", "Too much stock", "Need fast pickup"],
@@ -36,6 +40,7 @@ const TOPICS: TopicMeta[] = [
     label: "Question about a store",
     sub: "Shoppers · Store team",
     desk: "Store team",
+    ask: "What’s your question?",
     hint: "Looking for a product, opening hours, or feedback on a visit?",
     placeholder: "Example: is the $2 rice still in Brunswick?…",
     suggestions: ["Is it still in stock?", "Opening hours", "Feedback on a visit"],
@@ -45,6 +50,7 @@ const TOPICS: TopicMeta[] = [
     label: "Something else",
     sub: "General · Head office",
     desk: "Head office",
+    ask: "What’s on your mind?",
     hint: "Partnerships, press, jobs, or just saying hello.",
     placeholder: "Example: I'd like to partner with you on…",
     suggestions: ["Partnership", "Press", "Jobs"],
@@ -57,6 +63,9 @@ const VOLUMES = [
   { id: "large", label: "A truckload" },
   { id: "unsure", label: "Not sure" },
 ];
+
+const STEPS = ["Your need", "Details", "Reply to", "Review"];
+const LAST = STEPS.length - 1;
 
 type Fields = {
   name: string;
@@ -72,6 +81,17 @@ type Errors = Partial<Record<"name" | "email" | "message", string>>;
 const EMPTY: Fields = { name: "", email: "", phone: "", message: "", volume: "", store: "" };
 
 const emailOk = (value: string) => /^\S+@\S+\.\S+$/.test(value);
+
+/** What blocks leaving a step; only details (message) and reply-to (name, email) have rules. */
+function check(step: number, values: Fields): Errors {
+  const errors: Errors = {};
+  if (step === 1 && values.message.trim().length < 3) errors.message = "Write a few words so we know how to help.";
+  if (step === 2) {
+    if (!values.name.trim()) errors.name = "Tell us your name.";
+    if (!emailOk(values.email.trim())) errors.email = "Enter a valid email so we can reply.";
+  }
+  return errors;
+}
 
 /** Bulldog clip that holds the contact sheet. */
 function Clip({ className = "" }: { className?: string }) {
@@ -114,6 +134,44 @@ function TopicIcon({ id }: { id: Topic }) {
   );
 }
 
+/** Supplier perks as price stickers and a receipt, in the space left of the panel. */
+function WhyUs({ topic, onStock }: { topic: Topic; onStock: () => void }) {
+  return (
+    <section className="ct-why" aria-labelledby="ct-why-title">
+      <span className="ct-why-ghost" aria-hidden="true">
+        Why us
+      </span>
+      <div className="ct-why-inner">
+        <p className="ct-why-eyebrow">Why suppliers pick us</p>
+        <h2 id="ct-why-title" className="ct-why-title">
+          Good food, <em>sold not binned.</em>
+        </h2>
+        <ul className="ct-why-proof">
+          {PROOF.map(([big, small], index) => (
+            <li key={small} style={{ "--i": index } as CSSProperties}>
+              <strong>{big}</strong>
+              <span>{small}</span>
+            </li>
+          ))}
+        </ul>
+        <ol className="ct-why-gains">
+          {STOPS.map((stop, index) => (
+            <li key={stop.tag} style={{ "--i": index } as CSSProperties}>
+              <span className="ct-why-tag">{stop.tag}</span>
+              <p>{stop.gain}</p>
+            </li>
+          ))}
+        </ol>
+        {topic !== "stock" && (
+          <button className="ct-why-switch" type="button" onClick={onStock}>
+            I have stock to sell <span aria-hidden="true">→</span>
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export function ContactPanel({
   open,
   topic,
@@ -125,28 +183,44 @@ export function ContactPanel({
   onTopic: (topic: Topic) => void;
   onClose: () => void;
 }) {
-  const panel = useRef<HTMLElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const stepHead = useRef<HTMLHeadingElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
   const emailInput = useRef<HTMLInputElement>(null);
   const messageInput = useRef<HTMLTextAreaElement>(null);
   const thanks = useRef<HTMLHeadingElement>(null);
   const sentRef = useRef(false);
+  const advance = useRef(0);
   const [values, setValues] = useState<Fields>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
   const [sent, setSent] = useState(false);
+  const [step, setStep] = useState(0);
+  const [reached, setReached] = useState(0);
+  const [dir, setDir] = useState(1);
+  const [seenTopic, setSeenTopic] = useState(topic);
   const [docketNo] = useState(() => String(1995 + Math.floor(Math.random() * 7900)).padStart(4, "0"));
   const status = useOpenStatus();
 
   const current = TOPICS.find((item) => item.id === topic) ?? TOPICS[0];
 
+  // Opened from another button with a different topic: start again from step 1 so the change is visible.
+  if (topic !== seenTopic) {
+    setSeenTopic(topic);
+    setStep(0);
+  }
+
   useEffect(() => {
     sentRef.current = sent;
   }, [sent]);
+
+  useEffect(() => () => window.clearTimeout(advance.current), []);
 
   const resetSheet = useCallback(() => {
     setValues((v) => ({ ...EMPTY, name: v.name, email: v.email }));
     setErrors({});
     setSent(false);
+    setStep(0);
+    setReached(0);
   }, []);
 
   useEffect(() => {
@@ -163,12 +237,12 @@ export function ContactPanel({
       }
       if (event.key !== "Tab" || !panel.current) return;
       const nodes = [...panel.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), textarea, input, select")].filter(
-        (el) => !el.hasAttribute("disabled"),
+        (el) => !el.hasAttribute("disabled") && el.offsetParent !== null,
       );
       const first = nodes[0];
       const last = nodes[nodes.length - 1];
       if (!first || !last) return;
-      if (event.shiftKey && document.activeElement === first) {
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === panel.current)) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -197,10 +271,33 @@ export function ContactPanel({
     if (key in errors) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
+  /** Show a step, with any problems found, and focus the first one (or the step's heading). */
+  const land = (to: number, found: Errors = {}) => {
+    window.clearTimeout(advance.current);
+    setErrors(found);
+    setDir(to >= step ? 1 : -1);
+    setStep(to);
+    setReached((r) => Math.max(r, to));
+    window.setTimeout(() => {
+      const invalid = found.message ? messageInput : found.name ? nameInput : found.email ? emailInput : stepHead;
+      invalid.current?.focus({ preventScroll: true });
+    }, 60);
+  };
+
+  /** Move to a step; going forward checks every step from `from` and stops on the first problem. */
+  const goTo = (target: number, from = step) => {
+    for (let i = from; i < target; i += 1) {
+      const found = check(i, values);
+      if (Object.keys(found).length) return land(i, found);
+    }
+    land(target);
+  };
+
   const pickTopic = (next: Topic) => {
     if (sent) resetSheet();
     // Clear only the topic-specific extras, keep name/email/message.
     setValues((v) => ({ ...v, volume: "", store: "" }));
+    setSeenTopic(next);
     onTopic(next);
   };
 
@@ -216,26 +313,37 @@ export function ContactPanel({
 
   const onTopicKey = (event: KeyboardEvent) => {
     const i = TOPICS.findIndex((item) => item.id === topic);
-    const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
-    if (!step) return;
+    const delta = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+    if (!delta) return;
     event.preventDefault();
-    const next = (i + step + TOPICS.length) % TOPICS.length;
+    const next = (i + delta + TOPICS.length) % TOPICS.length;
     pickTopic(TOPICS[next].id);
     event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]')[next]?.focus();
+  };
+
+  /** Clicking a ticket picks it and, after the stub has slid over, turns the page. */
+  const chooseTopic = (next: Topic) => {
+    pickTopic(next);
+    window.clearTimeout(advance.current);
+    advance.current = window.setTimeout(() => goTo(1), 320);
+  };
+
+  const sellStock = () => {
+    pickTopic("stock");
+    land(1);
   };
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (sent) return;
-    const next: Errors = {};
-    if (!values.name.trim()) next.name = "Tell us your name.";
-    if (!emailOk(values.email.trim())) next.email = "Enter a valid email so we can reply.";
-    if (values.message.trim().length < 3) next.message = "Write a few words so we know how to help.";
-    setErrors(next);
-    const invalid = next.name ? nameInput : next.email ? emailInput : next.message ? messageInput : null;
-    if (invalid) {
-      invalid.current?.focus();
+    if (step < LAST) {
+      goTo(step + 1);
       return;
+    }
+    // Last guard: something may have been cleared after it was checked.
+    for (let i = 0; i < LAST; i += 1) {
+      const found = check(i, values);
+      if (Object.keys(found).length) return land(i, found);
     }
     setSent(true);
     window.setTimeout(() => thanks.current?.focus({ preventScroll: true }), 40);
@@ -243,276 +351,392 @@ export function ContactPanel({
 
   const again = () => {
     resetSheet();
-    window.requestAnimationFrame(() => nameInput.current?.focus({ preventScroll: true }));
+    window.requestAnimationFrame(() => panel.current?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]')?.focus({ preventScroll: true }));
   };
 
   const first = values.name.trim().split(/\s+/)[0];
+  const volume = VOLUMES.find((item) => item.id === values.volume)?.label;
+  const store = STORES.find((item) => item.id === values.store);
+  const nextLabel = step < LAST ? `Next: ${STEPS[step + 1]}` : "Send message";
 
   return (
     <div className="ct" data-open={open || undefined}>
       <div className="ct-scrim" onClick={onClose} />
-      <aside className="ct-panel" ref={panel} role="dialog" aria-modal="true" aria-labelledby="ct-title" tabIndex={-1}>
-        <header className="ct-top">
-          <div>
-            <p className="ct-eyebrow">Contact us</p>
-            <h2 id="ct-title">How can we help?</h2>
-          </div>
-          <button className="ct-close" type="button" onClick={onClose} aria-label="Close">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        </header>
+      <div className="ct-dialog" ref={panel} role="dialog" aria-modal="true" aria-labelledby="ct-title" tabIndex={-1}>
+        <WhyUs topic={topic} onStock={sellStock} />
 
-        <div className="ct-scroll">
-          <div className="ct-board">
-            <Clip className="ct-clip" />
-            <div className="ct-sheet">
-              <div className="ct-docket-bar">
-                <div className="ct-docket-id">
-                  <b>DISPATCH DOCKET</b>
-                  <small>Nº {docketNo}</small>
-                </div>
-                <div className="ct-docket-to">
-                  <span>TO</span>
-                  <strong key={current.id}>{current.desk}</strong>
-                </div>
-              </div>
+        <aside className="ct-panel">
+          <header className="ct-top">
+            <div>
+              <p className="ct-eyebrow">Contact us</p>
+              <h2 id="ct-title">How can we help?</h2>
+            </div>
+            <button className="ct-close" type="button" onClick={onClose} aria-label="Close">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </header>
 
-              {sent ? (
-                <>
-                  <span className="ct-stamp" aria-hidden="true">
-                    Received
-                  </span>
-                  <div className="ct-done">
-                  <span className="ct-check" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M5 12.5l4.5 4.5L19 7.5" />
-                    </svg>
-                  </span>
-                  <h3 ref={thanks} tabIndex={-1}>
-                    Thanks{first ? `, ${first}` : ""}!
-                  </h3>
-                  <p>
-                    Your note is with the {current.desk.toLowerCase()}. We’ll reply to <b>{values.email.trim()}</b>.
-                  </p>
-                  <div className="ct-done-actions">
-                    <button className="ct-send" type="button" onClick={again}>
-                      Send another message
-                    </button>
-                    <button className="ct-text" type="button" onClick={onClose}>
-                      Close
-                    </button>
+          <div className="ct-scroll">
+            <div className="ct-board">
+              <Clip className="ct-clip" />
+              <div className="ct-sheet">
+                <div className="ct-docket-bar">
+                  <div className="ct-docket-id">
+                    <b>DISPATCH DOCKET</b>
+                    <small>Nº {docketNo}</small>
                   </div>
+                  <div className="ct-docket-to">
+                    <span>TO</span>
+                    <strong key={current.id}>{current.desk}</strong>
                   </div>
-                </>
-              ) : (
-                <form className="ct-form" onSubmit={submit} noValidate>
-                  <fieldset className="ct-group">
-                    <legend>
-                      <span className="ct-num" aria-hidden="true">1</span> What do you need?
-                    </legend>
-                    <div
-                      className="ct-topics"
-                      role="radiogroup"
-                      aria-label="What do you need?"
-                      onKeyDown={onTopicKey}
-                      style={{ "--sel": TOPICS.findIndex((item) => item.id === topic) } as CSSProperties}
-                    >
-                      {TOPICS.map((item) => {
-                        const checked = item.id === topic;
-                        return (
-                          <button
-                            key={item.id}
-                            className="ct-topic"
-                            type="button"
-                            role="radio"
-                            aria-checked={checked}
-                            tabIndex={checked ? 0 : -1}
-                            onClick={() => pickTopic(item.id)}
-                          >
-                            <span className="ct-topic-icon" aria-hidden="true">
-                              <TopicIcon id={item.id} />
-                            </span>
-                            <b>{item.label}</b>
-                            <small>{item.sub}</small>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <p className="ct-hint" key={current.id}>{current.hint}</p>
-                  </fieldset>
+                </div>
 
-                  {topic === "stock" && (
-                    <div className="ct-group">
-                      <p className="ct-q" id="ct-volume-q">
-                        How much is it? <small>(optional)</small>
+                {sent ? (
+                  <>
+                    <span className="ct-stamp" aria-hidden="true">
+                      Received
+                    </span>
+                    <div className="ct-done">
+                      <span className="ct-check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M5 12.5l4.5 4.5L19 7.5" />
+                        </svg>
+                      </span>
+                      <h3 ref={thanks} tabIndex={-1}>
+                        Thanks{first ? `, ${first}` : ""}!
+                      </h3>
+                      <p>
+                        Your note is with the {current.desk.toLowerCase()}. We’ll reply to <b>{values.email.trim()}</b>.
                       </p>
-                      <div className="ct-pills" role="group" aria-labelledby="ct-volume-q">
-                        {VOLUMES.map((item) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            className="ct-pill"
-                            aria-pressed={values.volume === item.id}
-                            onClick={() => setValues((v) => ({ ...v, volume: v.volume === item.id ? "" : item.id }))}
-                          >
-                            {item.label}
-                          </button>
-                        ))}
+                      <div className="ct-done-actions">
+                        <button className="ct-send" type="button" onClick={again}>
+                          Send another message
+                        </button>
+                        <button className="ct-text" type="button" onClick={onClose}>
+                          Close
+                        </button>
                       </div>
                     </div>
-                  )}
-
-                  {topic === "shop" && (
-                    <label className="ct-field">
-                      <span>
-                        Which store? <small>(optional)</small>
-                      </span>
-                      <select name="store" value={values.store} onChange={set("store")}>
-                        <option value="">Any store is fine</option>
-                        {STORES.map((store) => (
-                          <option key={store.id} value={store.id}>
-                            {store.name} — {store.address.split(",")[0]}
-                          </option>
+                  </>
+                ) : (
+                  <form className="ct-form" onSubmit={submit} noValidate>
+                    <nav className="ct-steps" aria-label="Form steps" style={{ "--p": step / LAST } as CSSProperties}>
+                      <p className="ct-steps-count">
+                        Step <b>{String(step + 1).padStart(2, "0")}</b> / {String(STEPS.length).padStart(2, "0")}
+                      </p>
+                      <ol>
+                        {STEPS.map((label, index) => (
+                          <li key={label} data-state={index < step ? "done" : index === step ? "now" : "todo"}>
+                            <button
+                              type="button"
+                              onClick={() => goTo(index)}
+                              disabled={index > reached || index === step}
+                              aria-current={index === step ? "step" : undefined}
+                            >
+                              <span className="ct-steps-dot" aria-hidden="true">
+                                {index < step ? (
+                                  <svg viewBox="0 0 24 24">
+                                    <path d="M5 12.5l4.5 4.5L19 7.5" />
+                                  </svg>
+                                ) : (
+                                  index + 1
+                                )}
+                              </span>
+                              <span className="ct-steps-label">{label}</span>
+                            </button>
+                          </li>
                         ))}
-                      </select>
-                    </label>
-                  )}
+                      </ol>
+                    </nav>
 
-                  <div className="ct-group">
-                    <p className="ct-q" id="ct-msg-q">
-                      <span className="ct-num" aria-hidden="true">2</span> What should we know?
-                    </p>
-                    <div className="ct-suggest" aria-label="Ideas for your message">
-                      {current.suggestions.map((text) => (
-                        <button key={text} type="button" className="ct-chip" onClick={() => addSuggestion(text)}>
-                          {text}
-                        </button>
-                      ))}
-                    </div>
-                    <label className="ct-field">
-                      <span className="sr-only">Your message</span>
-                      <textarea
-                        ref={messageInput}
-                        name="message"
-                        value={values.message}
-                        onChange={set("message")}
-                        placeholder={current.placeholder}
-                        rows={4}
-                        aria-invalid={!!errors.message}
-                        aria-describedby={errors.message ? "ct-err-message" : undefined}
-                      />
-                      {errors.message && (
-                        <em id="ct-err-message" className="ct-err">
-                          {errors.message}
-                        </em>
+                    <div className="ct-step" key={step} data-dir={dir}>
+                      {step === 0 && (
+                        <fieldset className="ct-group">
+                          <legend>
+                            <h3 ref={stepHead} tabIndex={-1}>
+                              What do you need?
+                            </h3>
+                          </legend>
+                          <p className="ct-hint">Pick one and we’ll route your note to the right desk.</p>
+                          <div
+                            className="ct-topics"
+                            role="radiogroup"
+                            aria-label="What do you need?"
+                            onKeyDown={onTopicKey}
+                            style={{ "--sel": TOPICS.findIndex((item) => item.id === topic) } as CSSProperties}
+                          >
+                            {TOPICS.map((item) => {
+                              const checked = item.id === topic;
+                              return (
+                                <button
+                                  key={item.id}
+                                  className="ct-topic"
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={checked}
+                                  tabIndex={checked ? 0 : -1}
+                                  onClick={() => chooseTopic(item.id)}
+                                >
+                                  <span className="ct-topic-icon" aria-hidden="true">
+                                    <TopicIcon id={item.id} />
+                                  </span>
+                                  <b>{item.label}</b>
+                                  <small>{item.sub}</small>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {topic === "stock" && (
+                            <ul className="ct-proof-mini" aria-label="Why suppliers pick us">
+                              {PROOF.map(([big, small]) => (
+                                <li key={small}>
+                                  <b>{big}</b> {small}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </fieldset>
                       )}
-                    </label>
-                  </div>
 
-                  <div className="ct-group">
-                    <p className="ct-q">
-                      <span className="ct-num" aria-hidden="true">3</span> Where do we reply?
-                    </p>
-                    <div className="ct-who">
-                      <label className="ct-field">
-                        <span>Your name</span>
-                        <input
-                          ref={nameInput}
-                          type="text"
-                          name="name"
-                          value={values.name}
-                          onChange={set("name")}
-                          autoComplete="name"
-                          placeholder="e.g. Alex"
-                          aria-invalid={!!errors.name}
-                          aria-describedby={errors.name ? "ct-err-name" : undefined}
-                        />
-                        {errors.name && (
-                          <em id="ct-err-name" className="ct-err">
-                            {errors.name}
-                          </em>
-                        )}
-                      </label>
-                      <label className="ct-field">
-                        <span>Email</span>
-                        <input
-                          ref={emailInput}
-                          type="email"
-                          name="email"
-                          value={values.email}
-                          onChange={set("email")}
-                          autoComplete="email"
-                          inputMode="email"
-                          placeholder="you@example.com"
-                          aria-invalid={!!errors.email}
-                          aria-describedby={errors.email ? "ct-err-email" : undefined}
-                        />
-                        {errors.email && (
-                          <em id="ct-err-email" className="ct-err">
-                            {errors.email}
-                          </em>
-                        )}
-                      </label>
-                      <label className="ct-field">
-                        <span>
-                          Phone <small>(optional)</small>
-                        </span>
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={values.phone}
-                          onChange={set("phone")}
-                          autoComplete="tel"
-                          inputMode="tel"
-                          placeholder="Only if you prefer a call"
-                        />
-                      </label>
+                      {step === 1 && (
+                        <div className="ct-group">
+                          <div className="ct-step-head">
+                            <h3 ref={stepHead} tabIndex={-1}>
+                              {current.ask}
+                            </h3>
+                            <p className="ct-hint">{current.hint}</p>
+                          </div>
+
+                          {topic === "stock" && (
+                            <div className="ct-sub">
+                              <p className="ct-q" id="ct-volume-q">
+                                How much is it? <small>(optional)</small>
+                              </p>
+                              <div className="ct-pills" role="group" aria-labelledby="ct-volume-q">
+                                {VOLUMES.map((item) => (
+                                  <button
+                                    key={item.id}
+                                    type="button"
+                                    className="ct-pill"
+                                    aria-pressed={values.volume === item.id}
+                                    onClick={() => setValues((v) => ({ ...v, volume: v.volume === item.id ? "" : item.id }))}
+                                  >
+                                    {item.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {topic === "shop" && (
+                            <label className="ct-field">
+                              <span>
+                                Which store? <small>(optional)</small>
+                              </span>
+                              <select name="store" value={values.store} onChange={set("store")}>
+                                <option value="">Any store is fine</option>
+                                {STORES.map((item) => (
+                                  <option key={item.id} value={item.id}>
+                                    {item.name} — {item.address.split(",")[0]}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                          )}
+
+                          <div className="ct-sub">
+                            <p className="ct-q" id="ct-msg-q">
+                              Your message
+                            </p>
+                            <div className="ct-suggest" aria-label="Ideas for your message">
+                              {current.suggestions.map((text) => (
+                                <button key={text} type="button" className="ct-chip" onClick={() => addSuggestion(text)}>
+                                  + {text}
+                                </button>
+                              ))}
+                            </div>
+                            <label className="ct-field">
+                              <span className="sr-only">Your message</span>
+                              <textarea
+                                ref={messageInput}
+                                name="message"
+                                value={values.message}
+                                onChange={set("message")}
+                                placeholder={current.placeholder}
+                                rows={5}
+                                aria-invalid={!!errors.message}
+                                aria-describedby={errors.message ? "ct-err-message" : undefined}
+                              />
+                              {errors.message && (
+                                <em id="ct-err-message" className="ct-err">
+                                  {errors.message}
+                                </em>
+                              )}
+                            </label>
+                          </div>
+                        </div>
+                      )}
+
+                      {step === 2 && (
+                        <div className="ct-group">
+                          <div className="ct-step-head">
+                            <h3 ref={stepHead} tabIndex={-1}>
+                              Where do we reply?
+                            </h3>
+                            <p className="ct-hint">Just a name and an email. We only use them to answer you.</p>
+                          </div>
+                          <div className="ct-who">
+                            <label className="ct-field">
+                              <span>Your name</span>
+                              <input
+                                ref={nameInput}
+                                type="text"
+                                name="name"
+                                value={values.name}
+                                onChange={set("name")}
+                                autoComplete="name"
+                                placeholder="e.g. Alex"
+                                aria-invalid={!!errors.name}
+                                aria-describedby={errors.name ? "ct-err-name" : undefined}
+                              />
+                              {errors.name && (
+                                <em id="ct-err-name" className="ct-err">
+                                  {errors.name}
+                                </em>
+                              )}
+                            </label>
+                            <label className="ct-field">
+                              <span>Email</span>
+                              <input
+                                ref={emailInput}
+                                type="email"
+                                name="email"
+                                value={values.email}
+                                onChange={set("email")}
+                                autoComplete="email"
+                                inputMode="email"
+                                placeholder="you@example.com"
+                                aria-invalid={!!errors.email}
+                                aria-describedby={errors.email ? "ct-err-email" : undefined}
+                              />
+                              {errors.email && (
+                                <em id="ct-err-email" className="ct-err">
+                                  {errors.email}
+                                </em>
+                              )}
+                            </label>
+                            <label className="ct-field ct-field-wide">
+                              <span>
+                                Phone <small>(optional)</small>
+                              </span>
+                              <input
+                                type="tel"
+                                name="phone"
+                                value={values.phone}
+                                onChange={set("phone")}
+                                autoComplete="tel"
+                                inputMode="tel"
+                                placeholder="Only if you prefer a call"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      )}
+
+                      {step === 3 && (
+                        <div className="ct-group">
+                          <div className="ct-step-head">
+                            <h3 ref={stepHead} tabIndex={-1}>
+                              All good?
+                            </h3>
+                            <p className="ct-hint">A last look before it goes to the {current.desk.toLowerCase()}.</p>
+                          </div>
+                          <dl className="ct-review">
+                            <div>
+                              <dt>Need</dt>
+                              <dd>
+                                {current.label}
+                                {volume && <small>{volume}</small>}
+                                {topic === "shop" && <small>{store ? store.name : "Any store"}</small>}
+                              </dd>
+                              <button type="button" className="ct-edit" onClick={() => goTo(0)} aria-label="Edit your need">
+                                Edit
+                              </button>
+                            </div>
+                            <div>
+                              <dt>Message</dt>
+                              <dd className="ct-review-msg">“{values.message.trim()}”</dd>
+                              <button type="button" className="ct-edit" onClick={() => goTo(1)} aria-label="Edit your message">
+                                Edit
+                              </button>
+                            </div>
+                            <div>
+                              <dt>Reply to</dt>
+                              <dd>
+                                {values.name.trim()}
+                                <small>{values.email.trim()}</small>
+                                {values.phone.trim() && <small>{values.phone.trim()}</small>}
+                              </dd>
+                              <button type="button" className="ct-edit" onClick={() => goTo(2)} aria-label="Edit your contact details">
+                                Edit
+                              </button>
+                            </div>
+                          </dl>
+                        </div>
+                      )}
                     </div>
-                  </div>
 
-                  <button className="ct-send" type="submit">
-                    Send message
-                  </button>
-                  <p className="ct-note">We only use this to reply to you.</p>
-                </form>
-              )}
+                    <div className="ct-nav">
+                      {step > 0 && (
+                        <button className="ct-back" type="button" onClick={() => goTo(step - 1)}>
+                          <span aria-hidden="true">←</span> Back
+                        </button>
+                      )}
+                      <button className="ct-send" type="submit" data-last={step === LAST || undefined}>
+                        {nextLabel} <span aria-hidden="true">{step === LAST ? "✓" : "→"}</span>
+                      </button>
+                    </div>
+                    {step === LAST && <p className="ct-note">We only use this to reply to you.</p>}
+                  </form>
+                )}
+              </div>
             </div>
+
+            <footer className="ct-foot">
+              <div className="ct-foot-head">
+                <p>Prefer to talk? Call a store</p>
+                <span className={`ct-foot-status${status.open ? " open" : ""}`}>
+                  <i /> {status.short}
+                </span>
+              </div>
+              <ul className="ct-store-calls">
+                {STORES.map((item) => (
+                  <li key={item.id}>
+                    <a href={`tel:${item.phone.replace(/\s/g, "")}`} style={{ "--sc": item.color } as CSSProperties}>
+                      <span className="ct-call-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(item.glyph) }} />
+                      <span className="ct-call-copy">
+                        <b>{item.name}</b>
+                        <small>{item.phone}</small>
+                      </span>
+                      <span className="ct-call-ico" aria-hidden="true">
+                        <svg viewBox="0 0 20 20">
+                          <path d="M4.5 3.5h3l1.5 4-2 1.2a9 9 0 0 0 4.3 4.3l1.2-2 4 1.5v3a1.5 1.5 0 0 1-1.5 1.5A13 13 0 0 1 3 5a1.5 1.5 0 0 1 1.5-1.5z" />
+                        </svg>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </footer>
           </div>
 
-          <footer className="ct-foot">
-            <div className="ct-foot-head">
-              <p>Prefer to talk? Call a store</p>
-              <span className={`ct-foot-status${status.open ? " open" : ""}`}>
-                <i /> {status.short}
-              </span>
-            </div>
-            <ul className="ct-store-calls">
-              {STORES.map((store) => (
-                <li key={store.id}>
-                  <a href={`tel:${store.phone.replace(/\s/g, "")}`} style={{ "--sc": store.color } as CSSProperties}>
-                    <span className="ct-call-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
-                    <span className="ct-call-copy">
-                      <b>{store.name}</b>
-                      <small>{store.phone}</small>
-                    </span>
-                    <span className="ct-call-ico" aria-hidden="true">
-                      <svg viewBox="0 0 20 20">
-                        <path d="M4.5 3.5h3l1.5 4-2 1.2a9 9 0 0 0 4.3 4.3l1.2-2 4 1.5v3a1.5 1.5 0 0 1-1.5 1.5A13 13 0 0 1 3 5a1.5 1.5 0 0 1 1.5-1.5z" />
-                      </svg>
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </footer>
-        </div>
-
-        <p className="sr-only" role="status">
-          {sent ? "Message noted. Thanks." : ""}
-        </p>
-      </aside>
+          <p className="sr-only" role="status">
+            {sent ? "Message noted. Thanks." : `Step ${step + 1} of ${STEPS.length}: ${STEPS[step]}`}
+          </p>
+        </aside>
+      </div>
     </div>
   );
 }

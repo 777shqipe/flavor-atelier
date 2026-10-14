@@ -210,7 +210,7 @@ export function Header({
                 {/* Electronic shelf label: plastic housing, e-paper screen, red promo block, status LED. */}
                 <span className="price-tag" ref={tag} aria-hidden="true">
                   <span className="esl-screen">
-                    <i className="esl-flag">★</i>
+                    <i className="esl-flag">CBM</i>
                     <i className="esl-code" />
                   </span>
                   <i className="esl-led" />

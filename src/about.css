@@ -1,5 +1,5 @@
-/* About: hero with a peelable seal and the story, our history as jars of jam on
-   a shelf. "Why it matters" and "best before isn't use by" live here too but
+/* About: hero with a peelable seal and the story (the history itself is the time
+   machine, timemachine.css). "Why it matters" and "best before isn't use by" live here too but
    show on Home, inside the "why it costs less" mix. */
 
 /* ---------- hero ------------------------------------------------------- */
@@ -66,178 +66,6 @@
   color: var(--ink-soft);
   font: 600 12px / 1.25 var(--font-sans);
 }
-
-/* ---------- the jam shelf ------------------------------------------------ */
-.jams {
-  position: relative;
-  overflow-x: clip;
-  padding: var(--section-y) var(--pad);
-  background:
-    repeating-linear-gradient(90deg, rgb(0 56 42 / 0.04) 0 2px, transparent 2px 48px),
-    #efe6cc;
-}
-.jams-head { max-width: 1100px; margin: 0 auto clamp(70px, 8vw, 110px); }
-
-.shelf {
-  --plank: 22px;
-  --rail: 12px;
-  --ticket: 54px;
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(6px, 2vw, 28px);
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 0 clamp(6px, 3vw, 40px);
-}
-/* wooden plank with the green price rail on its front edge */
-.shelf-plank {
-  position: absolute;
-  z-index: 0;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--ticket) + var(--rail));
-  height: var(--plank);
-  border-radius: 5px 5px 0 0;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 70px, rgb(110 64 26 / 0.12) 70px 71px, transparent 71px 130px),
-    linear-gradient(180deg, #e2b57a, #c08850);
-  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.35);
-}
-.shelf-plank::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: var(--rail);
-  border-radius: 0 0 4px 4px;
-  background: linear-gradient(180deg, #0c3b2e, #042319);
-  box-shadow: 0 18px 26px -14px rgb(40 24 8 / 0.55);
-}
-.jar {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--green-900);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.jar-art {
-  display: block;
-  width: min(100%, 190px);
-  aspect-ratio: 120 / 165;
-  margin-bottom: calc(var(--plank) + var(--rail));
-  transform-origin: 50% 100%;
-  transition: translate 0.6s var(--spring), scale 0.6s var(--spring), rotate 0.6s var(--spring);
-}
-.jar-art svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 10px 8px rgb(60 35 10 / 0.25)); }
-.jar:hover .jar-art { translate: 0 -6px; rotate: -2deg; }
-.jar[aria-selected="true"] .jar-art { translate: 0 -24px; rotate: 0deg; scale: 1.07; }
-.jar[aria-selected="true"] .jar-art svg { filter: drop-shadow(0 22px 16px rgb(60 35 10 / 0.3)); }
-.jar:focus-visible { outline: none; }
-.jar:focus-visible .jar-ticket { outline: 3px solid var(--tomato); outline-offset: 3px; }
-
-.jar-lid { transform-box: fill-box; transform-origin: 8% 100%; transition: translate 0.7s var(--bounce), rotate 0.7s var(--bounce); }
-.jar[aria-selected="true"] .jar-lid { translate: -4px -26px; rotate: -18deg; }
-.jar-fill { translate: 0 98px; transition: translate 1.5s var(--ease-out) calc(var(--i) * 200ms + 350ms); }
-.shelf.in .jar-fill { translate: 0 0; }
-.jar-wave { animation: jar-slosh 3.2s linear infinite; }
-.jar[aria-selected="true"] .jar-wave { animation-duration: 1.2s; }
-@keyframes jar-slosh { to { translate: 15px 0; } }
-.jar-bubble { opacity: 0; }
-.jar[aria-selected="true"] .jar-bubble { animation: jar-bubble 2.2s ease-in infinite; }
-.jar[aria-selected="true"] .jar-bubble:nth-of-type(2) { animation-delay: 0.7s; }
-.jar[aria-selected="true"] .jar-bubble:nth-of-type(3) { animation-delay: 1.3s; }
-@keyframes jar-bubble { 0% { opacity: 0; translate: 0 0; } 15% { opacity: 0.6; } 90% { opacity: 0.5; } 100% { opacity: 0; translate: 0 -76px; } }
-.shelf.in .jar-art { animation: jar-in 0.85s var(--bounce) backwards; animation-delay: calc(var(--i) * 120ms); }
-@keyframes jar-in { from { opacity: 0; translate: 0 -70px; } }
-
-/* shelf ticket hanging off the rail */
-.jar-ticket {
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 4px;
-  width: min(100%, 168px);
-  height: var(--ticket);
-  padding: 0 6px;
-  border-radius: 0 0 10px 10px;
-  background: var(--paper);
-  box-shadow: 0 10px 18px -12px rgb(40 24 8 / 0.5);
-  transition: background-color 0.3s, translate 0.4s var(--spring);
-}
-.jar-ticket b { font: 400 clamp(18px, 2vw, 24px) / 1 var(--font-display); letter-spacing: 0.02em; }
-.jar-ticket small { overflow: hidden; max-width: 100%; color: var(--ink-soft); font: 700 clamp(8px, 0.8vw, 10px) / 1 var(--font-mono); letter-spacing: 0.08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
-.jar:hover .jar-ticket { translate: 0 2px; }
-.jar[aria-selected="true"] .jar-ticket { background: var(--sun); }
-.jar[aria-selected="true"] .jar-ticket small { color: #17140c; }
-
-/* ---------- the opened jar: label unrolls into the story ---------------------- */
-.jar-panel {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: clamp(26px, 4.5vw, 64px);
-  align-items: center;
-  max-width: 1100px;
-  margin: clamp(48px, 6vw, 80px) auto 0;
-  padding: clamp(58px, 6vw, 80px) clamp(20px, 4.5vw, 60px) clamp(28px, 3.4vw, 46px);
-  border-radius: 8px 8px var(--r-3) var(--r-3);
-  background: var(--paper);
-  box-shadow: var(--shadow-2);
-}
-.jp-drip { position: absolute; top: 0; left: 0; width: 100%; height: 56px; fill: var(--jam); border-radius: 8px 8px 0 0; transform-origin: 50% 0; animation: jp-drip 1.1s var(--ease-out) both; }
-@keyframes jp-drip { 0% { scale: 1 0.2; } 60% { scale: 1 1.06; } 100% { scale: 1 1; } }
-.jp-photo {
-  margin: 0;
-  padding: 12px 12px 46px;
-  background: #fff;
-  box-shadow: 0 26px 40px -24px rgb(0 20 14 / 0.55);
-  rotate: -3deg;
-  animation: jp-photo 0.8s var(--spring) both;
-}
-@keyframes jp-photo { from { opacity: 0; translate: 0 30px; rotate: -9deg; } }
-.jp-photo img { display: block; width: 100%; aspect-ratio: 4 / 4.2; object-fit: cover; }
-.jp-photo figcaption { margin-top: 14px; color: var(--green-900); font: 700 11px / 1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; }
-.jp-photo figcaption b { margin-right: 6px; color: var(--jam-dark); }
-.jp-body { min-width: 0; }
-.jp-batch { margin: 0 0 6px; color: var(--jam-dark); font: 700 11px / 1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; transition: color 0.4s; }
-.jp-year { color: var(--green-900); font: 400 clamp(72px, 9vw, 132px) / 1 var(--font-serif); letter-spacing: -0.02em; }
-.jp-year .odo-col { width: 0.6em; }
-.jp-text { margin-top: 10px; animation: jp-unroll 0.8s var(--ease-out) both; }
-@keyframes jp-unroll { from { clip-path: inset(0 0 100% 0); translate: 0 -10px; } to { clip-path: inset(0 0 -20px 0); } }
-.jp-text h3 { color: var(--green-900); font: 400 clamp(28px, 3vw, 40px) / 1.05 var(--font-serif); letter-spacing: -0.02em; }
-.jp-text > p { max-width: 520px; margin: 12px 0 0; color: var(--fg-body); font-size: 16.5px; line-height: 1.55; }
-.jp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
-.jp-chips li { padding: 8px 13px 7px; border: 1px solid rgb(0 56 42 / 0.18); border-radius: 99px; color: var(--green-900); font: 700 12.5px / 1 var(--font-sans); }
-.jp-meanwhile { margin-top: 22px; padding: 14px 16px; border-left: 4px solid var(--jam); border-radius: 0 12px 12px 0; background: #f3ecd8; transition: border-color 0.4s; }
-.jp-meanwhile b { display: block; margin-bottom: 6px; color: var(--green-900); font: 700 10.5px / 1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; }
-.jp-meanwhile p { margin: 0; color: var(--fg-body); font: 500 14.5px / 1.45 var(--font-sans); }
-.jp-nav { display: flex; align-items: center; gap: 14px; margin-top: 24px; color: var(--green-900); font: 700 12px / 1 var(--font-mono); letter-spacing: 0.1em; }
-.jp-nav button {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border: 1.5px solid rgb(0 56 42 / 0.25);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--green-900);
-  cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s, translate 0.35s var(--spring), opacity 0.2s;
-}
-.jp-nav button:last-child { border-color: var(--green-900); background: var(--green-900); color: var(--cream); }
-.jp-nav button:hover:not(:disabled) { translate: 0 -2px; }
-.jp-nav button:disabled { opacity: 0.35; cursor: default; }
-.jp-nav button:focus-visible { outline: 2px solid var(--tomato); outline-offset: 2px; }
-.jp-nav svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ---------- why it matters ------------------------------------------------------ */
 .waste { padding: var(--section-y) var(--pad); }
@@ -316,16 +144,7 @@
   .wn-tower { grid-column: span 2; grid-row: auto; }
   .wn-bags { grid-column: span 2; }
 }
-@media (max-width: 860px) {
-  .jar-panel { grid-template-columns: 1fr; }
-  .jp-photo { width: min(78%, 360px); justify-self: center; }
-}
 @media (max-width: 640px) {
-  .shelf { --ticket: 48px; gap: 4px; padding: 0; }
-  .jar-ticket small { display: none; }
-  .jar[aria-selected="true"] .jar-art { translate: 0 -14px; }
-  .jar[aria-selected="true"] .jar-lid { translate: -2px -18px; }
-  .jar-panel { padding-top: 54px; }
   .story-pillars { grid-template-columns: 1fr; }
   .waste-grid { grid-template-columns: 1fr; }
   .wn-tower, .wn-bags { grid-column: auto; }
@@ -338,11 +157,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ah-mark path { animation: none; stroke-dashoffset: 0; }
-  .ah-seal, .ah-story, .about-hero .story-pillars, .jar-wave, .jar-bubble, .shelf.in .jar-art, .jp-drip, .jp-photo, .jp-text, .tower-wave, .bags[data-go] .bag { animation: none !important; }
-  .jar-fill { transition: none; translate: 0 0; }
+  .ah-seal, .ah-story, .about-hero .story-pillars, .tower-wave, .bags[data-go] .bag { animation: none !important; }
 }
 
-/* ---------- glow-up pass: editorial hero, chapters, tactile shelf, condensed numbers ---------- */
+/* ---------- glow-up pass: editorial hero, condensed numbers ---------- */
 .about-hero .page-head h1 { max-width: 13ch; font-size: clamp(54px, 7vw, 112px); line-height: 0.98; letter-spacing: -0.03em; }
 .ah-italic { font-style: italic; color: var(--sage-200); }
 .ah-mark svg { stroke-width: 7; }
@@ -356,28 +174,6 @@
 .story-pillars li { position: relative; counter-increment: pillar; padding-top: 30px; transition: translate 0.35s var(--spring), box-shadow 0.35s; }
 .story-pillars li::before { content: "0" counter(pillar); position: absolute; top: 11px; left: 14px; color: var(--ink-soft); font: 700 10px / 1 var(--font-mono); letter-spacing: 0.14em; }
 .story-pillars li:hover { translate: 0 -4px; box-shadow: inset 0 0 0 1px rgb(0 56 42 / 0.12), 0 18px 28px -18px rgb(0 40 30 / 0.45); }
-
-/* shelf: contact shadow under every jar, a lit front edge, hover wobble */
-.shelf-plank { box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.45), inset 0 -3px 0 rgb(90 50 15 / 0.22); }
-.jar::before { content: ""; position: absolute; left: 18%; right: 18%; bottom: calc(var(--ticket) + var(--rail) + var(--plank) - 5px); height: 12px; border-radius: 50%; background: radial-gradient(ellipse at center, rgb(60 35 10 / 0.4), transparent 72%); transition: scale 0.6s var(--spring), opacity 0.6s; }
-.jar[aria-selected="true"]::before { scale: 0.8 1; opacity: 0.5; }
-@keyframes jar-wobble { 0% { rotate: 0deg; } 25% { rotate: -3.2deg; } 55% { rotate: 2.4deg; } 80% { rotate: -1deg; } 100% { rotate: 0deg; } }
-.shelf.in .jar:hover:not([aria-selected="true"]) .jar-art {
-  animation-name: jar-in, jar-wobble;
-  animation-duration: 0.85s, 0.7s;
-  animation-timing-function: var(--bounce), var(--ease-out);
-  animation-fill-mode: backwards, none;
-  animation-delay: calc(var(--i) * 120ms), 0s;
-}
-.jar-ticket { box-shadow: 0 14px 22px -12px rgb(40 24 8 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.6); }
-
-/* opened jar: taped photo, warm shadow, slow hover zoom */
-.jp-photo { position: relative; box-shadow: 0 32px 46px -24px rgb(90 50 15 / 0.5), 0 2px 0 rgb(0 0 0 / 0.04); transition: rotate 0.6s var(--spring), scale 0.6s var(--spring); }
-.jp-photo::before { content: ""; position: absolute; top: -12px; left: 50%; z-index: 2; width: 96px; height: 26px; translate: -50% 0; rotate: -2deg; background: rgb(246 181 49 / 0.8); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
-.jp-photo:hover { rotate: -1deg; scale: 1.02; }
-.jp-photo-in { display: block; overflow: hidden; }
-.jp-photo img { transition: scale 0.9s var(--ease-out); }
-.jp-photo:hover img { scale: 1.05; }
 
 /* why it matters: condensed numerals, accent bar per card, striped meter */
 .wn::before { content: ""; position: absolute; top: 0; left: clamp(22px, 2.4vw, 32px); width: 56px; height: 5px; border-radius: 0 0 4px 4px; background: var(--wn-accent, var(--sun)); }
@@ -398,5 +194,5 @@
   .wn-num { font-size: clamp(56px, 16vw, 72px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ah-glow, .ah-art .hero-illo, .shelf.in .jar:hover .jar-art { animation: none !important; }
+  .ah-glow, .ah-art .hero-illo { animation: none !important; }
 }

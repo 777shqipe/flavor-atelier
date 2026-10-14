@@ -1,9 +1,9 @@
-import { JamShelf } from "./JamShelf";
 import { Peel } from "./Peel";
 import { Suppliers } from "./Suppliers";
+import { TimeMachine } from "./TimeMachine";
 import "./about.css";
 
-/** Our story up top, the jam-jar history, then the supplier side of the business. */
+/** Our story up top, the time-machine history, then the supplier side of the business. */
 export function AboutPage({ onContact }: { onContact: () => void }) {
   return (
     <main>
@@ -75,7 +75,7 @@ export function AboutPage({ onContact }: { onContact: () => void }) {
         </div>
       </section>
 
-      <JamShelf />
+      <TimeMachine />
       <Suppliers onContact={onContact} />
     </main>
   );

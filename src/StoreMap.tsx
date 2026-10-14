@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import L from "leaflet";
-import { glyphSvg } from "./glyphs";
 import { CART_SVG, LANDMARKS, bow, landmarkHtml, shopPinSvg } from "./mapArt";
-import { ROUTE, STORES, directionsLink, distanceKm, formatKm, type Store } from "./stores";
-import { useOpenStatus } from "./useOpenStatus";
+import { ROUTE, STORES, distanceKm, formatKm, type Store } from "./stores";
 import "./storemap.css";
 
 /**
  * The store map, drawn as a night-time city: dark green streets, little CBM
- * shopfronts for pins, sticker landmarks, and a trolley that does the rounds
- * on a bowed loop between the shops. On the home page it drives the loop by
- * itself; in the finder it drives to whichever store you pick.
+ * shopfronts for pins, sticker landmarks, and a trolley that drives a bowed
+ * loop to whichever store you pick. Whatever is passed as children floats
+ * over the map, above the tiles and below nothing.
  */
 
 /** Loop order of the stores (ROUTE ends where it started). */
@@ -129,13 +127,11 @@ function makeDriver(map: L.Map, cart: L.Marker) {
 export function StoreMap({
   active,
   onSelect,
-  variant = "full",
-  onOpenFinder,
+  children,
 }: {
-  active: number | null;
+  active: number;
   onSelect: (index: number) => void;
-  variant?: "full" | "compact";
-  onOpenFinder?: () => void;
+  children?: ReactNode;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
   const node = useRef<HTMLDivElement>(null);
@@ -153,8 +149,6 @@ export function StoreMap({
   const previous = useRef<number | null>(null);
   const onSelectRef = useRef(onSelect);
   const [near, setNear] = useState<Near>({ status: "idle" });
-  const status = useOpenStatus();
-  const compact = variant === "compact";
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -165,7 +159,6 @@ export function StoreMap({
     const el = node.current;
     const box = wrap.current;
     if (!el || !box || mapRef.current) return;
-    const reduce = reduced();
     const touch = L.Browser.mobile;
     const map = L.map(el, {
       zoomControl: false,
@@ -187,9 +180,7 @@ export function StoreMap({
     const wide = () => box.clientWidth > 760;
     const overview = (animate = false) => {
       const bounds = L.latLngBounds([...points, CBD]);
-      const opts: L.FitBoundsOptions = compact
-        ? { paddingTopLeft: wide() ? [330, 90] : [26, 64], paddingBottomRight: wide() ? [150, 70] : [30, 30] }
-        : { paddingTopLeft: [60, 110], paddingBottomRight: [wide() ? 150 : 80, wide() ? 230 : 250] };
+      const opts: L.FitBoundsOptions = { paddingTopLeft: [60, 110], paddingBottomRight: [wide() ? 150 : 80, wide() ? 230 : 250] };
       if (animate) map.flyToBounds(bounds, { ...opts, duration: 1.1 });
       else map.fitBounds(bounds, opts);
     };
@@ -241,7 +232,7 @@ export function StoreMap({
       return marker;
     });
 
-    const start = compact ? LOOP[0] : (previous.current ?? 0);
+    const start = previous.current ?? 0;
     const cart = L.marker(points[start], {
       icon: L.divIcon({ className: "sm-cart", html: `<div class="cart" data-dir="r" data-in>${CART_SVG}</div>`, iconSize: [0, 0] }),
       interactive: false,
@@ -249,26 +240,6 @@ export function StoreMap({
       zIndexOffset: 3000,
     }).addTo(map);
     const driver = makeDriver(map, cart);
-    const hop = (index: number) => {
-      const pin = markers.current[index]?.getElement();
-      if (!pin) return;
-      pin.classList.remove("hop");
-      void pin.offsetWidth;
-      pin.classList.add("hop");
-    };
-
-    // Home: the trolley does the rounds, ducking into each shop for a moment.
-    let k = 0;
-    const lap = () => {
-      const seg = segs[k];
-      const len = seg[0].distanceTo(seg[seg.length - 1]);
-      driver.drive(seg, Math.max(1600, len / 0.36), () => {
-        k = (k + 1) % LOOP.length;
-        hop(LOOP[k]);
-        cart.getElement()?.querySelector(".cart")?.setAttribute("data-in", "");
-        driver.pause(1100, lap);
-      });
-    };
 
     // Everything drops in the first time the map is on screen; the trolley only runs while it is.
     let seen = false;
@@ -280,7 +251,6 @@ export function StoreMap({
         if (visible && !seen) {
           seen = true;
           box.dataset.live = "";
-          if (compact && !reduce) window.setTimeout(lap, 1900);
         }
         sync();
       },
@@ -293,7 +263,7 @@ export function StoreMap({
     const crowd = () => box.toggleAttribute("data-far", map.getZoom() < 13.4);
     map.on("zoomend", crowd);
 
-    // The home map always shows the whole loop, so refit it when its box changes size.
+    // Leaflet only measures its box once, so tell it when the box changes size.
     let refit = 0;
     let lastWidth = box.clientWidth;
     const ro = new ResizeObserver(() => {
@@ -302,7 +272,6 @@ export function StoreMap({
       window.clearTimeout(refit);
       refit = window.setTimeout(() => {
         map.invalidateSize();
-        if (compact) overview();
       }, 120);
     });
     ro.observe(box);
@@ -326,7 +295,7 @@ export function StoreMap({
       markers.current = [];
       api.current = null;
     };
-  }, [compact]);
+  }, []);
 
   // Follow the selection: light the pin, drive the trolley round the loop, then close in.
   useEffect(() => {
@@ -339,11 +308,10 @@ export function StoreMap({
     });
     const from = previous.current;
     previous.current = active;
-    if (active === null || compact) return;
 
     const target = L.latLng(STORES[active].lat, STORES[active].lon);
     const cartEl = () => map.getContainer().querySelector(".sm-cart .cart");
-    // Park the store a little up and right of centre, clear of the detail card.
+    // Park the store a little up and right of centre, clear of whatever floats bottom left.
     const closeIn = () => {
       const wideMap = map.getSize().x > 760;
       const centre = map.unproject(map.project(target, 14.75).add([wideMap ? -150 : 0, wideMap ? 70 : 110]), 14.75);
@@ -382,10 +350,7 @@ export function StoreMap({
       pin?.classList.add("hop");
       closeIn();
     });
-  }, [active, compact]);
-
-  const hot = (index: number | null) =>
-    markers.current.forEach((marker, i) => marker.getElement()?.classList.toggle("hot", i === index));
+  }, [active]);
 
   const locate = () => {
     if (!navigator.geolocation) {
@@ -437,16 +402,8 @@ export function StoreMap({
     );
   };
 
-  const store = active === null ? null : STORES[active];
-  const others = store
-    ? STORES.map((other, index) => ({ other, index, km: distanceKm(store.lat, store.lon, other.lat, other.lon) }))
-        .filter((entry) => entry.index !== active)
-        .sort((a, b) => a.km - b.km)
-    : [];
-  const step = (direction: number) => onSelect(((active ?? 0) + direction + STORES.length) % STORES.length);
-
   return (
-    <div className={`finder ${variant}`} ref={wrap}>
+    <div className="finder" ref={wrap}>
       <div className="finder-stage">
         <div
           ref={node}
@@ -466,152 +423,37 @@ export function StoreMap({
           <text x="22" y="7.6">N</text>
         </svg>
 
-        {variant === "full" && (
-          <>
-            <div className="finder-top left">
-              <button className="locate" type="button" onClick={locate} disabled={near.status === "loading"}>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="3.5" />
-                  <path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" />
-                </svg>
-                {near.status === "loading" ? "Locating…" : "Find my nearest"}
-              </button>
-              {near.status === "error" && <p className="finder-note">{near.message}</p>}
-              {near.status === "ok" && (
-                <p className="finder-note ok">
-                  Nearest: <b>{STORES[near.index].name}</b> · {formatKm(near.km)} away
-                </p>
-              )}
-            </div>
-            <div className="finder-top right">
-              <div className="zoom">
-                <button type="button" aria-label="Zoom in" onClick={() => mapRef.current?.zoomIn()}>
-                  +
-                </button>
-                <button type="button" aria-label="Zoom out" onClick={() => mapRef.current?.zoomOut()}>
-                  −
-                </button>
-                <button type="button" className="all" aria-label="Show all stores" onClick={() => api.current?.overview()}>
-                  All
-                </button>
-              </div>
-            </div>
-
-            {!store && (
-              <p className="finder-hint" aria-live="polite">
-                Pick a shopfront on the map to see its details.
-              </p>
-            )}
-            {store && (
-              <article className="finder-card" style={{ "--c": store.color } as CSSProperties} aria-live="polite">
-                <span className="fc-awning" key={`aw-${store.id}`} aria-hidden="true" />
-                <div className="fc" key={store.id}>
-                  <div className="fc-photo">
-                    <img src={store.src} alt={`${store.name} storefront`} style={{ objectPosition: store.pos }} />
-                    <span className="fc-badge" dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
-                  </div>
-                  <div className="fc-body">
-                    <p className={`fc-status${status.open ? " open" : ""}`}>
-                      <i /> {status.label}
-                    </p>
-                    <h3>{store.name}</h3>
-                    <p className="fc-address">{store.address}</p>
-                    <p className="fc-hours">
-                      {store.hours.split(" · ").map((part) => (
-                        <span key={part}>{part}</span>
-                      ))}
-                    </p>
-                    <p className="fc-line">{store.line}</p>
-                    <div className="fc-actions">
-                      <a className="fc-primary" href={directionsLink(store)} target="_blank" rel="noreferrer">
-                        Directions
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M7 17L17 7M8 7h9v9" />
-                        </svg>
-                      </a>
-                      <a href={`tel:${store.phone.replaceAll(" ", "")}`}>{store.phone}</a>
-                    </div>
-                  </div>
-                  <div className="fc-nav">
-                    <button type="button" aria-label="Previous store" onClick={() => step(-1)}>
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M20 12H5M11 6l-6 6 6 6" />
-                      </svg>
-                    </button>
-                    <button type="button" aria-label="Next store" onClick={() => step(1)}>
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M4 12h15M13 6l6 6-6 6" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <p className="fc-near">
-                  Next closest: <b>{others[0].other.name}</b> · {formatKm(others[0].km)} away
-                </p>
-              </article>
-            )}
-          </>
-        )}
-      </div>
-
-      {compact && (
-        <div className="flegend">
-          <p className={`flegend-head${status.open ? " open" : ""}`}>
-            <i /> All four {status.open ? "open now" : "closed right now"}
-          </p>
-          <ol>
-            {STORES.map((item, index) => (
-              <li key={item.id} style={{ "--i": index } as CSSProperties}>
-                <button
-                  type="button"
-                  style={{ "--c": item.color } as CSSProperties}
-                  onPointerEnter={() => hot(index)}
-                  onPointerLeave={() => hot(null)}
-                  onFocus={() => hot(index)}
-                  onBlur={() => hot(null)}
-                  onClick={() => onSelect(index)}
-                >
-                  <span className="fl-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(item.glyph) }} />
-                  <span className="fl-text">
-                    <b>{item.name}</b>
-                    <small>{item.address.split(",")[0]}</small>
-                  </span>
-                  <span className="fl-num">0{index + 1}</span>
-                </button>
-              </li>
-            ))}
-          </ol>
-          {onOpenFinder && (
-            <button className="flegend-cta" type="button" onClick={onOpenFinder}>
-              Open the store finder
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 12h15M13 6l6 6-6 6" />
-              </svg>
-            </button>
+        <div className="finder-top left">
+          <button className="locate" type="button" onClick={locate} disabled={near.status === "loading"}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3.5" />
+              <path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" />
+            </svg>
+            {near.status === "loading" ? "Locating…" : "Find my nearest"}
+          </button>
+          {near.status === "error" && <p className="finder-note">{near.message}</p>}
+          {near.status === "ok" && (
+            <p className="finder-note ok">
+              Nearest: <b>{STORES[near.index].name}</b> · {formatKm(near.km)} away
+            </p>
           )}
         </div>
-      )}
+        <div className="finder-top right">
+          <div className="zoom">
+            <button type="button" aria-label="Zoom in" onClick={() => mapRef.current?.zoomIn()}>
+              +
+            </button>
+            <button type="button" aria-label="Zoom out" onClick={() => mapRef.current?.zoomOut()}>
+              −
+            </button>
+            <button type="button" className="all" aria-label="Show all stores" onClick={() => api.current?.overview()}>
+              All
+            </button>
+          </div>
+        </div>
 
-      {variant === "full" && (
-        <ul className="finder-chips">
-          {STORES.map((item, index) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                aria-pressed={active === index}
-                style={{ "--c": item.color } as CSSProperties}
-                onClick={() => onSelect(index)}
-              >
-                <span className="chip-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(item.glyph) }} />
-                <span>
-                  <b>{item.name}</b>
-                  <small>{item.address.split(",")[0]}</small>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+        {children}
+      </div>
     </div>
   );
 }

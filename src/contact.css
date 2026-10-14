@@ -1,5 +1,6 @@
-/* Contact panel: wooden clipboard with a plain 3-step sheet inside.
-   Contorno figo, interno semplice: need → message → reply-to. */
+/* Contact panel: wooden clipboard with a 4-step wizard inside
+   (need → details → reply-to → review), plus a "Why us" column
+   in the space to its left on wide screens. */
 
 html { scrollbar-gutter: stable; }
 html.ct-lock { overflow: hidden; }
@@ -26,6 +27,15 @@ html.ct-lock { overflow: hidden; }
 }
 .ct[data-open] .ct-scrim { opacity: 1; }
 
+/* The dialog spans the screen so the Why-us column sits inside it; only its content takes clicks. */
+.ct-dialog {
+  position: absolute;
+  inset: 0;
+  outline: 0;
+  pointer-events: none;
+  --ct-w: min(620px, calc(100vw - 24px));
+}
+
 .ct-panel {
   position: absolute;
   top: 12px;
@@ -33,8 +43,9 @@ html.ct-lock { overflow: hidden; }
   bottom: 12px;
   display: flex;
   flex-direction: column;
-  width: min(500px, calc(100vw - 24px));
+  width: var(--ct-w);
   overflow: hidden;
+  pointer-events: auto;
   border-radius: 28px;
   background: linear-gradient(180deg, #132a22 0%, #0b1914 100%);
   box-shadow:
@@ -42,7 +53,6 @@ html.ct-lock { overflow: hidden; }
     0 34px 80px -24px rgb(0 12 8 / 0.8),
     0 6px 18px rgb(0 12 8 / 0.35);
   color: var(--ink);
-  outline: 0;
   translate: calc(100% + 32px) 0;
   rotate: 1.5deg;
   transition: translate 0.42s cubic-bezier(0.4, 0, 0.2, 1), rotate 0.42s cubic-bezier(0.4, 0, 0.2, 1);
@@ -59,7 +69,7 @@ html.ct-lock { overflow: hidden; }
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 20px 4px;
+  padding: 24px 28px 6px;
 }
 .ct-eyebrow {
   margin: 0 0 6px;
@@ -108,8 +118,8 @@ html.ct-lock { overflow: hidden; }
 /* ---------- The clipboard ---------------------------------------------- */
 .ct-board {
   position: relative;
-  margin: 22px 12px 0;
-  padding: 24px 10px 12px;
+  margin: 26px 18px 0;
+  padding: 28px 14px 16px;
   border-radius: 22px;
   background:
     repeating-linear-gradient(97deg, rgb(255 255 255 / 0.04) 0 2px, transparent 2px 9px),
@@ -132,7 +142,7 @@ html.ct-lock { overflow: hidden; }
 
 .ct-sheet {
   position: relative;
-  padding: 24px 18px 26px;
+  padding: 28px 32px 32px;
   border-radius: 6px 6px 0 0;
   background:
     repeating-linear-gradient(0deg, rgb(0 56 42 / 0.03) 0 1px, transparent 1px 27px),
@@ -183,8 +193,8 @@ html.ct-lock { overflow: hidden; }
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding-bottom: 12px;
-  margin-bottom: 16px;
+  padding-bottom: 14px;
+  margin-bottom: 22px;
   border-bottom: 2px dashed rgb(0 56 42 / 0.22);
 }
 .ct-docket-id { display: flex; align-items: baseline; gap: 8px; }
@@ -219,8 +229,8 @@ html.ct-lock { overflow: hidden; }
 }
 @keyframes docket-pop { from { scale: 0.85; rotate: -6deg; } }
 
-/* ---------- Plain 3-step sheet ------------------------------------------ */
-.ct-form,
+/* ---------- Wizard sheet ------------------------------------------------ */
+.ct-form { display: grid; gap: 28px; }
 .ct-done { display: grid; gap: 18px; }
 .ct-done { justify-items: start; }
 .ct-check {
@@ -252,36 +262,184 @@ html.ct-lock { overflow: hidden; }
 .ct-done b { color: var(--ink); font-weight: 600; }
 .ct-done-actions { display: grid; gap: 8px; width: 100%; margin-top: 4px; }
 
-.ct-group { display: grid; gap: 10px; margin: 0; padding: 0; border: 0; min-width: 0; }
-.ct-group legend,
+.ct-group { display: grid; gap: 22px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.ct-group legend { float: left; width: 100%; margin: 0; padding: 0; }
+.ct-group legend + * { clear: both; }
+.ct-step-head { display: grid; gap: 8px; }
+.ct-step h3 {
+  margin: 0;
+  color: var(--green-900);
+  font: 400 30px / 1.05 var(--font-serif);
+  letter-spacing: -0.03em;
+  outline: 0;
+}
+.ct-sub { display: grid; gap: 12px; }
 .ct-q {
   display: flex;
   align-items: center;
   gap: 8px;
   margin: 0;
-  padding: 0;
   color: var(--green-900);
   font: 700 14px / 1.3 var(--font-sans);
 }
-.ct-group legend small,
 .ct-q small { color: var(--ink-soft); font-weight: 500; }
-.ct-num {
-  display: inline-grid;
-  flex: none;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--green-900);
-  color: var(--cream);
+
+/* Stepper: a route with four stops; the green fill drives up to the current one. */
+.ct-steps { display: grid; gap: 12px; }
+.ct-steps-count {
+  margin: 0;
+  color: var(--ink-soft);
   font: 700 11px / 1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
+.ct-steps-count b { color: var(--tomato); }
+.ct-steps ol {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ct-steps ol::before,
+.ct-steps ol::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 12.5%;
+  height: 3px;
+  border-radius: 3px;
+}
+.ct-steps ol::before { right: 12.5%; background: repeating-linear-gradient(90deg, rgb(0 56 42 / 0.2) 0 6px, transparent 6px 11px); }
+.ct-steps ol::after {
+  width: calc(75% * var(--p, 0));
+  background: linear-gradient(90deg, var(--green), var(--green-900));
+  transition: width 0.6s var(--spring);
+}
+.ct-steps li { position: relative; z-index: 1; display: grid; justify-items: center; }
+.ct-steps button {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font: 650 12px / 1.2 var(--font-sans);
+  cursor: pointer;
+}
+.ct-steps button:disabled { cursor: default; }
+.ct-steps button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 8px; }
+.ct-steps-dot {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  border: 2px dashed rgb(0 56 42 / 0.3);
+  border-radius: 50%;
+  background: var(--paper);
+  font: 700 12px / 1 var(--font-mono);
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s, scale 0.45s var(--bounce), box-shadow 0.3s;
+}
+.ct-steps-dot svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.ct-steps [data-state="done"] .ct-steps-dot { border: 2px solid var(--green); background: var(--green); color: var(--cream); }
+.ct-steps [data-state="done"] button:hover .ct-steps-dot { scale: 1.1; }
+.ct-steps [data-state="now"] button { color: var(--green-900); }
+.ct-steps [data-state="now"] .ct-steps-dot {
+  border: 2px solid var(--green-900);
+  background: var(--sun);
+  color: #17140c;
+  box-shadow: 0 0 0 5px rgb(246 181 49 / 0.25);
+  scale: 1.12;
+}
+.ct-steps-label { white-space: nowrap; }
+
+/* Each step slides in from the side you are heading to. */
+.ct-step { min-width: 0; animation: ct-step-in 0.45s var(--ease-out) both; }
+.ct-step[data-dir="-1"] { animation-name: ct-step-back; }
+@keyframes ct-step-in { from { opacity: 0; translate: 28px 0; } }
+@keyframes ct-step-back { from { opacity: 0; translate: -28px 0; } }
+
+.ct-nav { display: flex; gap: 12px; }
+.ct-nav .ct-send { flex: 1; }
+.ct-back {
+  height: 54px;
+  padding: 0 20px;
+  border: 1.5px solid rgb(0 56 42 / 0.22);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--green-900);
+  font: 700 15px / 1 var(--font-sans);
+  cursor: pointer;
+  transition: border-color 0.2s, translate 0.3s var(--spring);
+}
+.ct-back:hover { border-color: var(--green); translate: -2px 0; }
+.ct-back:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.ct-send span { display: inline-block; margin-left: 4px; transition: translate 0.3s var(--spring); }
+.ct-send:hover span { translate: 4px 0; }
+.ct-send[data-last] { background: linear-gradient(180deg, #ffc955, var(--sun)); color: #17140c; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 12px 22px -14px rgb(120 80 0 / 0.9); }
+
+/* Review: the docket's summary lines, each with an Edit link back to its step. */
+.ct-review { display: grid; margin: 0; border-top: 1.5px solid rgb(0 56 42 / 0.14); }
+.ct-review > div {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1.5px dashed rgb(0 56 42 / 0.18);
+}
+.ct-review dt {
+  padding-top: 3px;
+  color: var(--ink-soft);
+  font: 700 10.5px / 1.3 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.ct-review dd { display: grid; gap: 3px; margin: 0; color: var(--green-900); font: 650 15px / 1.4 var(--font-sans); overflow-wrap: anywhere; }
+.ct-review dd small { color: var(--ink-soft); font: 500 13.5px / 1.4 var(--font-sans); }
+.ct-review-msg {
+  display: -webkit-box !important;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  font-family: var(--font-serif) !important;
+  font-weight: 400 !important;
+  font-size: 17px !important;
+}
+.ct-edit {
+  padding: 4px 10px;
+  border: 1px solid rgb(0 56 42 / 0.2);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--green-900);
+  font: 700 12px / 1.2 var(--font-sans);
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.ct-edit:hover { border-color: var(--green); background: var(--cream); }
+.ct-edit:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+/* Narrow screens only: the Why-us column is hidden, so the stock topic shows its three proofs inline. */
+.ct-proof-mini { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ct-proof-mini li {
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--green-900);
+  color: rgb(246 240 219 / 0.8);
+  font: 600 12px / 1 var(--font-sans);
+  rotate: -1deg;
+  animation: ct-rise 0.4s var(--ease-out) both;
+}
+.ct-proof-mini li:nth-child(2) { rotate: 1.2deg; }
+.ct-proof-mini b { color: var(--sun); font: 400 14px / 1 var(--font-display); letter-spacing: 0.04em; }
 
 .ct-topics {
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 /* One dark stub slides between the three tickets instead of each lighting up on its own. */
 .ct-topics::before {
@@ -289,12 +447,12 @@ html.ct-lock { overflow: hidden; }
   position: absolute;
   top: 0;
   left: 0;
-  width: calc((100% - 16px) / 3);
+  width: calc((100% - 20px) / 3);
   height: 100%;
   border-radius: 14px;
   background: linear-gradient(180deg, #0f3a2d, var(--green-900));
   box-shadow: 0 12px 20px -12px rgb(0 20 14 / 0.7);
-  translate: calc(var(--sel, 0) * (100% + 8px)) 0;
+  translate: calc(var(--sel, 0) * (100% + 10px)) 0;
   transition: translate 0.5s var(--spring);
   pointer-events: none;
 }
@@ -304,9 +462,9 @@ html.ct-lock { overflow: hidden; }
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
-  min-height: 108px;
-  padding: 12px 10px;
+  gap: 6px;
+  min-height: 136px;
+  padding: 16px 14px;
   border: 1.5px solid rgb(0 56 42 / 0.16);
   border-radius: 14px;
   background: #fff;
@@ -345,15 +503,15 @@ html.ct-lock { overflow: hidden; }
   transition: rotate 0.45s var(--spring), scale 0.45s var(--spring);
 }
 .ct-topic-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.ct-topic b { font: 700 13px / 1.2 var(--font-sans); }
+.ct-topic b { margin-top: auto; font: 700 14px / 1.2 var(--font-sans); }
 .ct-topic small { color: var(--ink-soft); font: 500 11px / 1.3 var(--font-sans); }
 .ct-topic[aria-checked="true"] small { color: rgb(246 240 219 / 0.75); }
-.ct-hint { margin: 0; color: var(--ink-soft); font-size: 13.5px; line-height: 1.45; }
+.ct-hint { margin: 0; color: var(--ink-soft); font-size: 15px; line-height: 1.5; }
 
-.ct-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.ct-pills { display: flex; flex-wrap: wrap; gap: 10px; }
 .ct-pill {
-  height: 38px;
-  padding: 0 14px;
+  height: 42px;
+  padding: 0 16px;
   border: 1px solid rgb(0 56 42 / 0.2);
   border-radius: 999px;
   background: #fff;
@@ -383,8 +541,9 @@ html.ct-lock { overflow: hidden; }
 .ct-chip:active { scale: 0.94; }
 .ct-chip:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 
-.ct-who { display: grid; gap: 12px; }
-.ct-field { display: grid; gap: 6px; min-width: 0; }
+.ct-who { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 16px; }
+.ct-field-wide { grid-column: 1 / -1; }
+.ct-field { display: grid; gap: 8px; align-content: start; min-width: 0; }
 .ct-field > span { color: var(--green-900); font: 650 13px / 1.2 var(--font-sans); transition: color 0.2s; }
 .ct-field:focus-within > span { color: var(--green); }
 .ct-field > span small { color: var(--ink-soft); font-weight: 500; }
@@ -400,16 +559,16 @@ html.ct-lock { overflow: hidden; }
   outline: 0;
   transition: border-color 0.2s, box-shadow 0.3s var(--ease-out), background-color 0.2s;
 }
-.ct-field input { height: 46px; padding: 0 12px; }
+.ct-field input { height: 50px; padding: 0 14px; }
 .ct-field select {
-  height: 46px;
-  padding: 0 36px 0 12px;
+  height: 50px;
+  padding: 0 36px 0 14px;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23005842' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
 }
-.ct-field textarea { min-height: 96px; padding: 10px 12px; resize: vertical; }
+.ct-field textarea { min-height: 132px; padding: 12px 14px; resize: vertical; }
 .ct-field textarea::placeholder,
 .ct-field input::placeholder { color: rgb(39 52 47 / 0.42); }
 .ct-field input:focus,
@@ -452,7 +611,7 @@ html.ct-lock { overflow: hidden; }
 .ct-send {
   position: relative;
   isolation: isolate;
-  height: 50px;
+  height: 54px;
   overflow: hidden;
   border: 0;
   border-radius: 12px;
@@ -488,10 +647,10 @@ html.ct-lock { overflow: hidden; }
 }
 .ct-text:hover { text-decoration: underline; }
 .ct-text:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 8px; }
-.ct-note { margin: -8px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
+.ct-note { margin: -16px 0 0; text-align: center; color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
 
 /* ---------- Store call cards on the dark panel --------------------------- */
-.ct-foot { padding: 18px 14px 20px; color: var(--cream); }
+.ct-foot { padding: 24px 22px 26px; color: var(--cream); }
 .ct-foot-head {
   display: flex;
   align-items: center;
@@ -567,23 +726,206 @@ html.ct-lock { overflow: hidden; }
 .ct-store-calls a:hover .ct-call-ico { color: var(--sc, var(--sun)); transform: rotate(-12deg) scale(1.1); }
 .ct-call-ico svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
+/* ---------- Why us: the empty space left of the panel ------------------- */
+.ct-why { display: none; }
+
+@media (min-width: 1100px) {
+  .ct-scrim { background: linear-gradient(90deg, rgb(3 14 10 / 0.88), rgb(3 14 10 / 0.6)); }
+  .ct-proof-mini { display: none; }
+
+  .ct-why {
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 12px;
+    right: calc(var(--ct-w) + 24px);
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    padding: clamp(24px, 4vw, 72px);
+    overflow: hidden;
+    color: var(--cream);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .ct[data-open] .ct-why { opacity: 1; transition-duration: 0.5s; }
+  /* Warm glow behind the stickers. */
+  .ct-why::before {
+    content: "";
+    position: absolute;
+    top: 30%;
+    left: 22%;
+    width: 46vw;
+    max-width: 640px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(246 181 49 / 0.16), transparent);
+    translate: -30% -40%;
+    pointer-events: none;
+  }
+  .ct-why-ghost {
+    position: absolute;
+    bottom: -0.16em;
+    left: -0.04em;
+    color: transparent;
+    font: 400 clamp(140px, 17vw, 280px) / 0.8 var(--font-display);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    -webkit-text-stroke: 1.5px rgb(246 240 219 / 0.09);
+    rotate: -4deg;
+    pointer-events: none;
+    user-select: none;
+  }
+  .ct-why-inner {
+    position: relative;
+    display: grid;
+    gap: clamp(22px, 2.6vw, 34px);
+    width: 100%;
+    max-width: 540px;
+    pointer-events: auto;
+  }
+  .ct-why-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--sun);
+    font: 700 11.5px / 1 var(--font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .ct-why-eyebrow::before { content: ""; width: 26px; height: 2px; border-radius: 2px; background: currentColor; }
+  .ct-why-title {
+    margin: 0;
+    color: var(--cream);
+    font: 400 clamp(40px, 4.3vw, 66px) / 0.98 var(--font-serif);
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .ct-why-title em { display: block; color: var(--sun); font-style: italic; }
+
+  /* Three proofs as price stickers, each slapped on at its own angle. */
+  .ct-why-proof {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(8px, 1vw, 14px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ct-why-proof li {
+    position: relative;
+    display: grid;
+    align-content: end;
+    gap: 8px;
+    min-height: clamp(112px, 10vw, 140px);
+    padding: 24px 14px 14px;
+    border-radius: 14px;
+    background: var(--sun);
+    color: #17140c;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08), 0 18px 30px -16px rgb(0 0 0 / 0.7);
+    rotate: -4deg;
+    transition: rotate 0.45s var(--spring), scale 0.45s var(--spring), translate 0.45s var(--spring);
+  }
+  .ct-why-proof li:nth-child(2) { background: var(--cream); color: var(--green-900); rotate: 3deg; translate: 0 10px; }
+  .ct-why-proof li:nth-child(3) { background: #0f3a2d; color: var(--cream); box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.16), 0 18px 30px -16px rgb(0 0 0 / 0.7); rotate: -1.5deg; }
+  .ct-why-proof li:hover { rotate: 0deg; scale: 1.05; translate: 0 -4px; }
+  /* Tag hole. */
+  .ct-why-proof li::before {
+    content: "";
+    position: absolute;
+    top: 11px;
+    left: 12px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #0b1914;
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5);
+  }
+  .ct-why-proof strong { font: 400 clamp(30px, 3vw, 46px) / 0.9 var(--font-display); letter-spacing: 0.01em; text-transform: uppercase; }
+  .ct-why-proof li:nth-child(3) strong { color: var(--sun); }
+  .ct-why-proof span { font: 700 10.5px / 1.25 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.78; }
+
+  /* The four gains as a receipt: stamp tag, then what it does for you. */
+  .ct-why-gains { display: grid; margin: 0; padding: 0; list-style: none; counter-reset: gain; }
+  .ct-why-gains li {
+    display: grid;
+    grid-template-columns: 116px minmax(0, 1fr);
+    align-items: baseline;
+    gap: 16px;
+    padding: 13px 0;
+    border-bottom: 1px dashed rgb(246 240 219 / 0.16);
+  }
+  .ct-why-gains li:first-child { border-top: 1px dashed rgb(246 240 219 / 0.16); }
+  .ct-why-tag {
+    justify-self: start;
+    padding: 5px 8px 4px;
+    border: 1.5px solid rgb(246 181 49 / 0.7);
+    border-radius: 6px;
+    color: var(--sun);
+    font: 700 10px / 1 var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .ct-why-gains p { margin: 0; color: rgb(246 240 219 / 0.84); font: 500 15px / 1.45 var(--font-sans); }
+
+  .ct-why-switch {
+    justify-self: start;
+    height: 46px;
+    padding: 0 20px;
+    border: 1.5px solid var(--sun);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--sun);
+    font: 700 14px / 1 var(--font-sans);
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, translate 0.3s var(--spring);
+  }
+  .ct-why-switch span { display: inline-block; margin-left: 4px; transition: translate 0.3s var(--spring); }
+  .ct-why-switch:hover { background: var(--sun); color: #17140c; }
+  .ct-why-switch:hover span { translate: 4px 0; }
+  .ct-why-switch:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
+
+  /* Entrance: copy rises in, stickers slap down one by one, receipt lines print. */
+  .ct[data-open] .ct-why-inner > :not(ul, ol) { animation: ct-why-in 0.6s var(--ease-out) 0.18s both; }
+  .ct[data-open] .ct-why-title { animation-delay: 0.26s; }
+  .ct[data-open] .ct-why-switch { animation-delay: 0.7s; }
+  .ct[data-open] .ct-why-proof li { animation: ct-why-slap 0.55s var(--bounce) both; animation-delay: calc(0.38s + var(--i) * 0.09s); }
+  .ct[data-open] .ct-why-gains li { animation: ct-why-in 0.5s var(--ease-out) both; animation-delay: calc(0.6s + var(--i) * 0.06s); }
+}
+@keyframes ct-why-in { from { opacity: 0; translate: -24px 0; } }
+@keyframes ct-why-slap { from { opacity: 0; scale: 1.5; } 40% { opacity: 1; } }
+
 @media (max-width: 600px) {
   .ct-panel { top: 8px; right: 8px; bottom: 8px; width: calc(100vw - 16px); border-radius: 22px; }
   .ct-top { padding: 16px 16px 2px; }
   .ct-board { margin-inline: 8px; padding-inline: 8px; }
-  .ct-sheet { padding: 22px 14px 16px; }
+  .ct-sheet { padding: 24px 16px 22px; }
+  .ct-docket-id { flex-direction: column; gap: 4px; }
+  .ct-docket-id b { font-size: 17px; white-space: nowrap; }
+  .ct-docket-to strong { white-space: nowrap; }
+  .ct-form { gap: 24px; }
+  .ct-step h3 { font-size: 26px; }
+  .ct-steps-label { font-size: 11px; }
+  .ct-who { grid-template-columns: 1fr; }
+  .ct-review > div { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; }
+  .ct-review dt { grid-column: 1 / -1; }
+  .ct-back { padding: 0 16px; }
   .ct-foot { padding-right: 12px; padding-left: 12px; }
   .ct-topics { grid-template-columns: 1fr; grid-auto-rows: 1fr; }
-  .ct-topics::before { width: 100%; height: calc((100% - 16px) / 3); translate: 0 calc(var(--sel, 0) * (100% + 8px)); }
+  .ct-topics::before { width: 100%; height: calc((100% - 20px) / 3); translate: 0 calc(var(--sel, 0) * (100% + 10px)); }
   .ct-stamp { top: 50px; right: 12px; font-size: 17px; }
-  .ct-topic { min-height: 0; flex-direction: row; align-items: center; gap: 10px; }
+  .ct-topic { min-height: 0; flex-direction: row; align-items: center; gap: 12px; padding: 14px; }
+  .ct-topic b { margin-top: 0; }
   .ct-store-calls { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ct { transition-duration: 0.2s; }
-  .ct-topics::before, .ct-topic, .ct-topic-icon, .ct-pill, .ct-chip, .ct-send, .ct-send::after, .ct-store-calls a, .ct-field input, .ct-field select, .ct-field textarea { transition-duration: 0.01ms; }
-  .ct-check, .ct-check path, .ct-done > *, .ct-stamp, .ct-err, .ct-field [aria-invalid="true"], .ct-docket-to strong { animation: none; }
+  .ct-topics::before, .ct-topic, .ct-topic-icon, .ct-pill, .ct-chip, .ct-send, .ct-send::after, .ct-send span, .ct-back, .ct-store-calls a, .ct-field input, .ct-field select, .ct-field textarea, .ct-steps ol::after, .ct-steps-dot, .ct-why-proof li, .ct-why-switch, .ct-why-switch span { transition-duration: 0.01ms; }
+  .ct-check, .ct-check path, .ct-done > *, .ct-stamp, .ct-err, .ct-field [aria-invalid="true"], .ct-docket-to strong, .ct-step, .ct-proof-mini li, .ct[data-open] .ct-why-inner > *, .ct[data-open] .ct-why-proof li, .ct[data-open] .ct-why-gains li { animation: none; }
   .ct-check path { stroke-dashoffset: 0; }
   .ct-scrim { transition-duration: 0.2s; }
   .ct-panel,

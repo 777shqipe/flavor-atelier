@@ -26,6 +26,8 @@ const YEAR = new Date().getFullYear();
 
 /** The weekly flyer stays in the project. Home shows the Instagram shelf in its place. */
 const showWeeklyFlyer = false;
+/** The product posters (Showcase) stay in the project for later. Home shows only the feed for now. */
+const showShowcase = false;
 const TICKER = ["Once it’s gone, it’s gone", "New finds every week", "Big brands, small prices", "Less waste, more taste"];
 const TICKER_ALT = ["Up to 70% off RRP", "Rescued, not wasted", "Four Melbourne stores", "Fighting food waste since 1995"];
 
@@ -74,20 +76,30 @@ function Products({ onNavigate }: { onNavigate: (page: Page) => void }) {
   );
 }
 
+function Feed() {
+  return showWeeklyFlyer ? <Flyer /> : <InstaShelf />;
+}
+
 function Home({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onContact: (topic?: Topic) => void }) {
   return (
     <main>
       <Hero onNavigate={onNavigate} />
 
-      {/* What's on the shelves, two ways: the posters in store, or the posts on Instagram. */}
-      <Mix
-        id="finds"
-        label="This week’s finds"
-        tabs={[
-          { id: "store", label: "In store now", render: () => <Products onNavigate={onNavigate} /> },
-          { id: "feed", label: "On Instagram", render: () => (showWeeklyFlyer ? <Flyer /> : <InstaShelf />) },
-        ]}
-      />
+      {/* What's on the shelves: the posters in store and the posts on Instagram, or just the posts. */}
+      {showShowcase ? (
+        <Mix
+          id="finds"
+          label="This week’s finds"
+          tabs={[
+            { id: "store", label: "In store now", render: () => <Products onNavigate={onNavigate} /> },
+            { id: "feed", label: "On Instagram", render: () => <Feed /> },
+          ]}
+        />
+      ) : (
+        <div id="finds">
+          <Feed />
+        </div>
+      )}
 
       <section className="manifesto" data-surface="cream" aria-labelledby="manifesto-title">
         <div className="display-letters rv" tabIndex={0}>

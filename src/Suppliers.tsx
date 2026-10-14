@@ -1,155 +1,102 @@
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
-import { Mix } from "./Mix";
-import { ImpactArt, MinArt, SecondArt } from "./SupplierArt";
+import { useEffect, useRef, type CSSProperties } from "react";
+import { PROOF, STOPS } from "./supplierDeal";
 import { TruckScene } from "./TruckScene";
 import "./suppliers.css";
 
-const STEPS = [
-  {
-    title: "Tell us what you've got",
-    tag: "2 min",
-    text: "A few lines is plenty: what it is, how much, and when it needs to move.",
-  },
-  {
-    title: "We come back fast",
-    tag: "Same day",
-    text: "Our buying team gets back to you. Fast decisions, flexible volumes.",
-  },
-  {
-    title: "Seal it, collect it",
-    tag: "Door to door",
-    text: "Deals can be sealed and stock collected the same day.",
-  },
-  {
-    title: "Paid upfront",
-    tag: "100% upfront",
-    text: "We pay upfront, no delays, and every pallet is tracked door to door.",
-  },
-] as const;
-
-/** Payment, speed and tracking are already in the steps, so the bento keeps what they don't say. */
-const BENEFITS = [
-  { id: "second", kicker: "Second life", text: "Your surplus gets a second life instead of a skip bin.", art: <SecondArt /> },
-  { id: "min", kicker: "Any size", text: "No minimum order size, from a few pallets to a full truckload.", art: <MinArt /> },
-  { id: "waste", kicker: "Impact", text: "Every sale means less good food thrown away.", art: <ImpactArt /> },
-];
+/** When the truck reaches each stop; must match the @keyframes route-drive stops. */
+const ARRIVALS = [0, 1.2, 2.4, 3.68];
 
 const BUYS = ["Close-to-date", "Past best-before", "Surplus stock", "A few pallets", "A full truckload"];
 
-/** Fills the line between the steps as the list scrolls through the viewport. */
-function HowItWorks() {
-  const list = useRef<HTMLOListElement>(null);
-  const [progress, setProgress] = useState(0);
+function Truck() {
+  return (
+    <svg viewBox="0 0 64 36" aria-hidden="true" focusable="false">
+      <g stroke="#1c1a17" strokeWidth="2" strokeLinejoin="round">
+        <rect x="2" y="5" width="36" height="21" rx="3" fill="#005842" />
+        <path d="M38 11h12l8 8v7H38z" fill="#f6b531" />
+        <path d="M41 14h8l5 5h-13z" fill="#cfe7f3" strokeWidth="1.6" />
+        <circle className="wheel" cx="14" cy="28" r="5" fill="#2a2a2a" />
+        <circle className="wheel" cx="48" cy="28" r="5" fill="#2a2a2a" />
+      </g>
+      <path d="M8 12h22M8 17h14" stroke="#f6f0db" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+      <circle cx="14" cy="28" r="1.6" fill="#d7dbe0" />
+      <circle cx="48" cy="28" r="1.6" fill="#d7dbe0" />
+    </svg>
+  );
+}
 
+/**
+ * How it works and why us in one: a truck drives a route through four stops.
+ * Each stop lights up as it arrives and shows the step plus what it gives the supplier.
+ */
+function Deal({ onContact }: { onContact: () => void }) {
+  const route = useRef<HTMLDivElement>(null);
+
+  // Stacked layout: the vertical route stops at the last pin, so it needs the last stop's height below that pin.
   useEffect(() => {
-    let frame = 0;
-    const measure = () => {
-      frame = 0;
-      const el = list.current;
-      if (!el) return;
-      const box = el.getBoundingClientRect();
-      const reach = window.innerHeight * 0.62 - box.top;
-      setProgress(Math.min(1, Math.max(0, reach / box.height)));
-    };
-    const request = () => {
-      if (!frame) frame = requestAnimationFrame(measure);
-    };
-    measure();
-    window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", request);
-      window.removeEventListener("resize", request);
-    };
+    const el = route.current;
+    const last = el?.querySelector<HTMLElement>(".stop:last-child");
+    if (!el || !last) return;
+    const ro = new ResizeObserver(() => el.style.setProperty("--last", `${last.offsetHeight - 27}px`));
+    ro.observe(last);
+    return () => ro.disconnect();
   }, []);
 
   return (
-    <section className="how" data-surface="paper" aria-labelledby="how-title">
-      <header className="section-head how-head rv">
-        <p className="eyebrow">Simple from start to finish</p>
-        <h2 id="how-title">A deal that works for everyone.</h2>
-        <p className="lead">Four steps from “we have too much” to “it’s gone, thank you”.</p>
+    <section className="deal" id="supply" data-surface="paper" aria-labelledby="deal-title">
+      <header className="section-head split rv">
+        <div>
+          <p className="eyebrow">Working with us</p>
+          <h2 id="deal-title">
+            A deal that works <em>for everyone.</em>
+          </h2>
+        </div>
+        <p className="lead">Four steps from “we have too much” to “it’s gone, thank you”, and what each one does for you.</p>
       </header>
-      <ol className="steps" ref={list} style={{ "--prog": progress } as CSSProperties}>
-        <span className="steps-line" aria-hidden="true">
-          <i />
-        </span>
-        {STEPS.map((step, index) => (
-          <li key={step.title} className="step" data-on={progress >= index / (STEPS.length - 0.6) || undefined}>
-            <span className="step-num">0{index + 1}</span>
-            <div className="step-card">
-              <div className="step-top">
-                <h3>{step.title}</h3>
-                <span className="step-tag">{step.tag}</span>
+
+      <div className="route rv" ref={route}>
+        <div className="route-track" aria-hidden="true">
+          <i className="route-fill" />
+          <span className="route-truck">
+            <Truck />
+          </span>
+        </div>
+        <ol className="route-stops">
+          {STOPS.map((stop, index) => (
+            <li key={stop.title} className="stop" style={{ "--t": `${ARRIVALS[index] + 0.3}s` } as CSSProperties}>
+              <span className="stop-pin">0{index + 1}</span>
+              <div className="stop-card">
+                <span className="stop-tag">{stop.tag}</span>
+                <h3>{stop.title}</h3>
+                <p>{stop.text}</p>
+                <p className="stop-gain">
+                  <b>For you</b>
+                  {stop.gain}
+                </p>
               </div>
-              <p>{step.text}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
-function Tile({ item, index }: { item: (typeof BENEFITS)[number]; index: number }) {
-  const ref = useRef<HTMLElement>(null);
-  // Tilts towards the pointer and drags a soft glare across the surface.
-  const move = (event: PointerEvent<HTMLElement>) => {
-    const el = ref.current;
-    if (!el || event.pointerType !== "mouse") return;
-    const box = el.getBoundingClientRect();
-    const x = (event.clientX - box.left) / box.width;
-    const y = (event.clientY - box.top) / box.height;
-    el.style.setProperty("--tx", ((x - 0.5) * 2).toFixed(3));
-    el.style.setProperty("--ty", ((y - 0.5) * 2).toFixed(3));
-    el.style.setProperty("--gx", `${(x * 100).toFixed(1)}%`);
-    el.style.setProperty("--gy", `${(y * 100).toFixed(1)}%`);
-    el.style.setProperty("--glare", "1");
-  };
-  const leave = () => {
-    const el = ref.current;
-    if (!el) return;
-    ["--tx", "--ty"].forEach((name) => el.style.setProperty(name, "0"));
-    el.style.setProperty("--glare", "0");
-  };
-
-  return (
-    <article
-      ref={ref}
-      className={`tile t-${item.id} rv`}
-      style={{ "--rv": `${index * 70}ms` } as CSSProperties}
-      onPointerMove={move}
-      onPointerLeave={leave}
-    >
-      <p className="tile-kicker">
-        <span>0{index + 1}</span> {item.kicker}
-      </p>
-      <div className="tile-art" aria-hidden="true">
-        {item.art}
+            </li>
+          ))}
+        </ol>
       </div>
-      <h3>{item.text}</h3>
-    </article>
-  );
-}
 
-function Bento() {
-  return (
-    <section className="bento-wrap" data-surface="deep" aria-labelledby="bento-title">
-      <header className="section-head rv">
-        <p className="eyebrow">Why suppliers choose us</p>
-        <h2 id="bento-title">Good for your stock. Good for the planet.</h2>
-      </header>
-      <div className="bento">
-        {BENEFITS.map((item, index) => (
-          <Tile key={item.id} item={item} index={index} />
-        ))}
+      <div className="deal-proof rv">
+        <ul>
+          {PROOF.map(([big, small]) => (
+            <li key={small}>
+              <strong>{big}</strong>
+              <span>{small}</span>
+            </li>
+          ))}
+        </ul>
+        <button className="button cream" type="button" onClick={onContact}>
+          Get a quote
+        </button>
       </div>
     </section>
   );
 }
 
-/** The supplier half of About: the pitch, what we buy, then how it works or why us. */
+/** The supplier half of About: the pitch, what we buy, then the deal route. */
 export function Suppliers({ onContact }: { onContact: () => void }) {
   return (
     <>
@@ -195,14 +142,7 @@ export function Suppliers({ onContact }: { onContact: () => void }) {
         </div>
       </div>
 
-      <Mix
-        id="supply"
-        label="Working with us"
-        tabs={[
-          { id: "how", label: "How it works", render: () => <HowItWorks /> },
-          { id: "why", label: "Why us", render: () => <Bento /> },
-        ]}
-      />
+      <Deal onContact={onContact} />
     </>
   );
 }
