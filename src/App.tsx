@@ -3,7 +3,6 @@ import { flushSync } from "react-dom";
 import { AboutPage } from "./AboutPage";
 import { BinPile } from "./BinPile";
 import { ContactPanel, type Topic } from "./ContactPanel";
-import { DateCheck } from "./DateCheck";
 import { Flyer } from "./Flyer";
 import { InstaShelf } from "./InstaShelf";
 import { Header, type Page } from "./Header";
@@ -11,11 +10,10 @@ import { Hero } from "./Hero";
 import { Mix } from "./Mix";
 import { PageSwap, type Swap } from "./PageSwap";
 import { Peel } from "./Peel";
-import { Receipt } from "./Receipt";
 import { revealIn } from "./reveal";
 import { Showcase } from "./Showcase";
 import { StoresPage } from "./StoresPage";
-import { WasteNumbers } from "./WasteNumbers";
+import { WhyFilm } from "./WhyFilm";
 
 /** Fades elements marked `.rv` in as they scroll into view. */
 function useReveal(page: Page) {
@@ -153,16 +151,8 @@ function Home({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onC
         </div>
       </section>
 
-      {/* Why it costs less, three ways: one basket, the national numbers, the date on the label. */}
-      <Mix
-        id="why"
-        label="Why it costs less"
-        tabs={[
-          { id: "receipt", label: "The receipt", render: () => <Receipt /> },
-          { id: "numbers", label: "The numbers", render: () => <WasteNumbers /> },
-          { id: "label", label: "The label", render: () => <DateCheck /> },
-        ]}
-      />
+      {/* Why it costs less: the numbers, the label and the receipt, told as one film that plays on its own. */}
+      <WhyFilm />
     </main>
   );
 }
