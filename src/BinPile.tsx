@@ -401,7 +401,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
   // ---- static scenery: floor, side walls, the bin, the till (rebuilt on resize) ----
   const T = 400;
   let statics: MatterNS.Body[] = [];
-  let inside = { x0: 0, x1: 0, y0: 0, y1: 0 };
+  let mouth = { x0: 0, x1: 0, top: 0 };
   let counter = { x0: 0, x1: 0, top: 0, head: 0 };
   let eye = { x: 0, y: 0 };
 
@@ -416,7 +416,6 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
     const by = H - bh;
     const sx = bw / 120;
     const sy = bh / 160;
-    const wallH = (146 - 40) * sy;
 
     // The till is drawn on a 200×170 grid; its blocks are solid, so things rest on the counter.
     const tx = tillEl.offsetLeft;
@@ -432,16 +431,16 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
       wall(W / 2, -T / 2, W + T * 2, T),
       wall(-T / 2, H - 2000, T, 4000),
       wall(W + T / 2, H - 2000, T, 4000),
-      wall(bx + 18 * sx, by + 40 * sy + wallH / 2, 8, wallH),
-      wall(bx + 102 * sx, by + 40 * sy + wallH / 2, 8, wallH),
-      wall(bx + 60 * sx, by + 142 * sy, 84 * sx, 8),
+      // The bin is solid, lid shut: nothing can wedge itself between thin walls.
+      wall(bx + 60 * sx, by + 89 * sy, 88 * sx, 142 * sy),
+      wall(bx + 60 * sx, by + 41 * sy, 108 * sx, 10 * sy),
       block(0, 74, 200, 96),
       block(12, 30, 60, 48),
-      block(94, 2, 104, 48),
-      block(140, 46, 12, 32),
+      // Display and pole as one column, so there's no pocket under the screen to get stuck in.
+      block(94, 2, 104, 76),
     ];
     Composite.add(world, statics);
-    inside = { x0: bx + 22 * sx, x1: bx + 98 * sx, y0: by + 44 * sy, y1: by + 146 * sy };
+    mouth = { x0: bx + 6 * sx, x1: bx + 114 * sx, top: by + 18 * sy };
     counter = { x0: tx, x1: tx + 200 * ux, top: ty + 74 * uy, head: ty };
     eye = { x: bx + 60 * sx, y: by + 66 * sy };
   };
@@ -487,7 +486,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
     const soft = line.tone === "tip";
     it.touched = false;
     Sleeping.set(it.body, false);
-    Body.setPosition(it.body, { x: it.body.position.x, y: Math.min(it.body.position.y, inside.y0 + 10) });
+    Body.setPosition(it.body, { x: it.body.position.x, y: Math.min(it.body.position.y, mouth.top - Math.max(it.w, it.h) / 2) });
     Body.setVelocity(it.body, soft ? { x: -(3.5 + Math.random() * 2), y: -(10 + Math.random() * 2) } : { x: -(5 + Math.random() * 4), y: -(13 + Math.random() * 3) });
     Body.setAngularVelocity(it.body, (Math.random() - 0.5) * (soft ? 0.2 : 0.5));
     replay(binEl, "data-spit");
@@ -534,6 +533,12 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
   let raf = 0;
   let visible = false;
   let dragging: { body: MatterNS.Body; c: MatterNS.Constraint } | null = null;
+  const letGo = () => {
+    if (!dragging) return;
+    Composite.remove(world, dragging.c);
+    dragging = null;
+    delete el.dataset.dragging;
+  };
   let pending = 0;
   let look = { x: 0, y: 0 };
 
@@ -559,25 +564,37 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
       const b = it.body;
       // Keep things from tunnelling through walls after a wild throw.
       const speed = Math.hypot(b.velocity.x, b.velocity.y);
-      if (speed > 38) Body.setVelocity(b, { x: (b.velocity.x / speed) * 38, y: (b.velocity.y / speed) * 38 });
+      if (speed > 30) Body.setVelocity(b, { x: (b.velocity.x / speed) * 30, y: (b.velocity.y / speed) * 30 });
       const { x, y } = b.position;
-      const held = dragging !== null && dragging.body === b;
-      // Inside the bin, or resting across its mouth: either way the bin refuses it.
-      const binned = x > inside.x0 - 14 && x < inside.x1 + 14 && y > inside.y0 - 170 && y < inside.y1;
+      // While held, what counts is where the pointer is: the item itself gets stopped at the
+      // bin's or the till's edge, and would only shake there against it.
+      const hand = dragging !== null && dragging.body === b ? dragging.c.pointA : null;
+      const held = hand !== null;
+      const reach = Math.max(it.w, it.h) / 2;
+      // Dropped over the bin or onto its lid, or pushed at it by hand: the bin refuses it, straight
+      // out of your hand if need be. Things merely standing beside the bin, under the lip, don't count.
+      const binned = hand
+        ? (hand.x > mouth.x0 && hand.y > mouth.top - 24) || (x > mouth.x0 - 10 && x < mouth.x1 + 10 && y > mouth.top - reach - 16)
+        : (x > mouth.x0 + 14 && x < mouth.x1 - 14 && y > mouth.top) ||
+          (x > mouth.x0 - 10 && x < mouth.x1 + 10 && y > mouth.top - 170 && y < mouth.top + 12);
       if (binned && !it.binnedAt) it.binnedAt = now;
       if (!binned) it.binnedAt = 0;
-      if (it.binnedAt && now - it.binnedAt > 320 && !held) {
+      if (it.binnedAt && now - it.binnedAt > (held ? 150 : 320)) {
+        if (held) letGo();
         it.binnedAt = 0;
         spit(it);
         awake = true;
         continue;
       }
-      // Set down anywhere on the till (counter, scanner or display): scanned.
-      const reach = Math.max(it.w, it.h) / 2 + 26;
-      const onTill = it.touched && x > counter.x0 && x < counter.x1 && y < counter.top && y > counter.head - reach;
+      // Set down anywhere on the till (counter, scanner or display), or pushed at it by hand: scanned.
+      const onTill = hand
+        ? (hand.x < counter.x1 && hand.y > counter.head - 24) || (x > counter.x0 && x < counter.x1 && y > counter.head - reach - 16)
+        : it.touched && x > counter.x0 && x < counter.x1 && y > counter.head - reach - 26 && y < counter.top;
       if (onTill && !it.tillAt) it.tillAt = now;
       if (!onTill) it.tillAt = 0;
-      if (it.tillAt && now - it.tillAt > 300 && !held) {
+      if (it.tillAt && now - it.tillAt > (held ? 200 : 300)) {
+        // A scanner doesn't wait for you to let go.
+        if (held) letGo();
         ringUp(it);
         continue;
       }
@@ -620,7 +637,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
   // Groceries land between the till and the bin (on a phone, there's only room if they can land on the counter too).
   const spawnX = (it: It) => {
     const x0 = (W < 640 ? counter.x0 + 8 : counter.x1 + 24) + it.w / 2;
-    const x1 = inside.x0 - 30 - it.w / 2;
+    const x1 = mouth.x0 - 24 - it.w / 2;
     return x0 + Math.random() * Math.max(0, x1 - x0);
   };
 
@@ -711,15 +728,15 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
     });
     on(it.node, "pointermove", (event) => {
       if (!dragging || dragging.body !== it.body) return;
-      dragging.c.pointA = toWorld(event);
+      // Kept inside the stage, so nothing gets hauled into the floor or the walls.
+      const p = toWorld(event);
+      dragging.c.pointA = { x: Math.min(W - 4, Math.max(4, p.x)), y: Math.min(H - 4, Math.max(4, p.y)) };
       Sleeping.set(it.body, false);
       kick();
     });
     const release = () => {
       if (!dragging || dragging.body !== it.body) return;
-      Composite.remove(world, dragging.c);
-      dragging = null;
-      delete el.dataset.dragging;
+      letGo();
       kick();
     };
     on(it.node, "pointerup", release);
