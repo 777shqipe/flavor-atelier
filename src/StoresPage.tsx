@@ -60,7 +60,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
     .sort((a, b) => a.km - b.km)[0];
 
   // One parchment sheet: title and facts on the left, the live map printed straight
-  // onto the paper on the right with the shopfront photo pinned over it, and the
+  // onto the paper on the right with the shop's photo print laid over it, and the
   // four picks underneath.
   return (
     <main>
@@ -68,7 +68,10 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
         <div className="parchment" aria-hidden="true" />
         <div className="sh">
           <header className="sh-head">
-            <h1 id="stores-title">Our stores</h1>
+            <div className="sh-title">
+              <h1 id="stores-title">Our stores</h1>
+              <RingBadge className="sh-badge" text="OPEN 7 DAYS • FIGHT FOOD WASTE •" center="7" label="Open seven days a week" />
+            </div>
           </header>
 
           <article className="sh-facts" style={{ "--c": store.color } as CSSProperties}>
@@ -128,25 +131,27 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                       draggable={false}
                     />
                   ))}
-                  <span className="sh-chip" key={`chip-${store.id}`}>
-                    <span className="sc-glyph" style={{ "--c": store.color } as CSSProperties} dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
-                    <span className="sc-text">
-                      <b>{store.name}</b>
-                      {/* street only: the suburb is already the name */}
-                      <small>{store.address.split(",")[0]}</small>
-                    </span>
+                </div>
+                {/* the print's caption: who, where, open or not, and the way to the next one */}
+                <div className="sh-caption">
+                  <span className="sc-glyph" dangerouslySetInnerHTML={{ __html: glyphSvg(store.glyph) }} />
+                  <span className="sc-text" key={`cap-${store.id}`}>
+                    <b>{store.name}</b>
+                    {/* street only: the suburb is already the name */}
+                    <small>{store.address.split(",")[0]}</small>
+                  </span>
+                  <span className="sc-nav">
+                    <button type="button" onClick={() => go(-1)} aria-label="Previous store">
+                      {arrow("left")}
+                    </button>
+                    <button type="button" onClick={() => go(1)} aria-label="Next store">
+                      {arrow("right")}
+                    </button>
                   </span>
                   <p className={`status${status.open ? " open" : ""}`}>
                     <i /> {status.label}
                   </p>
-                  <button className="round-btn sh-arrow prev" type="button" onClick={() => go(-1)} aria-label="Previous store">
-                    {arrow("left")}
-                  </button>
-                  <button className="round-btn sh-arrow next" type="button" onClick={() => go(1)} aria-label="Next store">
-                    {arrow("right")}
-                  </button>
                 </div>
-                <RingBadge className="sh-badge" text="OPEN 7 DAYS • FIGHT FOOD WASTE •" center="7" label="Open seven days a week" />
               </div>
             </StoreMap>
           </div>

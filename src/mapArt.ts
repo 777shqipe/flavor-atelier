@@ -4,7 +4,7 @@ import type { Store } from "./stores";
 /**
  * Drawings for the store maps, as SVG strings (Leaflet markers take HTML).
  * Same sticker language as the flyer packs: flat colour, ink outline, and a
- * white border drawn underneath so every icon reads on the dark map.
+ * white border drawn underneath so every icon reads on the map.
  */
 
 const INK = "#141414";
@@ -55,7 +55,7 @@ export function shopPinSvg(store: Store) {
       <g fill="#fff" stroke="#fff" stroke-width="7">${outline.replace(/fill="[^"]*"/g, "")}<path d="${aw.edge}"/></g>
       <g stroke="${INK}" stroke-width="2.2">
         ${parts}
-        <g class="pin-aw">${aw.fill}<path d="${aw.edge}" fill="none"/></g>
+        <g>${aw.fill}<path d="${aw.edge}" fill="none"/></g>
         <circle cx="54" cy="10" r="10" fill="${store.color}"/>
       </g>
       <rect x="16" y="44" width="18" height="4" fill="${WOOD}"/>
@@ -112,7 +112,7 @@ const cbd = sticker(
    <path d="M3 48H57" fill="none"/>`,
   `<path d="M20.5 19h5M20.5 25h5M20.5 31h5M20.5 37h5" stroke="${CREAM}" stroke-width="1.6"/>
    <path d="M32.5 21h6M32.5 27h6M32.5 33h6M32.5 39h6M45 32h5M45 38h5" stroke="#2c6b55" stroke-width="1.6"/>
-   <circle class="lm-blink" cx="35.5" cy="5.5" r="1.8" fill="${TOMATO}"/>`,
+   <circle cx="35.5" cy="5.5" r="1.8" fill="${TOMATO}"/>`,
 );
 
 const marketAw = awning(7, 11, 6, 7, 6, TOMATO);
@@ -128,10 +128,8 @@ const market = `
       <rect x="9" y="18" width="3" height="24" fill="${WOOD}"/><rect x="44" y="18" width="3" height="24" fill="${WOOD}"/>
       <rect x="14" y="3" width="28" height="9" rx="2" fill="${DEEP}"/>
       ${marketAw.fill}<path d="${marketAw.edge}" fill="none"/>
-      <g class="lm-bob">
-        <circle cx="14" cy="29" r="4.4" fill="${TOMATO}"/><circle cx="22.5" cy="29" r="4.4" fill="${SUN}"/>
-        <circle cx="31" cy="29" r="4.4" fill="${LEAF}"/><circle cx="39.5" cy="29" r="4.4" fill="#f08a24"/>
-      </g>
+      <circle cx="14" cy="29" r="4.4" fill="${TOMATO}"/><circle cx="22.5" cy="29" r="4.4" fill="${SUN}"/>
+      <circle cx="31" cy="29" r="4.4" fill="${LEAF}"/><circle cx="39.5" cy="29" r="4.4" fill="#f08a24"/>
       <rect x="6" y="32" width="44" height="13" rx="1.5" fill="${WOOD}"/>
       <path d="M6 38.5h44" fill="none" stroke-width="1.6"/>
     </g>
@@ -145,7 +143,7 @@ const zoo = sticker(
    <rect x="18" y="12" width="31" height="21" rx="10" fill="#b8c4bf"/>
    <path d="M8 22Q3 32 8 41L13.5 40Q10 33 13 25Z" fill="#b8c4bf"/>
    <circle cx="17" cy="19" r="10.5" fill="#b8c4bf"/>
-   <path class="lm-ear" d="M17 11Q28 12 26.5 23Q21 29 15.5 25Z" fill="#9fb0aa"/>`,
+   <path d="M17 11Q28 12 26.5 23Q21 29 15.5 25Z" fill="#9fb0aa"/>`,
   `<circle cx="12.5" cy="17" r="1.4" fill="${INK}"/><path d="M9.5 25.5Q12 28.5 15.5 27.2" stroke="${CREAM}" stroke-width="2" fill="none" stroke-linecap="round"/>`,
 );
 
@@ -158,7 +156,7 @@ const cup = sticker(
    <rect x="13" y="36" width="18" height="6" rx="1.5" fill="${DEEP}"/>
    <rect x="10" y="42" width="24" height="5" rx="1.5" fill="#2b3833"/>`,
   `<path d="M15 13V20" stroke="${CREAM}" stroke-width="2.4" stroke-linecap="round"/>
-   <path class="lm-spark" d="M38 1.5l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" fill="${CREAM}" stroke="none"/>`,
+   <path d="M38 1.5l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" fill="${CREAM}" stroke="none"/>`,
 );
 
 const cabins = Array.from({ length: 8 }, (_, i) => {
@@ -174,7 +172,7 @@ const wheel = `
     <g stroke="${INK}">
       <path d="M26 24L15 50M26 24L37 50" fill="none" stroke-width="3"/>
       <path d="M10 50H42" fill="none" stroke-width="2.2"/>
-      <g class="lm-spin">
+      <g>
         <circle cx="26" cy="22" r="18" fill="#e3efe9" stroke-width="2.2"/>
         <circle cx="26" cy="22" r="11" fill="none" stroke-width="1.3"/>
         <path d="M26 4V40M8 22H44M13.3 9.3L38.7 34.7M38.7 9.3L13.3 34.7" fill="none" stroke-width="1.3"/>
@@ -193,7 +191,7 @@ const exhibition = sticker(
    <rect x="6" y="30" width="48" height="14" fill="#f1e6c8"/>
    <rect x="4" y="44" width="52" height="4" rx="1" fill="#d9cfb4"/>`,
   `${arches}<path d="M27 44v-7a3 3 0 0 1 6 0v7z" fill="${DEEP}" stroke="none"/>
-   <path class="lm-flag" d="M30.8 3.5L38 6L30.8 8.5Z" fill="${TOMATO}" stroke="${INK}" stroke-width="1.4"/>`,
+   <path d="M30.8 3.5L38 6L30.8 8.5Z" fill="${TOMATO}" stroke="${INK}" stroke-width="1.4"/>`,
 );
 
 const trees = sticker(
@@ -201,9 +199,9 @@ const trees = sticker(
    <rect x="11" y="24" width="3" height="13" fill="#8a5a33"/>
    <rect x="24" y="20" width="3" height="17" fill="#8a5a33"/>
    <rect x="37" y="24" width="3" height="13" fill="#8a5a33"/>
-   <circle class="lm-sway" cx="12.5" cy="20" r="9" fill="#74c26b"/>
-   <circle class="lm-sway" cx="38.5" cy="20" r="9" fill="#74c26b"/>
-   <circle class="lm-sway" cx="25.5" cy="15" r="11" fill="${LEAF}"/>`,
+   <circle cx="12.5" cy="20" r="9" fill="#74c26b"/>
+   <circle cx="38.5" cy="20" r="9" fill="#74c26b"/>
+   <circle cx="25.5" cy="15" r="11" fill="${LEAF}"/>`,
 );
 
 export const LANDMARKS: Landmark[] = [
@@ -216,37 +214,8 @@ export const LANDMARKS: Landmark[] = [
   { id: "park", name: "Royal Park", lat: -37.7925, lon: 144.9468, w: 44, box: [50, 40], svg: trees, minor: true },
 ];
 
-export const landmarkHtml = (lm: Landmark, index: number) => `
-  <div class="lm lm-${lm.id}"${lm.minor ? " data-minor" : ""} style="--w:${lm.w}px;--ar:${lm.box[0] / lm.box[1]};--i:${index}">
+export const landmarkHtml = (lm: Landmark) => `
+  <div class="lm lm-${lm.id}"${lm.minor ? " data-minor" : ""} style="--w:${lm.w}px;--ar:${lm.box[0] / lm.box[1]}">
     <span class="lm-art"><svg viewBox="0 0 ${lm.box[0]} ${lm.box[1]}" aria-hidden="true" focusable="false">${lm.svg}</svg></span>
     <span class="lm-cap">${lm.name}</span>
   </div>`;
-
-/* ---------- route geometry -------------------------------------------------- */
-export type XY = { x: number; y: number };
-
-/** Control point that bows the straight line a→b away from `centre`. */
-export function bowControl(a: XY, b: XY, centre: XY, amount = 0.16): XY {
-  const mx = (a.x + b.x) / 2;
-  const my = (a.y + b.y) / 2;
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const len = Math.hypot(dx, dy) || 1;
-  let nx = -dy / len;
-  let ny = dx / len;
-  if ((mx - centre.x) * nx + (my - centre.y) * ny < 0) {
-    nx = -nx;
-    ny = -ny;
-  }
-  return { x: mx + nx * len * amount, y: my + ny * len * amount };
-}
-
-/** Points along the bowed curve a→b. */
-export function bow(a: XY, b: XY, centre: XY, amount = 0.16, steps = 32): XY[] {
-  const c = bowControl(a, b, centre, amount);
-  return Array.from({ length: steps + 1 }, (_, i) => {
-    const t = i / steps;
-    const u = 1 - t;
-    return { x: u * u * a.x + 2 * u * t * c.x + t * t * b.x, y: u * u * a.y + 2 * u * t * c.y + t * t * b.y };
-  });
-}

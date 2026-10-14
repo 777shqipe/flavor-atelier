@@ -1,30 +1,24 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import L from "leaflet";
-import { CART_SVG, LANDMARKS, bow, landmarkHtml, shopPinSvg } from "./mapArt";
-import { ROUTE, STORES, distanceKm, formatKm, type Store } from "./stores";
+import { LANDMARKS, landmarkHtml, shopPinSvg } from "./mapArt";
+import { STORES, distanceKm, formatKm, type Store } from "./stores";
 import "./storemap.css";
 
 /**
- * The store map, printed on parchment: green-inked streets and water, little CBM
- * shopfronts for pins, sticker landmarks, and a trolley that drives a bowed
- * loop to whichever store you pick. Whatever is passed as children floats
- * over the map, above the tiles and below nothing.
+ * The store map, printed on parchment: green-inked streets and water, four big
+ * CBM shopfronts for pins and a few faded landmarks for bearings. Picking a
+ * store glides the map over to it. Whatever is passed as children floats over
+ * the map, above the tiles and below nothing.
  */
 
-/** Loop order of the stores (ROUTE ends where it started). */
-const LOOP = ROUTE.slice(0, -1);
-/** Zoom level the route maths is done at, in projected pixels. */
-const Z = 15;
 const CBD = L.latLng(-37.8136, 144.9631);
 
 /** Name tags hang to the right of the shop, except where a landmark already sits there. */
 const TAG_LEFT = new Set(["flemington"]);
 
 const pinHtml = (store: Store, index: number) => `
-  <div class="pin" style="--c:${store.color};--i:${index}">
+  <div class="pin" style="--c:${store.color}">
     <span class="pin-shadow"></span>
-    <span class="pin-pulse"></span>
-    <span class="pin-pulse two"></span>
     <span class="pin-art">${shopPinSvg(store)}</span>
     <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><b>0${index + 1}</b>${store.name}</span>
   </div>`;
@@ -57,10 +51,9 @@ const INK_TABLES = [0, 1, 2].map((channel) =>
   }).join(" "),
 );
 
-/** Height kept clear at the bottom of the map for whatever floats over it (CSS --float-room). */
-const floatRoom = (map: L.Map) => parseFloat(getComputedStyle(map.getContainer()).getPropertyValue("--float-room")) || 0;
+/** A px length the stylesheet sets on the map (see --float-room and --inset-l/r in storemap.css). */
+const cssPx = (map: L.Map, name: string) => parseFloat(getComputedStyle(map.getContainer()).getPropertyValue(name)) || 0;
 
-const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 type Near =
@@ -68,92 +61,6 @@ type Near =
   | { status: "loading" }
   | { status: "ok"; index: number; km: number }
   | { status: "error"; message: string };
-
-/** Moves the trolley marker along polylines in projected space, frame by frame. */
-function makeDriver(map: L.Map, cart: L.Marker) {
-  type Leg = { pts: L.Point[]; cum: number[]; ms: number; done?: () => void };
-  let leg: Leg | null = null;
-  let elapsed = 0;
-  let wait = 0;
-  let after: (() => void) | null = null;
-  let raf = 0;
-  let last = 0;
-  let running = false;
-  const art = () => cart.getElement()?.querySelector<HTMLElement>(".cart");
-  const place = (p: L.Point) => cart.setLatLng(map.unproject(p, Z));
-
-  const frame = (now: number) => {
-    raf = 0;
-    const dt = Math.min(48, now - last);
-    last = now;
-    if (leg) {
-      elapsed += dt;
-      const t = Math.min(1, elapsed / leg.ms);
-      const d = ease(t) * leg.cum[leg.cum.length - 1];
-      let i = 1;
-      while (i < leg.cum.length - 1 && leg.cum[i] < d) i += 1;
-      const a = leg.pts[i - 1];
-      const b = leg.pts[i];
-      const k = (d - leg.cum[i - 1]) / (leg.cum[i] - leg.cum[i - 1] || 1);
-      place(L.point(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k));
-      if (Math.abs(b.x - a.x) > 0.5) art()?.setAttribute("data-dir", b.x < a.x ? "l" : "r");
-      if (t >= 1) {
-        const done = leg.done;
-        leg = null;
-        art()?.removeAttribute("data-moving");
-        done?.();
-      }
-    } else if (wait > 0) {
-      wait -= dt;
-      if (wait <= 0 && after) {
-        const fn = after;
-        after = null;
-        fn();
-      }
-    }
-    if (running && (leg || wait > 0)) raf = requestAnimationFrame(frame);
-  };
-  const kick = () => {
-    if (raf || !running || !(leg || wait > 0)) return;
-    last = performance.now();
-    raf = requestAnimationFrame(frame);
-  };
-
-  return {
-    place,
-    drive(pts: L.Point[], ms: number, done?: () => void) {
-      const cum = [0];
-      for (let i = 1; i < pts.length; i += 1) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
-      leg = { pts, cum, ms, done };
-      elapsed = 0;
-      wait = 0;
-      after = null;
-      art()?.removeAttribute("data-in");
-      art()?.setAttribute("data-moving", "");
-      kick();
-    },
-    pause(ms: number, fn: () => void) {
-      wait = ms;
-      after = fn;
-      kick();
-    },
-    setRunning(on: boolean) {
-      running = on;
-      if (on) kick();
-      else {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
-    },
-    stop() {
-      leg = null;
-      wait = 0;
-      after = null;
-      cancelAnimationFrame(raf);
-      raf = 0;
-    },
-  };
-}
 
 export function StoreMap({
   active,
@@ -168,12 +75,7 @@ export function StoreMap({
   const node = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markers = useRef<L.Marker[]>([]);
-  const api = useRef<{
-    driver: ReturnType<typeof makeDriver>;
-    between: (from: number, to: number) => L.Point[];
-    at: (index: number) => L.Point;
-    overview: () => void;
-  } | null>(null);
+  const overviewRef = useRef<(() => void) | null>(null);
   const me = useRef<L.Marker | null>(null);
   const meLine = useRef<L.Polyline | null>(null);
   const fromMe = useRef<L.LatLng | null>(null);
@@ -210,41 +112,19 @@ export function StoreMap({
     const wide = () => box.clientWidth > 760;
     const overview = (animate = false) => {
       const bounds = L.latLngBounds([...points, CBD]);
-      const opts: L.FitBoundsOptions = { paddingTopLeft: [60, 110], paddingBottomRight: [wide() ? 150 : 80, floatRoom(map)] };
+      const opts: L.FitBoundsOptions = {
+        paddingTopLeft: [60 + cssPx(map, "--inset-l"), 110],
+        paddingBottomRight: [(wide() ? 150 : 80) + cssPx(map, "--inset-r"), cssPx(map, "--float-room")],
+      };
       if (animate) map.flyToBounds(bounds, { ...opts, duration: 1.1 });
       else map.fitBounds(bounds, opts);
     };
     overview();
 
-    // ---- the loop, bowed outwards so it reads as a drawn route ---------------
-    const P = points.map((point) => map.project(point, Z));
-    const centre = { x: P.reduce((s, p) => s + p.x, 0) / P.length, y: P.reduce((s, p) => s + p.y, 0) / P.length };
-    const segs = LOOP.map((from, k) =>
-      bow(P[from], P[LOOP[(k + 1) % LOOP.length]], centre, 0.17).map((p) => L.point(p.x, p.y)),
-    );
-    const loop = segs.flatMap((seg, k) => (k ? seg.slice(1) : seg)).map((p) => map.unproject(p, Z));
-    L.polyline(loop, { className: "route-glow", color: "#005842", weight: 12, opacity: 0.12, interactive: false }).addTo(map);
-    const drawn = L.polyline(loop, { className: "route-line", color: "#005842", weight: 2.5, opacity: 0.8, interactive: false }).addTo(map);
-    L.polyline(loop, { className: "route-dots", color: "#f6b531", weight: 4.5, opacity: 0.95, dashArray: "0.1 14", lineCap: "round", interactive: false }).addTo(map);
-    drawn.getElement()?.setAttribute("pathLength", "1");
-
-    const between = (from: number, to: number) => {
-      const n = LOOP.length;
-      const ia = LOOP.indexOf(from);
-      const forward = (LOOP.indexOf(to) - ia + n) % n;
-      const out: L.Point[] = [];
-      if (forward <= n - forward) {
-        for (let s = 0; s < forward; s += 1) out.push(...segs[(ia + s) % n].slice(s ? 1 : 0));
-      } else {
-        for (let s = 0; s < n - forward; s += 1) out.push(...[...segs[(ia - 1 - s + n) % n]].reverse().slice(s ? 1 : 0));
-      }
-      return out;
-    };
-
-    // ---- landmarks, pins, trolley ---------------------------------------------
-    LANDMARKS.forEach((lm, index) =>
+    // ---- landmarks, then the pins on top -----------------------------------------
+    LANDMARKS.forEach((lm) =>
       L.marker([lm.lat, lm.lon], {
-        icon: L.divIcon({ className: "sm-lm", html: landmarkHtml(lm, index), iconSize: [0, 0] }),
+        icon: L.divIcon({ className: "sm-lm", html: landmarkHtml(lm), iconSize: [0, 0] }),
         interactive: false,
         keyboard: false,
         zIndexOffset: -1000,
@@ -261,33 +141,6 @@ export function StoreMap({
       marker.on("click", () => onSelectRef.current(index));
       return marker;
     });
-
-    const start = previous.current ?? 0;
-    const cart = L.marker(points[start], {
-      icon: L.divIcon({ className: "sm-cart", html: `<div class="cart" data-dir="r" data-in>${CART_SVG}</div>`, iconSize: [0, 0] }),
-      interactive: false,
-      keyboard: false,
-      zIndexOffset: 3000,
-    }).addTo(map);
-    const driver = makeDriver(map, cart);
-
-    // Everything drops in the first time the map is on screen; the trolley only runs while it is.
-    let seen = false;
-    let visible = false;
-    const sync = () => driver.setRunning(visible && !document.hidden);
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        visible = entry.isIntersecting;
-        if (visible && !seen) {
-          seen = true;
-          box.dataset.live = "";
-        }
-        sync();
-      },
-      { threshold: 0.25 },
-    );
-    io.observe(box);
-    document.addEventListener("visibilitychange", sync);
 
     // Zoomed far out, the small landmarks and their captions would pile up.
     const crowd = () => box.toggleAttribute("data-far", map.getZoom() < 13.4);
@@ -306,7 +159,7 @@ export function StoreMap({
     });
     ro.observe(box);
 
-    api.current = { driver, between, at: (index) => P[index], overview: () => overview(true) };
+    overviewRef.current = () => overview(true);
     mapRef.current = map;
     const settle = window.setTimeout(() => {
       map.invalidateSize();
@@ -317,69 +170,46 @@ export function StoreMap({
       window.clearTimeout(settle);
       window.clearTimeout(refit);
       ro.disconnect();
-      io.disconnect();
-      document.removeEventListener("visibilitychange", sync);
-      driver.stop();
       map.remove();
       mapRef.current = null;
       markers.current = [];
-      api.current = null;
+      overviewRef.current = null;
     };
   }, []);
 
-  // Follow the selection: light the pin, drive the trolley round the loop, then close in.
+  // Follow the selection: light the pin and glide over to it (to it and you, after "Find my nearest").
   useEffect(() => {
     const map = mapRef.current;
-    const tools = api.current;
-    if (!map || !tools) return;
+    if (!map) return;
     markers.current.forEach((marker, index) => {
       marker.getElement()?.classList.toggle("active", index === active);
       marker.setZIndexOffset(index === active ? 1000 : 0);
     });
-    const from = previous.current;
+    const first = previous.current === null;
     previous.current = active;
+    if (first) return; // the overview already shows every store
 
     const target = L.latLng(STORES[active].lat, STORES[active].lon);
-    const cartEl = () => map.getContainer().querySelector(".sm-cart .cart");
-    // Park the store a little up and right of centre, clear of whatever floats bottom left.
-    const closeIn = () => {
-      const wideMap = map.getSize().x > 760;
-      const centre = map.unproject(map.project(target, 14.75).add([wideMap ? -150 : 0, Math.max(0, floatRoom(map) / 2 - 45)]), 14.75);
-      map.flyTo(centre, 14.75, { animate: !reduced(), duration: 1.1 });
-    };
-
-    if (reduced() || from === null) {
-      tools.driver.place(tools.at(active));
-      if (from !== null) closeIn();
-      return;
-    }
-
+    const wideMap = map.getSize().x > 760;
+    const left = cssPx(map, "--inset-l");
+    const right = cssPx(map, "--inset-r");
+    const room = cssPx(map, "--float-room");
     const me = fromMe.current;
     fromMe.current = null;
-    const path = me ? [map.project(me, Z), tools.at(active)] : from === active ? [] : tools.between(from, active);
-    if (path.length < 2) {
-      closeIn();
+    if (me) {
+      map.flyToBounds(L.latLngBounds([me, target]), {
+        paddingTopLeft: [70 + left, 110],
+        paddingBottomRight: [(wideMap ? 140 : 70) + right, Math.max(60, room - 10)],
+        maxZoom: 15,
+        animate: !reduced(),
+        duration: 1,
+      });
       return;
     }
-    let length = 0;
-    for (let i = 1; i < path.length; i += 1) length += path[i].distanceTo(path[i - 1]);
-    const bounds = L.latLngBounds(path.map((p) => map.unproject(p, Z)));
-    const wideMap = map.getSize().x > 760;
-    map.flyToBounds(bounds, {
-      paddingTopLeft: [70, 110],
-      paddingBottomRight: [wideMap ? 140 : 70, Math.max(60, floatRoom(map) - 10)],
-      maxZoom: 15,
-      duration: 0.9,
-    });
-    tools.driver.setRunning(true);
-    tools.driver.drive(path, Math.min(2600, Math.max(1500, length / 0.55)), () => {
-      cartEl()?.setAttribute("data-in", "");
-      const pin = markers.current[active]?.getElement();
-      pin?.classList.remove("hop");
-      void pin?.offsetWidth;
-      pin?.classList.add("hop");
-      closeIn();
-    });
+    // Park the store a little up and right of the visible middle, clear of whatever floats bottom left.
+    const shift = L.point((wideMap ? -150 : 0) + (right - left) / 2, Math.max(0, room / 2 - 45));
+    const centre = map.unproject(map.project(target, 14.75).add(shift), 14.75);
+    map.flyTo(centre, 14.75, { animate: !reduced(), duration: 1 });
   }, [active]);
 
   const locate = () => {
@@ -451,15 +281,10 @@ export function StoreMap({
           role="region"
           aria-label="Map of the four Cheaper Buy Miles stores in inner Melbourne"
         />
-        <span className="finder-plate" aria-hidden="true">
-          Inner Melbourne · <b>04</b> shops
-        </span>
         <svg className="finder-compass" viewBox="0 0 44 44" aria-hidden="true">
           <circle cx="22" cy="22" r="20" />
-          <g className="needle">
-            <path d="M22 9l4.5 13h-9z" />
-            <path d="M22 35l-4.5-13h9z" />
-          </g>
+          <path d="M22 9l4.5 13h-9z" />
+          <path d="M22 35l-4.5-13h9z" />
           <text x="22" y="7.6">N</text>
         </svg>
 
@@ -486,7 +311,7 @@ export function StoreMap({
             <button type="button" aria-label="Zoom out" onClick={() => mapRef.current?.zoomOut()}>
               −
             </button>
-            <button type="button" className="all" aria-label="Show all stores" onClick={() => api.current?.overview()}>
+            <button type="button" className="all" aria-label="Show all stores" onClick={() => overviewRef.current?.()}>
               All
             </button>
           </div>

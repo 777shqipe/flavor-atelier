@@ -78,9 +78,6 @@ export const STORES: Store[] = [
   },
 ];
 
-/** Order used for the dashed route and the cart's journey: a loop, not the list order. */
-export const ROUTE = [0, 1, 3, 2, 0];
-
 export const mapsLink = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${address}, Melbourne`)}`;
 

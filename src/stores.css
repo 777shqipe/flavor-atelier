@@ -38,18 +38,23 @@
 }
 
 .sh {
+  --col-gap: clamp(40px, 5.5vw, 96px);
+  --sh-max: 1520px;
   display: grid;
-  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.42fr);
+  grid-template-columns: minmax(0, 0.74fr) minmax(0, 1.46fr);
   grid-template-rows: auto 1fr auto;
   grid-template-areas: "head visual" "facts visual" "picks picks";
-  column-gap: clamp(40px, 5.5vw, 96px);
-  width: min(100%, 1400px);
+  column-gap: var(--col-gap);
+  width: min(100%, var(--sh-max));
   margin-inline: auto;
 }
 
 /* ---------- title ----------------------------------------------------- */
 .sh-head { grid-area: head; align-self: end; }
 .sh-head h1 { max-width: none; color: var(--green-900); font-size: clamp(56px, 6.2vw, 100px); line-height: 0.92; }
+/* the open-7-days sticker sits on the end of the title */
+.sh-title { --b: clamp(72px, 6.4vw, 100px); position: relative; display: inline-block; }
+.sh-title .sh-badge { top: calc(var(--b) * -0.42); right: calc(var(--b) * -0.9); width: var(--b); height: var(--b); }
 /* a double hairline under the title, like a ledger page */
 .sh-head::after { content: ""; display: block; height: 5px; margin: clamp(26px, 2.6vw, 36px) 0 clamp(30px, 3vw, 44px); border-block: 1px solid var(--rule); }
 
@@ -102,32 +107,30 @@
 .sh-near b { color: var(--green); }
 
 /* ---------- map + photo ----------------------------------------------- */
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0;
-  padding: 7px 12px 7px 10px;
-  border-radius: 99px;
-  color: #ffb9a8;
-  font: 700 10.5px / 1 var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.status i { position: relative; flex: none; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.status.open { color: #8ff0bd; }
-.status.open i::after { content: ""; position: absolute; inset: -3px; border: 1.5px solid currentColor; border-radius: 50%; animation: status-ring 1.6s ease-out infinite; }
-@keyframes status-ring { from { scale: 0.6; opacity: 0.9; } to { scale: 2.4; opacity: 0; } }
 .sh-visual { grid-area: visual; position: relative; align-self: stretch; }
-.sh-visual .finder-map { height: clamp(580px, calc(100svh - 200px), 760px); }
+/* The map runs past its column, into the gap on the left and out towards the
+   page edge on the right; its controls stay inside the column. */
+.sh-visual .finder {
+  --inset-l: calc(var(--col-gap) * 0.6);
+  --inset-r: min(240px, calc(var(--pad) + max(0px, (100vw - 2 * var(--pad) - var(--sh-max)) / 2)));
+  margin-left: calc(var(--inset-l) * -1);
+  margin-right: calc(var(--inset-r) * -1);
+}
+.sh-visual .finder-map { height: clamp(600px, calc(100svh - 180px), 800px); }
+
+/* The shop as a photo print laid on the map: its awning on top, a caption underneath. */
 .sh-window {
   --px: 0;
   --py: 0;
   position: absolute;
-  left: clamp(12px, 3%, 36px);
-  bottom: clamp(40px, 7%, 64px);
+  left: calc(var(--inset-l) + clamp(8px, 2%, 28px));
+  bottom: clamp(36px, 6%, 60px);
   z-index: 500;
-  width: clamp(240px, 38%, 350px);
+  width: clamp(260px, 34%, 330px);
+  padding: 8px 8px 0;
+  border-radius: 10px;
+  background: #fffdf6;
+  box-shadow: 0 0 0 1px rgb(60 60 20 / 0.1), 0 2px 3px rgb(40 50 20 / 0.14), 0 34px 50px -26px rgb(30 45 20 / 0.6);
   rotate: -2deg;
   transition: rotate 0.5s var(--spring), translate 0.5s var(--spring);
 }
@@ -135,27 +138,24 @@
 /* The shop's own awning, in its colour, rolls down each time the pick changes. */
 .sh-awning {
   position: absolute;
-  inset: -12px 16px auto;
+  inset: -11px 12px auto;
   z-index: 6;
   height: 24px;
   background: repeating-linear-gradient(90deg, var(--c) 0 22px, #fffaf0 22px 44px);
   -webkit-mask: radial-gradient(11px at 11px 13px, #000 97%, #0000) 0 2px / 22px 24px repeat-x, linear-gradient(#000 0 0) top / 100% 13px no-repeat;
   mask: radial-gradient(11px at 11px 13px, #000 97%, #0000) 0 2px / 22px 24px repeat-x, linear-gradient(#000 0 0) top / 100% 13px no-repeat;
-  filter: drop-shadow(0 3px 2px rgb(30 45 20 / 0.3));
+  filter: drop-shadow(0 3px 2px rgb(30 45 20 / 0.28));
   transform-origin: 50% 0;
   animation: aw-roll 0.8s var(--bounce) both;
 }
 @keyframes aw-roll { from { scale: 1 0; } }
-/* a photo print: white border, small radius, lying on the paper */
 .sh-photo {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  aspect-ratio: 4 / 3;
-  border: 7px solid #fffdf6;
-  border-radius: 8px;
+  aspect-ratio: 3 / 2;
+  border-radius: 5px;
   background: var(--green-700);
-  box-shadow: 0 0 0 1px rgb(60 60 20 / 0.12), 0 2px 3px rgb(40 50 20 / 0.18), 0 30px 44px -24px rgb(30 45 20 / 0.6);
 }
 .sh-window:hover .sh-photo img.active { scale: 1.09; }
 .sh-photo img {
@@ -172,40 +172,57 @@
 }
 .sh-photo img.active { z-index: 2; clip-path: inset(0); scale: 1.03; }
 .sh-photo img.before { z-index: 1; clip-path: inset(0); }
-.sh-photo::after { content: ""; position: absolute; inset: 0; z-index: 3; background: linear-gradient(180deg, rgb(0 30 22 / 0.28), transparent 28%, transparent 60%, rgb(0 30 22 / 0.45)); pointer-events: none; }
-/* Deep green capsules over the photo. */
-.sh-chip,
-.sh-photo .status {
-  position: absolute;
-  z-index: 5;
-  background: linear-gradient(180deg, #0f4a3a, #00382a);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.12), 0 14px 24px -12px rgb(0 0 0 / 0.6);
-  color: var(--cream);
+/* the awning's shade on the top of the print */
+.sh-photo::after { content: ""; position: absolute; inset: 0; z-index: 3; background: linear-gradient(180deg, rgb(0 30 22 / 0.24), transparent 26%); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06); border-radius: inherit; pointer-events: none; }
+
+.sh-caption {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-areas: "glyph text nav" "status status status";
+  column-gap: 12px;
+  align-items: center;
+  padding: 14px 6px 12px;
 }
-.sh-chip {
-  top: 10px;
-  left: 10px;
-  display: inline-flex;
+.sc-glyph { grid-area: glyph; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--c); color: var(--green-900); box-shadow: inset 0 0 0 1.5px rgb(0 56 42 / 0.16); }
+.sc-glyph svg { width: 21px; height: 21px; }
+.sc-text { grid-area: text; display: grid; gap: 5px; min-width: 0; animation: fade-up 0.5s var(--ease-out) both; }
+.sc-text b { color: var(--green-900); font: 400 25px / 1 var(--font-serif); letter-spacing: -0.01em; }
+.sc-text small { overflow: hidden; color: var(--ink-soft); font: 500 12.5px / 1.2 var(--font-sans); text-overflow: ellipsis; white-space: nowrap; }
+.sc-nav { grid-area: nav; display: flex; gap: 6px; }
+.sc-nav button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--green);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, scale 0.3s var(--spring);
+}
+.sc-nav button:hover { border-color: var(--green); background: var(--green); color: var(--cream); }
+.sc-nav button:active { scale: 0.92; }
+.sc-nav button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.sc-nav svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.status {
+  grid-area: status;
+  display: flex;
   align-items: center;
   gap: 9px;
-  height: 44px;
-  padding: 0 16px 0 7px;
-  border-radius: 999px;
-  animation: chip-in 0.6s var(--spring);
+  margin: 12px 0 0;
+  padding-top: 11px;
+  border-top: 1px dashed var(--rule);
+  color: #b4452f;
+  font: 700 10px / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
-.sc-text { display: grid; gap: 4px; }
-.sc-text b { font: 700 14px / 1 var(--font-sans); letter-spacing: 0.02em; }
-.sc-text small { color: rgb(246 240 219 / 0.7); font: 600 12px / 1 var(--font-sans); }
-/* Open or closed sits bottom right; the dot keeps its colour. */
-.sh-photo .status { top: auto; right: 10px; bottom: 10px; height: 32px; padding: 0 12px 0 10px; font-size: 9.5px; color: #ffb9a8; }
-.sh-photo .status.open { color: #8ff0bd; }
-@keyframes chip-in { from { opacity: 0; translate: -10px 0; } }
-.sc-glyph { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--c); color: #141414; }
-.sc-glyph svg { width: 18px; height: 18px; }
-.sh-arrow { position: absolute; top: 50%; z-index: 5; width: 40px; height: 40px; translate: 0 -50%; }
-.sh-arrow.prev { left: 10px; }
-.sh-arrow.next { right: 10px; }
-.sh-badge { top: -40px; right: -34px; z-index: 7; width: 84px; height: 84px; }
+.status i { position: relative; flex: none; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.status.open { color: #157a4f; }
+.status.open i::after { content: ""; position: absolute; inset: -3px; border: 1.5px solid currentColor; border-radius: 50%; animation: status-ring 1.6s ease-out infinite; }
+@keyframes status-ring { from { scale: 0.6; opacity: 0.9; } to { scale: 2.4; opacity: 0; } }
 
 /* ---------- picks ----------------------------------------------------- */
 .sh-picks {
@@ -274,7 +291,6 @@
   .stores-hero { padding-top: 112px; }
   .sh { grid-template-columns: 1fr; grid-template-rows: none; grid-template-areas: "head" "visual" "facts" "picks"; }
   .sh-head::after { margin-bottom: 8px; }
-  .sh-visual .finder-map { height: clamp(460px, 62vh, 600px); }
   /* name and button on the left, the details beside them */
   .sh-facts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "name info" "line info" "actions info" "near near"; column-gap: 40px; align-content: start; padding-top: clamp(28px, 4vw, 40px); }
   .sh-name { grid-area: name; }
@@ -285,7 +301,10 @@
   .sh-picks { --gap: 10px; grid-template-columns: 1fr 1fr; }
   .pick-lens { display: none; }
   .sh-picks button[aria-selected="true"] { background: var(--green); }
-  .sh-badge { top: -44px; right: -12px; }
+  /* the map runs edge to edge; a smaller print keeps the pins clear */
+  .sh-visual .finder { --inset-l: var(--pad); --inset-r: var(--pad); --float-room: 300px; }
+  .sh-visual .finder-map { height: clamp(520px, 68vh, 660px); }
+  .sh-window { width: clamp(230px, 30%, 280px); }
 }
 @media (max-width: 640px) {
   .sh-facts { display: block; }
@@ -297,19 +316,14 @@
   /* On a phone the photo sits under the map, just tucked over its faded edge. */
   .sh-visual .finder { --float-room: 50px; }
   .sh-visual .finder-map { height: 420px; }
-  .sh-window { position: relative; left: auto; bottom: auto; width: auto; margin: -44px 6px 0; rotate: -1deg; }
-  .sh-visual .finder-credit { position: static; margin: 14px 6px 0; text-align: right; }
-  .sh-photo { border-width: 5px; }
-  .sh-chip { top: 8px; left: 8px; height: 40px; }
-  .sh-photo .status { right: 8px; bottom: 8px; height: 30px; }
-  /* On a phone the picks and the pins do the switching; the photo stays clear. */
-  .sh-photo .sh-arrow, .sh-window .sh-badge { display: none; }
+  .sh-window { position: relative; left: auto; bottom: auto; width: auto; margin: -40px calc(var(--inset-r) + 4px) 0 calc(var(--inset-l) + 4px); rotate: -1deg; }
+  .sh-visual .finder-credit { position: static; margin: 14px var(--inset-r) 0 0; text-align: right; }
   .sh-picks button { grid-template-columns: 1fr; gap: 10px; padding: 8px 8px 14px; }
   .sh-picks img { width: 100%; height: 76px; }
   .pick-text { padding-inline: 6px; }
   .pick-text b { font-size: 21px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sh-chip, .sh-awning, .sh-near, .status.open i::after, .sh-picks button, .sh-name span, .sh-line, .sh-info li { animation: none; }
+  .sc-text, .sh-awning, .sh-near, .status.open i::after, .sh-picks button, .sh-name span, .sh-line, .sh-info li { animation: none; }
   .sh-window:hover .sh-photo img.active { scale: 1.03; }
 }
