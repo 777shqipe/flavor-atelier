@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Logo } from "./Logo";
 import "./header.css";
 
@@ -27,81 +27,53 @@ function Roll({ text }: { text: string }) {
 }
 
 /**
- * The active-page marker is an electronic shelf label. It springs to whichever
- * link is hovered or current, tilting a little on its rail clip while it travels.
+ * One grocery item behind each link. Off, it is only a soft blurred shadow;
+ * the current page's item switches on in full colour with a glow.
  */
-function useTag() {
-  const tag = useRef<HTMLSpanElement>(null);
-  const api = useRef<((el: HTMLElement | null) => void) | null>(null);
+const FOOD: Record<Page, { glow: string; art: ReactNode }> = {
+  home: {
+    glow: "#ff5a3c",
+    art: (
+      <>
+        <path d="M24 15.5c-3.2-2.4-9.6-2.8-12.6 1.6-3.4 5-2.4 12.4 1 17.6 3 4.6 7 7 11.6 4.8 4.6 2.2 8.6-.2 11.6-4.8 3.4-5.2 4.4-12.6 1-17.6-3-4.4-9.4-4-12.6-1.6z" fill="#e3261b" />
+        <path d="M15.6 21.4c.8-2.2 2.6-3.4 4.6-3.6" stroke="#ffb3a6" strokeWidth="2.2" />
+        <path d="M24 15.5c-.2-3.4.8-6.4 2.8-8.6" />
+        <path d="M25.6 11.6c1.8-4 6.4-5.6 10.4-4.6-1 3.8-5.8 6.4-10.4 4.6z" fill="#6fd3b0" />
+      </>
+    ),
+  },
+  stores: {
+    glow: "#ff9a3d",
+    art: (
+      <>
+        <path d="M33.4 9.4c-1.2-3.2.2-5.6 2.2-6.4 1.2 2.4.4 5-2.2 6.4zM34.6 11c2.6-2.6 6-2.8 8.4-1.6-1.8 2.4-5 3.4-8.4 1.6zM34 10.2c3.4-1 6.8.6 7.8 2.8" fill="#6fd3b0" />
+        <path d="M30.4 11.6c3.4.6 6 3.4 6.2 6.6.1 1.4-.4 2.6-1.2 3.6L13.2 42.6c-1.4 1.2-3.4-.4-2.6-2L24.4 15.4c1.4-2.6 3.6-4.2 6-3.8z" fill="#ff9a3d" />
+        <path d="M24.6 19.4l3.4 1.8M20.6 27l3 1.6M17.2 34l2.6 1.4M30 23.4l1.8 1.2" stroke="#c2601a" />
+      </>
+    ),
+  },
+  about: {
+    glow: "#f6b531",
+    art: (
+      <>
+        <path d="M38.6 9.6l1.6-3.4 2.4 1.2-1.4 3.2c1.6 7.6-.4 15.6-6.4 21.2-6.4 6-16.2 8.4-24.6 5.4-1.8-.6-2-3-.4-3.8 8.2 1.2 16.8-1.2 22.4-7 4.2-4.4 6.4-10.4 6.4-16.8z" fill="#f6b531" />
+        <path d="M13.6 34.6c7.6.4 14.8-2.6 19.6-8.2 2.6-3 4.2-6.6 4.8-10.4" stroke="#c98a12" />
+        <path d="M40.2 6.2l2.4 1.2" stroke="#00382a" strokeWidth="2.6" />
+      </>
+    ),
+  },
+};
 
-  useEffect(() => {
-    const t = tag.current;
-    if (!t) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let x = 0;
-    let w = 0;
-    let vx = 0;
-    let vw = 0;
-    let a = 0;
-    let va = 0;
-    let tx = 0;
-    let tw = 0;
-    let raf = 0;
-    let last = 0;
-    let placed = false;
-
-    const paint = () => {
-      t.style.translate = `${x.toFixed(2)}px 0`;
-      t.style.width = `${w.toFixed(2)}px`;
-      t.style.rotate = `${a.toFixed(2)}deg`;
-    };
-    const tick = (now: number) => {
-      const dt = Math.min(0.032, (now - last) / 1000 || 0.016);
-      last = now;
-      vx += (420 * (tx - x) - 30 * vx) * dt;
-      vw += (420 * (tw - w) - 30 * vw) * dt;
-      x += vx * dt;
-      w += vw * dt;
-      // Swing: lean with the speed of travel, then wobble back to level.
-      const lean = Math.max(-4, Math.min(4, vx * 0.006));
-      va += (300 * (lean - a) - 13 * va) * dt;
-      a += va * dt;
-      paint();
-      const busy = Math.abs(tx - x) + Math.abs(tw - w) + Math.abs(vx) / 40 + Math.abs(a) + Math.abs(va) / 20 > 0.05;
-      raf = busy ? requestAnimationFrame(tick) : 0;
-      if (!busy) {
-        x = tx;
-        w = tw;
-        a = 0;
-        paint();
-      }
-    };
-
-    api.current = (el) => {
-      if (!el) return;
-      tx = el.offsetLeft;
-      tw = el.offsetWidth;
-      if (!placed || reduce) {
-        placed = true;
-        x = tx;
-        w = tw;
-        paint();
-        t.dataset.ready = "";
-        return;
-      }
-      if (!raf) {
-        last = performance.now();
-        raf = requestAnimationFrame(tick);
-      }
-    };
-    return () => {
-      cancelAnimationFrame(raf);
-      api.current = null;
-    };
-  }, []);
-
-  return { tag, to: useCallback((el: HTMLElement | null) => api.current?.(el), []) };
+function Food({ page }: { page: Page }) {
+  return (
+    <svg className="food" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      {FOOD[page].art}
+    </svg>
+  );
 }
+
+/** Two-digit queue number, as on a deli-counter ticket. */
+const pad = (n: number) => String(n % 100).padStart(2, "0");
 
 export function Header({
   page,
@@ -116,49 +88,10 @@ export function Header({
   const [open, setOpen] = useState(false);
   // Touch screens wide enough for the full nav cannot hover the compact bar open, so they tap to peek.
   const [peek, setPeek] = useState(false);
-  const [hot, setHot] = useState<Page | null>(null);
-  const nav = useRef<HTMLElement>(null);
-  const { tag, to } = useTag();
-
-  const placeTag = useCallback(() => {
-    to(nav.current?.querySelector<HTMLElement>('[aria-current="page"]') ?? null);
-  }, [to]);
-  const restTag = () => {
-    setHot(null);
-    placeTag();
-  };
-
-  useLayoutEffect(() => {
-    placeTag();
-  }, [page, placeTag]);
-
-  // E-paper refresh: the label flashes inverted and blank before redrawing, on
-  // every page change and then every 5–10s on its own.
-  useEffect(() => {
-    const el = nav.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let timer = 0;
-    const flash = () => {
-      delete el.dataset.flash;
-      void el.offsetWidth;
-      el.dataset.flash = "";
-      timer = window.setTimeout(flash, 5000 + Math.random() * 5000);
-    };
-    timer = window.setTimeout(flash, 450);
-    return () => {
-      window.clearTimeout(timer);
-      delete el.dataset.flash;
-    };
-  }, [page]);
-
-  useEffect(() => {
-    const el = nav.current;
-    if (!el) return;
-    const ro = new ResizeObserver(placeTag);
-    ro.observe(el);
-    document.fonts?.ready.then(placeTag);
-    return () => ro.disconnect();
-  }, [placeTag]);
+  // Deli queue: the display shows `serving`, the ticket in the slot is the next number.
+  const [serving, setServing] = useState(() => 10 + Math.floor(Math.random() * 80));
+  const [torn, setTorn] = useState(false);
+  const tearTimer = useRef(0);
 
   useEffect(() => {
     let frame = 0;
@@ -187,58 +120,75 @@ export function Header({
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  useEffect(() => () => window.clearTimeout(tearTimer.current), []);
+
   const go = (next: Page) => {
     setOpen(false);
     setPeek(false);
     onNavigate(next);
   };
-  const point = (id: Page, el: HTMLElement) => {
-    setHot(id);
-    to(el);
+  // Tear the ticket off, then open the sheet; a fresh ticket feeds out behind it.
+  const takeNumber = () => {
+    if (torn) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setServing((n) => n + 1);
+      onContact();
+      return;
+    }
+    setTorn(true);
+    tearTimer.current = window.setTimeout(() => {
+      onContact();
+      setServing((n) => n + 1);
+      setTorn(false);
+    }, 320);
   };
 
   return (
     <header className="hd" data-stuck={stuck || undefined} data-open={open || undefined} data-peek={peek || undefined}>
       <div className="bar">
         <div className="bar-row">
-          <Logo onClick={() => go("home")} />
+          <Logo onClick={() => go("home")} refreshKey={page} />
 
           {/* Scrolled down, this folds away and the bar is just the logo and the name. */}
           <div className="bar-more">
             <div className="bar-more-in">
-              <nav className="nav" ref={nav} aria-label="Main navigation" onPointerLeave={restTag}>
-                {/* Electronic shelf label: plastic housing, e-paper screen, red promo block, status LED. */}
-                <span className="price-tag" ref={tag} aria-hidden="true">
-                  <span className="esl-screen">
-                    <i className="esl-flag">CBM</i>
-                    <i className="esl-code" />
-                  </span>
-                  <i className="esl-led" />
-                </span>
+              <nav className="nav" aria-label="Main navigation">
                 {LINKS.map(([id, label]) => (
                   <button
                     key={id}
                     type="button"
                     aria-label={label}
                     aria-current={page === id ? "page" : undefined}
-                    data-lit={(hot ?? page) === id || undefined}
+                    style={{ "--glow": FOOD[id].glow } as CSSProperties}
                     onClick={() => go(id)}
-                    onPointerEnter={(event) => point(id, event.currentTarget)}
-                    onFocus={(event) => point(id, event.currentTarget)}
-                    onBlur={restTag}
                   >
+                    <Food page={id} />
                     <Roll text={label} />
                   </button>
                 ))}
               </nav>
 
-              <button className="cta" type="button" onClick={onContact}>
-                <Roll text="Contact us" />
+              {/* "Take a number": a deli-counter ticket dispenser. Its display shows who is
+                  being served, the ticket sticking out of the slot is yours. */}
+              <button className="cta" type="button" data-torn={torn || undefined} onClick={takeNumber}>
                 <span className="sr-only">Contact us</span>
-                <span className="cta-arrow" aria-hidden="true">
-                  <svg viewBox="0 0 16 16">
-                    <path d="M3 8h10M9 4l4 4-4 4" />
-                  </svg>
+                <span className="cta-box" aria-hidden="true">
+                  <small>Now serving</small>
+                  <span className="cta-led">
+                    <span className="cta-led-roll">
+                      <b>{pad(serving)}</b>
+                      <b>{pad(serving + 1)}</b>
+                    </span>
+                  </span>
+                </span>
+                <span className="cta-ticket" key={serving} aria-hidden="true">
+                  <span className="cta-paper">
+                    <span className="cta-word">Contact us</span>
+                    <span className="cta-no">
+                      <small>Nº</small>
+                      {pad(serving + 1)}
+                    </span>
+                  </span>
                 </span>
               </button>
             </div>

@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 /** Cart-in-a-circle mark, as on the shop signs in the illustrations. */
 export function LogoMark({ className = "" }: { className?: string }) {
   return (
@@ -20,17 +22,54 @@ const WORDS = [
   ["M", "ILES"],
 ] as const;
 
-/** Wordmark only: the full name, folding to its initials (CBM) once the header is stuck. */
-export function Logo({ onClick }: { onClick?: () => void }) {
+/**
+ * The wordmark printed on an electronic shelf label: light plastic housing, an
+ * e-paper screen with a red promo block, a barcode and a status LED. The name
+ * folds to its initials (CBM) once the header is stuck, and the panel does an
+ * e-paper refresh on every page change and then every 5–10s on its own.
+ */
+export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey?: unknown }) {
+  const label = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = label.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let timer = 0;
+    const flash = () => {
+      delete el.dataset.flash;
+      void el.offsetWidth;
+      el.dataset.flash = "";
+      timer = window.setTimeout(flash, 5000 + Math.random() * 5000);
+    };
+    timer = window.setTimeout(flash, 450);
+    return () => {
+      window.clearTimeout(timer);
+      delete el.dataset.flash;
+    };
+  }, [refreshKey]);
+
   return (
     <button className="logo" type="button" onClick={onClick} aria-label="Cheaper Buy Miles, home">
-      <span className="logo-word" aria-hidden="true">
-        {WORDS.map(([first, rest]) => (
-          <span key={first}>
-            {first}
-            <span className="logo-rest">{rest}</span>
+      <span className="esl" ref={label} aria-hidden="true">
+        <span className="esl-screen">
+          <i className="esl-flag">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 5h2.4l1.9 9.2a1 1 0 0 0 1 .8h7.6a1 1 0 0 0 1-.8L18.4 9H6.2" />
+              <circle cx="9.4" cy="18.6" r="1.25" />
+              <circle cx="15.6" cy="18.6" r="1.25" />
+            </svg>
+          </i>
+          <span className="logo-word">
+            {WORDS.map(([first, rest]) => (
+              <span key={first}>
+                {first}
+                <span className="logo-rest">{rest}</span>
+              </span>
+            ))}
           </span>
-        ))}
+          <i className="esl-code" />
+        </span>
+        <i className="esl-led" />
       </span>
     </button>
   );
