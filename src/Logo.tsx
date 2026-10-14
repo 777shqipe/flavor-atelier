@@ -34,7 +34,7 @@ const WORDS: Array<[string, ReactNode]> = [
 
 /**
  * The wordmark printed on an electronic shelf label: light plastic housing, an
- * e-paper screen with a red promo block, a barcode and a status LED. The name
+ * e-paper screen, a barcode and a status LED. The name
  * folds to its initials (CBM) once the header is stuck, and the panel does an
  * e-paper refresh on every page change and then every 5–10s on its own.
  */
@@ -80,13 +80,6 @@ export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey
     <button className="logo" type="button" onClick={onClick} aria-label="Cheaper Buy Miles, home">
       <span className="esl" ref={label} aria-hidden="true">
         <span className="esl-screen">
-          <i className="esl-flag">
-            <svg viewBox="0 0 24 24">
-              <path d="M3 5h2.4l1.9 9.2a1 1 0 0 0 1 .8h7.6a1 1 0 0 0 1-.8L18.4 9H6.2" />
-              <circle cx="9.4" cy="18.6" r="1.25" />
-              <circle cx="15.6" cy="18.6" r="1.25" />
-            </svg>
-          </i>
           <span className="logo-word">
             {WORDS.map(([first, rest]) => (
               <span key={first}>

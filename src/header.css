@@ -131,24 +131,11 @@
 /* E-paper tooth and a faint glass glare. */
 .esl-screen::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--grain) 0 0 / 90px 90px; opacity: 0.09; mix-blend-mode: multiply; pointer-events: none; }
 .esl-screen::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(104deg, transparent 38%, rgb(255 255 255 / 0.32) 46%, transparent 54%) 100% 0 / 260% 100% no-repeat; pointer-events: none; transition: background-position 0.9s var(--ease-out); }
-/* Red promo block carrying the cart, drawn as e-paper red ink. */
-.esl-flag {
-  display: grid;
-  flex: none;
-  place-items: center;
-  align-self: stretch;
-  width: 36px;
-  background: linear-gradient(180deg, #da3329, #c4241b);
-  box-shadow: inset -1px 0 0 rgb(90 10 6 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.18);
-  color: #fff3ee;
-}
-.esl-flag svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0.5px 0 rgb(90 10 6 / 0.4)); }
-.esl-flag circle { fill: currentColor; stroke: none; }
 .esl-code {
   position: absolute;
   right: 9px;
   bottom: 3px;
-  left: 47px;
+  left: 14px;
   height: 3.5px;
   background: repeating-linear-gradient(90deg, #1b1b1b 0 1px, transparent 1px 2px, #1b1b1b 2px 2.6px, transparent 2.6px 3.6px, #1b1b1b 3.6px 5.4px, transparent 5.4px 6.4px, #1b1b1b 6.4px 7px, transparent 7px 9px);
   opacity: 0.45;
@@ -159,7 +146,7 @@
 /* Wordmark: "CHEAPER BUY MILES" in a bold Didone, printed in e-paper black; the
    letters after each initial fold away on scroll so it reads CBM in the same face. */
 .logo-word {
-  padding: 0 14px 4px 13px;
+  padding: 0 17px 4px;
   color: #17140c;
   font: 700 27px / 1 var(--font-mark);
   letter-spacing: -0.005em;
@@ -194,7 +181,6 @@
    white hearts (the easter egg), blank, and the label redraws with a brief
    ghost. Stepped so every frame is a hard cut, like the real panels. */
 .esl[data-flash] .esl-screen { animation: esl-screen 1.1s steps(1); }
-.esl[data-flash] .esl-flag { animation: esl-flag 1.1s steps(1); }
 .esl[data-flash] .esl-code { animation: esl-code 1.1s steps(1); }
 .esl[data-flash] .logo-word { animation: esl-text 1.1s steps(1); }
 @keyframes esl-screen {
@@ -202,14 +188,6 @@
   9% { background: #f3f2ec; }
   16% { background: #141414; }
   71% { background: #f6f5f0; }
-}
-@keyframes esl-flag {
-  0% { background: #141414; color: transparent; }
-  9% { background: #f3f2ec; color: transparent; }
-  16% { background: #141414; color: transparent; }
-  71% { background: #f6f5f0; color: transparent; }
-  82% { background: #e9a39d; color: #fde9e5; }
-  91% { background: #d42a20; }
 }
 @keyframes esl-code {
   0% { opacity: 0; }
@@ -262,7 +240,7 @@
   .hd[data-stuck] .esl { border-radius: var(--r); }
   .hd[data-stuck] .esl-screen { border-radius: calc(var(--r) - 5px); }
 }
-.hd[data-stuck] .logo-word { padding-right: 15px; font-size: 28px; letter-spacing: 0.04em; }
+.hd[data-stuck] .logo-word { padding: 0 15px 4px; font-size: 28px; letter-spacing: 0.04em; }
 .hd[data-stuck] .logo-rest { max-width: 0; padding-right: 0 !important; opacity: 0; }
 @media (hover: hover) {
   .hd[data-stuck] .bar:hover .bar-row { padding-right: 6px; }
@@ -505,10 +483,8 @@
   .bar { --r: 16px; width: 100%; }
   .bar-row { justify-content: space-between; height: 64px; padding: 0 7px 0 0; }
   .bar-more { display: none; }
-  .esl-flag { width: 31px; }
-  .esl-flag svg { width: 19px; height: 19px; }
-  .esl-code { left: 41px; }
-  .logo-word { padding: 0 12px 4px 11px; font-size: 22px; }
+  .esl-code { left: 12px; right: 12px; }
+  .logo-word { padding: 0 14px 4px; font-size: 22px; }
   .hd[data-stuck] .bar-row { height: 60px; padding-right: 7px; }
   .hd[data-stuck] .menu-btn { height: 42px; }
   .hd[data-stuck] .burger { width: 32px; height: 32px; }
@@ -601,13 +577,10 @@
   .hd[data-open] .scrim { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 }
 @media (max-width: 440px) {
-  .esl-flag { width: 27px; }
-  .esl-flag svg { width: 17px; height: 17px; }
-  .esl-code { left: 37px; }
-  .logo-word { padding: 0 10px 3px 9px; font-size: 18.5px; }
+  .logo-word { padding: 0 12px 3px; font-size: 18.5px; }
 }
 @media (max-width: 380px) {
-  .logo-word { padding: 0 8px 3px 7px; font-size: 16px; }
+  .logo-word { padding: 0 10px 3px; font-size: 16px; }
   .menu-btn { padding-left: 12px; }
 }
 @media (max-width: 340px) {
