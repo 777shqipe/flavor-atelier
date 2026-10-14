@@ -158,7 +158,6 @@ export function Header({
                     <span className="cta-slide">
                       <TicketArt />
                       <span className="cta-copy">
-                        <small>It’s my turn</small>
                         <span className="cta-word">Contact us</span>
                       </span>
                     </span>

@@ -427,8 +427,6 @@
   justify-content: center;
   gap: 3px;
 }
-/* DM Sans ships upright only here, so the italic is a skew. */
-.cta-copy small { align-self: flex-start; color: #d39a00; font: 800 7.5px / 1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; transform: skewX(-12deg); }
 .cta-word { color: var(--green-900); font: 700 16px / 1 var(--font-sans); letter-spacing: -0.015em; white-space: nowrap; }
 .cta:hover .cta-ticket { width: 216px; }
 .cta:hover .cta-led b { animation: led-call 0.9s steps(1) 0.15s 2; }
