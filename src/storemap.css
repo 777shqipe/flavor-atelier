@@ -1,5 +1,5 @@
 /* Store map: Melbourne printed on parchment in brand greens. The four shopfront
-   pins are the loudest thing on it; the landmarks are faded bearings. No frame:
+   pins are the clearest thing on it; the landmarks are faded bearings. No frame:
    the map's edges fade into the page it sits on. A page can let the map run past
    its column with --inset-l / --inset-r: the controls stay inside the column. */
 
@@ -46,56 +46,58 @@
 .finder-compass path:last-of-type { fill: rgb(0 88 66 / 0.28); }
 .finder-compass text { fill: var(--green); font: 700 6.5px var(--font-sans); text-anchor: middle; }
 
-/* ---------- store pins: big shopfronts ---------------------------------------- */
+/* ---------- store pins: light shopfronts, no pointer --------------------------- */
 .sm-marker { width: 0; height: 0; outline: 0; }
-.pin { --pw: 74px; position: absolute; left: 0; top: 0; }
+.pin { --pw: 66px; position: absolute; left: 0; top: 0; }
 .pin-art {
   position: absolute;
   left: calc(var(--pw) / -2);
-  top: calc(var(--pw) * -71 / 64);
+  top: calc(var(--pw) * -57 / 64);
   width: var(--pw);
-  height: calc(var(--pw) * 76 / 64);
-  transform-origin: 50% 93.4%;
+  height: calc(var(--pw) * 60 / 64);
+  transform-origin: 50% 95%;
   transition: translate 0.4s var(--spring), scale 0.5s var(--spring);
 }
-.pin-art svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1.5px 1px rgb(30 45 20 / 0.3)) drop-shadow(0 12px 12px rgb(30 45 20 / 0.3)); }
+.pin-art svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1px 1px rgb(30 45 20 / 0.18)) drop-shadow(0 8px 10px rgb(30 45 20 / 0.2)); }
 .pin-shadow {
   position: absolute;
-  left: calc(var(--pw) * -0.28);
-  top: -6px;
-  width: calc(var(--pw) * 0.56);
-  height: 12px;
+  left: calc(var(--pw) * -0.36);
+  top: -5px;
+  width: calc(var(--pw) * 0.72);
+  height: 10px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(30 45 20 / 0.4), transparent);
+  background: radial-gradient(closest-side, rgb(30 45 20 / 0.3), transparent);
   transition: scale 0.4s var(--spring), opacity 0.4s;
 }
 .pin-tag {
   position: absolute;
-  left: calc(var(--pw) * 0.55);
-  top: calc(var(--pw) * -0.8);
+  left: calc(var(--pw) * 0.56);
+  top: calc(var(--pw) * -0.72);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 30px;
-  padding: 0 14px 0 6px;
+  gap: 7px;
+  height: 28px;
+  padding: 0 12px 0 10px;
   border-radius: 99px;
   background: #fffdf6;
-  box-shadow: 0 0 0 1.5px var(--green-900), 0 8px 14px -6px rgb(30 45 20 / 0.4);
+  box-shadow: 0 0 0 1px rgb(0 56 42 / 0.28), 0 6px 12px -6px rgb(30 45 20 / 0.35);
   color: var(--green-900);
-  font: 700 13.5px / 1 var(--font-sans);
+  font: 700 13px / 1 var(--font-sans);
   letter-spacing: 0.01em;
   white-space: nowrap;
   pointer-events: none;
-  transition: background-color 0.3s, translate 0.4s var(--spring);
+  transition: background-color 0.3s, box-shadow 0.3s, translate 0.4s var(--spring);
 }
-.pin-tag.left { left: auto; right: calc(var(--pw) * 0.55); }
-.pin-tag b { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--c); font: 700 10px / 1 var(--font-mono); }
+.pin-tag.left { left: auto; right: calc(var(--pw) * 0.56); }
+.pin-tag i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1px rgb(0 56 42 / 0.25); }
 .sm-marker:hover .pin-art,
-.sm-marker:focus-visible .pin-art { translate: 0 -6px; }
-.sm-marker:hover .pin-shadow { scale: 0.75; opacity: 0.7; }
-.sm-marker:hover .pin-tag { translate: 0 -6px; background: var(--sun); }
+.sm-marker:focus-visible .pin-art { translate: 0 -5px; }
+.sm-marker:hover .pin-shadow { scale: 0.8; opacity: 0.7; }
+.sm-marker:hover .pin-tag,
+.sm-marker.active .pin-tag { background: var(--sun); box-shadow: 0 0 0 1px rgb(0 56 42 / 0.35), 0 8px 14px -6px rgb(30 45 20 / 0.4); }
+.sm-marker:hover .pin-tag { translate: 0 -5px; }
 .sm-marker.active .pin-art { scale: 1.12; }
-.sm-marker.active .pin-tag { translate: 0 -10px; background: var(--sun); }
+.sm-marker.active .pin-tag { translate: 0 -8px; }
 .sm-marker:focus-visible .pin-art svg { outline: 3px solid var(--green); outline-offset: 4px; border-radius: 8px; }
 
 /* ---------- landmarks: faded bearings ------------------------------------------- */
@@ -117,16 +119,15 @@
 }
 .finder[data-far] .lm[data-minor],
 .finder[data-far] .lm-cap { display: none; }
-/* Phone-sized maps: number-only tags, just the two big landmarks. */
+/* Phone-sized maps: smaller shops, one name tag, just the two big landmarks. */
 @container (max-width: 760px) {
   .lm:not(.lm-cbd, .lm-cup) { display: none; }
   .lm { scale: 0.62; }
   .lm-cap { display: none; }
-  .pin { --pw: 54px; }
-  .pin-tag { left: calc(var(--pw) * 0.4); top: calc(var(--pw) * -1.12); height: auto; padding: 2px; font-size: 0; gap: 0; }
-  .pin-tag.left { left: auto; right: calc(var(--pw) * 0.4); }
-  .pin-tag b { width: 22px; height: 22px; font-size: 10.5px; }
-  .sm-marker.active .pin-tag { font-size: 12px; gap: 6px; padding: 2px 10px 2px 2px; }
+  .pin { --pw: 50px; }
+  /* only the picked store keeps its name tag; the picks below name the rest */
+  .pin-tag { display: none; height: 26px; font-size: 12px; }
+  .sm-marker.active .pin-tag { display: inline-flex; }
 }
 
 /* ---------- you are here ----------------------------------------------------- */

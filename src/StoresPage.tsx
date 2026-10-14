@@ -118,7 +118,14 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
 
           <div className="sh-visual">
             <StoreMap active={active} onSelect={onSelect}>
-              <div className="sh-window" ref={frame} style={{ "--c": store.color } as CSSProperties} onPointerMove={look} onPointerLeave={rest}>
+              <div
+                className="sh-window"
+                ref={frame}
+                data-closed={!status.open || undefined}
+                style={{ "--c": store.color } as CSSProperties}
+                onPointerMove={look}
+                onPointerLeave={rest}
+              >
                 <span className="sh-awning" key={`aw-${store.id}`} aria-hidden="true" />
                 <div className="sh-photo">
                   {STORES.map((item, index) => (
@@ -131,6 +138,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                       draggable={false}
                     />
                   ))}
+                  <span className="sh-blind" aria-hidden="true" />
                 </div>
                 {/* the print's caption: who, where, open or not, and the way to the next one */}
                 <div className="sh-caption">

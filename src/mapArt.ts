@@ -1,4 +1,3 @@
-import { glyphSvg } from "./glyphs";
 import type { Store } from "./stores";
 
 /**
@@ -35,36 +34,29 @@ function awning(x0: number, y0: number, stripes: number, w: number, h: number, c
 }
 
 /* ---------- store pin: a little CBM shopfront ------------------------------ */
-// Anchor (the store's location) is the tip of the pointer: x 32, y 71 of 64 x 76.
+// Drawn light: thin deep-green line, no pointer. The anchor (the store's location)
+// is the middle of the doorstep: x 32, y 57 of 64 x 60.
 export function shopPinSvg(store: Store) {
-  const aw = awning(8, 21, 6, 8, 6, store.color);
-  const outline = `
-    <path d="M25 57L32 71L39 57Z" fill="${store.color}"/>
-    <rect x="11" y="24" width="42" height="34" rx="2" fill="${CREAM}"/>
-    <rect x="9" y="9" width="46" height="13" rx="3" fill="${DEEP}"/>
-    <circle cx="54" cy="10" r="10" fill="${store.color}"/>`;
-  const parts = `
-    <path d="M25 57L32 71L39 57Z" fill="${store.color}"/>
-    <rect x="11" y="24" width="42" height="34" rx="2" fill="${CREAM}"/>
-    <rect x="15" y="35" width="20" height="14" rx="1.5" fill="#cfe6dd"/>
-    <rect x="38" y="35" width="11" height="23" fill="${DEEP}"/>
-    <rect x="9" y="9" width="46" height="13" rx="3" fill="${DEEP}"/>`;
+  const line = "#0b3a2d";
+  const aw = awning(10, 19, 6, 44 / 6, 6, store.color);
   return `
-  <svg viewBox="0 0 64 76" aria-hidden="true" focusable="false">
+  <svg viewBox="0 0 64 60" aria-hidden="true" focusable="false">
     <g stroke-linejoin="round" stroke-linecap="round">
-      <g fill="#fff" stroke="#fff" stroke-width="7">${outline.replace(/fill="[^"]*"/g, "")}<path d="${aw.edge}"/></g>
-      <g stroke="${INK}" stroke-width="2.2">
-        ${parts}
-        <g>${aw.fill}<path d="${aw.edge}" fill="none"/></g>
-        <circle cx="54" cy="10" r="10" fill="${store.color}"/>
+      <g fill="#fffdf6" stroke="#fffdf6" stroke-width="5">
+        <rect x="10" y="22" width="44" height="35" rx="2.5"/>
+        <rect x="8" y="7" width="48" height="13" rx="3"/>
+        <path d="${aw.edge}"/>
       </g>
-      <rect x="16" y="44" width="18" height="4" fill="${WOOD}"/>
-      <circle cx="19.5" cy="42.6" r="2.4" fill="${TOMATO}"/>
-      <circle cx="25" cy="42.6" r="2.4" fill="${SUN}"/>
-      <circle cx="30.5" cy="42.6" r="2.4" fill="${LEAF}"/>
-      <circle cx="40.6" cy="47.5" r="1.1" fill="${SUN}"/>
-      <text x="27" y="18.7" fill="${CREAM}" font-family="Anton, sans-serif" font-size="8.6" letter-spacing="0.9" text-anchor="middle">CBM</text>
-      ${glyphSvg(store.glyph, `x="47" y="3" width="14" height="14" color="${INK}"`)}
+      <g stroke="${line}" stroke-width="1.6">
+        <rect x="10" y="22" width="44" height="35" rx="2.5" fill="${CREAM}"/>
+        <rect x="15" y="33" width="19" height="13" rx="1.5" fill="#d7e8df"/>
+        <rect x="38.5" y="33" width="10.5" height="24" rx="1" fill="${DEEP}"/>
+        <rect x="8" y="7" width="48" height="13" rx="3" fill="${DEEP}"/>
+        ${aw.fill}<path d="${aw.edge}" fill="none"/>
+      </g>
+      <path d="M19 43l7-7" stroke="#fffdf6" stroke-width="1.4"/>
+      <circle cx="41.5" cy="46" r="1" fill="${SUN}"/>
+      <text x="32" y="16.9" fill="${CREAM}" font-family="Anton, sans-serif" font-size="8.4" letter-spacing="1" text-anchor="middle">CBM</text>
     </g>
   </svg>`;
 }

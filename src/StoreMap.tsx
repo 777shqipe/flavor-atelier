@@ -5,7 +5,7 @@ import { STORES, distanceKm, formatKm, type Store } from "./stores";
 import "./storemap.css";
 
 /**
- * The store map, printed on parchment: green-inked streets and water, four big
+ * The store map, printed on parchment: green-inked streets and water, four light
  * CBM shopfronts for pins and a few faded landmarks for bearings. Picking a
  * store glides the map over to it. Whatever is passed as children floats over
  * the map, above the tiles and below nothing.
@@ -16,11 +16,11 @@ const CBD = L.latLng(-37.8136, 144.9631);
 /** Name tags hang to the right of the shop, except where a landmark already sits there. */
 const TAG_LEFT = new Set(["flemington"]);
 
-const pinHtml = (store: Store, index: number) => `
+const pinHtml = (store: Store) => `
   <div class="pin" style="--c:${store.color}">
     <span class="pin-shadow"></span>
     <span class="pin-art">${shopPinSvg(store)}</span>
-    <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><b>0${index + 1}</b>${store.name}</span>
+    <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><i></i>${store.name}</span>
   </div>`;
 
 /**
@@ -133,7 +133,7 @@ export function StoreMap({
 
     markers.current = STORES.map((store, index) => {
       const marker = L.marker(points[index], {
-        icon: L.divIcon({ className: "sm-marker", html: pinHtml(store, index), iconSize: [0, 0] }),
+        icon: L.divIcon({ className: "sm-marker", html: pinHtml(store), iconSize: [0, 0] }),
         title: `${store.name} store`,
         alt: `${store.name} store`,
         riseOnHover: true,

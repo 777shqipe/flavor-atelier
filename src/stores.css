@@ -39,6 +39,7 @@
 
 .sh {
   --col-gap: clamp(40px, 5.5vw, 96px);
+  --above: clamp(28px, 3vw, 44px);
   --sh-max: 1520px;
   display: grid;
   grid-template-columns: minmax(0, 0.74fr) minmax(0, 1.46fr);
@@ -118,27 +119,28 @@
 }
 .sh-visual .finder-map { height: clamp(600px, calc(100svh - 180px), 800px); }
 
-/* The shop as a photo print laid on the map: its awning on top, a caption underneath. */
+/* The shop as a photo print laid on the bottom corner of the map, hanging just
+   past its faded edge: its awning on top, a caption underneath. */
 .sh-window {
   --px: 0;
   --py: 0;
   position: absolute;
   left: calc(var(--inset-l) + clamp(8px, 2%, 28px));
-  bottom: clamp(36px, 6%, 60px);
+  bottom: calc(var(--above) * -0.7);
   z-index: 500;
-  width: clamp(260px, 34%, 330px);
-  padding: 8px 8px 0;
+  width: clamp(240px, 28%, 300px);
+  padding: 7px 7px 0;
   border-radius: 10px;
   background: #fffdf6;
-  box-shadow: 0 0 0 1px rgb(60 60 20 / 0.1), 0 2px 3px rgb(40 50 20 / 0.14), 0 34px 50px -26px rgb(30 45 20 / 0.6);
-  rotate: -2deg;
+  box-shadow: 0 0 0 1px rgb(60 60 20 / 0.08), 0 1px 2px rgb(40 50 20 / 0.12), 0 24px 38px -26px rgb(30 45 20 / 0.5);
+  rotate: -1.5deg;
   transition: rotate 0.5s var(--spring), translate 0.5s var(--spring);
 }
 .sh-window:hover { rotate: 0deg; translate: 0 -4px; }
 /* The shop's own awning, in its colour, rolls down each time the pick changes. */
 .sh-awning {
   position: absolute;
-  inset: -11px 12px auto;
+  inset: -11px 7px auto;
   z-index: 6;
   height: 24px;
   background: repeating-linear-gradient(90deg, var(--c) 0 22px, #fffaf0 22px 44px);
@@ -173,27 +175,46 @@
 .sh-photo img.active { z-index: 2; clip-path: inset(0); scale: 1.03; }
 .sh-photo img.before { z-index: 1; clip-path: inset(0); }
 /* the awning's shade on the top of the print */
-.sh-photo::after { content: ""; position: absolute; inset: 0; z-index: 3; background: linear-gradient(180deg, rgb(0 30 22 / 0.24), transparent 26%); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06); border-radius: inherit; pointer-events: none; }
+.sh-photo::after { content: ""; position: absolute; inset: 0; z-index: 4; background: linear-gradient(180deg, rgb(0 30 22 / 0.24), transparent 26%); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06); border-radius: inherit; pointer-events: none; }
+/* Closed: the blind is down, in the awning's stripes. Hovering lifts it a little, to peek in. */
+.sh-blind {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 13px, rgb(0 30 22 / 0.08) 13px 14px),
+    linear-gradient(180deg, transparent 70%, rgb(0 30 22 / 0.14)),
+    repeating-linear-gradient(90deg, var(--c) 0 22px, #fffaf0 22px 44px);
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% calc(100% - 11px) no-repeat, radial-gradient(11px at 11px 0, #000 97%, #0000) 0 100% / 22px 11px repeat-x;
+  mask: linear-gradient(#000 0 0) top / 100% calc(100% - 11px) no-repeat, radial-gradient(11px at 11px 0, #000 97%, #0000) 0 100% / 22px 11px repeat-x;
+  translate: 0 -101%;
+  transition: translate 0.75s var(--spring);
+  pointer-events: none;
+}
+/* the pull at the hem */
+.sh-blind::after { content: ""; position: absolute; left: 50%; bottom: 18px; width: 26px; height: 6px; border-radius: 3px; background: var(--green-900); translate: -50% 0; }
+.sh-window[data-closed] .sh-blind { translate: 0 0; }
+.sh-window[data-closed]:hover .sh-blind { translate: 0 -32%; }
 
 .sh-caption {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
   grid-template-areas: "glyph text nav" "status status status";
-  column-gap: 12px;
+  column-gap: 11px;
   align-items: center;
-  padding: 14px 6px 12px;
+  padding: 12px 5px 10px;
 }
-.sc-glyph { grid-area: glyph; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--c); color: var(--green-900); box-shadow: inset 0 0 0 1.5px rgb(0 56 42 / 0.16); }
-.sc-glyph svg { width: 21px; height: 21px; }
+.sc-glyph { grid-area: glyph; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--c); color: var(--green-900); box-shadow: inset 0 0 0 1.5px rgb(0 56 42 / 0.16); }
+.sc-glyph svg { width: 19px; height: 19px; }
 .sc-text { grid-area: text; display: grid; gap: 5px; min-width: 0; animation: fade-up 0.5s var(--ease-out) both; }
-.sc-text b { color: var(--green-900); font: 400 25px / 1 var(--font-serif); letter-spacing: -0.01em; }
+.sc-text b { color: var(--green-900); font: 400 22px / 1 var(--font-serif); letter-spacing: -0.01em; }
 .sc-text small { overflow: hidden; color: var(--ink-soft); font: 500 12.5px / 1.2 var(--font-sans); text-overflow: ellipsis; white-space: nowrap; }
 .sc-nav { grid-area: nav; display: flex; gap: 6px; }
 .sc-nav button {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   border: 1px solid var(--rule);
   border-radius: 50%;
@@ -227,7 +248,6 @@
 /* ---------- picks ----------------------------------------------------- */
 .sh-picks {
   --gap: 14px;
-  --above: clamp(28px, 3vw, 44px);
   grid-area: picks;
   position: relative;
   display: grid;
@@ -304,7 +324,7 @@
   /* the map runs edge to edge; a smaller print keeps the pins clear */
   .sh-visual .finder { --inset-l: var(--pad); --inset-r: var(--pad); --float-room: 300px; }
   .sh-visual .finder-map { height: clamp(520px, 68vh, 660px); }
-  .sh-window { width: clamp(230px, 30%, 280px); }
+  .sh-window { bottom: clamp(20px, 4%, 36px); width: clamp(230px, 30%, 270px); }
 }
 @media (max-width: 640px) {
   .sh-facts { display: block; }
