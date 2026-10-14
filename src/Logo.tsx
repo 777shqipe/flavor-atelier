@@ -14,13 +14,23 @@ export function LogoMark({ className = "" }: { className?: string }) {
   );
 }
 
+const WORDS = [
+  ["C", "HEAPER"],
+  ["B", "UY"],
+  ["M", "ILES"],
+] as const;
+
+/** Wordmark only: the full name, folding to its initials (CBM) once the header is stuck. */
 export function Logo({ onClick }: { onClick?: () => void }) {
   return (
     <button className="logo" type="button" onClick={onClick} aria-label="Cheaper Buy Miles, home">
-      <LogoMark className="logo-mark" />
-      <span className="logo-text" aria-hidden="true">
-        <b>cheaper</b>
-        <b>buy miles</b>
+      <span className="logo-word" aria-hidden="true">
+        {WORDS.map(([first, rest]) => (
+          <span key={first}>
+            {first}
+            <span className="logo-rest">{rest}</span>
+          </span>
+        ))}
       </span>
     </button>
   );

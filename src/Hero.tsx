@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Page } from "./Header";
-import { Pack } from "./Pack";
+import { ChocBar, GoodsDefs, Gelato, Jam, OatMilk, OliveOil, Ramen, Soda } from "./HeroGoods";
 import { Peel } from "./Peel";
 import { RingBadge } from "./RingBadge";
-import type { Shape } from "./products";
 import "./hero.css";
 
 const LINES = [
@@ -22,24 +21,21 @@ const LINES = [
   </>,
 ];
 
-const STICKERS: Array<{
-  id: string;
-  cls: string;
-  shape: Shape;
-  color: string;
-  label: [string, string?];
-  labelText: string;
-}> = [
-  { id: "fizz", cls: "k1", shape: "cans", color: "#e8542f", label: ["BLOOD", "ORANGE"], labelText: "Blood orange fizz, $4" },
-  { id: "ramen", cls: "k2", shape: "bag", color: "#c0290f", label: ["SPICY", "RAMEN"], labelText: "Spicy ramen 4-pack, $4" },
-  { id: "choc", cls: "k3", shape: "box", color: "#7a4ce0", label: ["CHOC", "BISCUIT"], labelText: "Choc-biscuit bar, $2" },
+/** Seven stickers stacked back to front; the class sets position, size and tilt. */
+const STICKERS = [
+  { cls: "k-oil", Art: OliveOil, label: "Extra virgin olive oil" },
+  { cls: "k-ramen", Art: Ramen, label: "Spicy ramen" },
+  { cls: "k-milk", Art: OatMilk, label: "Barista oat milk" },
+  { cls: "k-soda", Art: Soda, label: "Blood orange sparkling soda" },
+  { cls: "k-gelato", Art: Gelato, label: "Strawberry gelato" },
+  { cls: "k-jam", Art: Jam, label: "Strawberry jam" },
+  { cls: "k-choc", Art: ChocBar, label: "Choc biscuit bar" },
 ] as const;
 
 /** Markdown stickers, each stuck over the shelf price it beat. Peel one to see. */
 const BURSTS = [
-  { cls: "b1", price: "$4", note: "4 × 330ml", from: "br", rrp: "Ouch." },
-  { cls: "b2", price: "$4", note: "4 pack", from: "bl", rrp: "Yikes." },
-  { cls: "b3", price: "$2", note: "Limited", from: "tl", rrp: "Nope." },
+  { cls: "b1", price: "$4", note: "4 pack", from: "br", rrp: "Ouch." },
+  { cls: "b2", price: "$2", note: "Limited", from: "bl", rrp: "Nope." },
 ] as const;
 
 const STATS = [
@@ -110,7 +106,9 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
             ))}
           </h1>
 
-          <p className="lead">Big-name groceries rescued from waste and brought to your basket for a fraction of the usual price.</p>
+          <p className="lead">
+            <strong>Big-name groceries, rescued from waste</strong> and brought to your basket for a fraction of the usual price.
+          </p>
 
           <div className="hero-ctas">
             <button className="button" type="button" onClick={() => onNavigate("stores")}>
@@ -126,22 +124,27 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
         </div>
 
         <div className="hero-stage">
-          <div className="disc" aria-hidden="true" />
+          <GoodsDefs />
+          <div className="disc" aria-hidden="true">
+            <i className="disc-rays" />
+            <i className="disc-ring" />
+          </div>
           <svg className="ring-art" viewBox="0 0 100 100" aria-hidden="true">
             <circle cx="50" cy="50" r="49" />
+            <circle className="orbit-dot" cx="50" cy="1" r="1.1" />
           </svg>
 
-          {STICKERS.map((item, index) => (
+          {STICKERS.map(({ cls, Art, label }, index) => (
             <button
-              key={item.id}
-              className={`stk ${item.cls}`}
+              key={cls}
+              className={`stk ${cls}`}
               type="button"
-              aria-label={`${item.labelText}. See this week’s finds`}
-              style={{ "--e": `${index * 130 + 300}ms` } as CSSProperties}
+              aria-label={`${label}. See this week’s finds`}
+              style={{ "--e": `${index * 90 + 300}ms` } as CSSProperties}
               onClick={toFinds}
             >
               <span className="stk-in">
-                <Pack shape={item.shape} color={item.color} label={item.label} />
+                <Art />
               </span>
             </button>
           ))}
@@ -167,9 +170,6 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
               </Peel>
             </div>
           ))}
-          <span className="tag t1 outlined" aria-hidden="true">
-            New<br />every week
-          </span>
           <RingBadge className="hero-ring" text="SINCE 1995 • FIGHTING FOOD WASTE •" center="95" label="Since 1995, fighting food waste" />
         </div>
       </div>

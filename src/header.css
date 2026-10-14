@@ -1,4 +1,4 @@
-/* Header: one dark capsule. Logo, nav with a swinging price-tag marker, CTA.
+/* Header: one dark capsule. Logo, nav with an e-paper shelf-label marker, CTA.
    On phones the capsule itself opens into the menu. Solid at the top of the
    page; once scrolled it frosts slightly so it reads the same over every section. */
 
@@ -96,34 +96,31 @@
   cursor: pointer;
   transition: gap 0.5s var(--ease-out), padding 0.5s var(--ease-out), margin 0.5s var(--ease-out), border-color 0.4s, height 0.5s var(--ease-out);
 }
-.logo-mark { flex: none; width: 48px; height: 48px; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.25)); transition: rotate 0.7s var(--spring), scale 0.5s var(--spring), width 0.5s var(--ease-out), height 0.5s var(--ease-out); }
-/* Hover: the cart tips back and its wheels skid; press: it squashes. */
-.logo:hover .logo-mark { rotate: -14deg; scale: 1.06; }
-.logo:active .logo-mark { scale: 0.92; rotate: -6deg; transition-duration: 0.12s; }
-.logo-wheels { transition: translate 0.5s var(--spring); }
-.logo:hover .logo-wheels { animation: wheels 0.6s var(--ease-out); }
-@keyframes wheels {
-  30% { translate: -1.6px 0; }
-  65% { translate: 1.1px 0; }
-}
-.logo-text {
-  display: grid;
-  max-width: 110px;
-  overflow: hidden;
-  font: 700 15.5px / 0.98 var(--font-sans);
-  letter-spacing: -0.02em;
-  text-align: left;
+/* Wordmark: "CHEAPER BUY MILES" in a bold Didone; the letters after each initial
+   fold away on scroll so it reads CBM in the same face. */
+.logo-word {
+  padding-left: 12px;
+  color: var(--cream);
+  font: 700 21px / 1 var(--font-mark);
+  letter-spacing: -0.005em;
   white-space: nowrap;
-  transition: max-width 0.5s var(--ease-out), opacity 0.3s, translate 0.5s var(--spring);
+  transition: font-size 0.5s var(--ease-out), letter-spacing 0.5s var(--ease-out), translate 0.5s var(--spring);
 }
-.logo:hover .logo-text { translate: 2px 0; }
-.logo-text b { font-weight: 700; }
+.logo:hover .logo-word { translate: 2px 0; }
+.logo-rest {
+  display: inline-block;
+  max-width: 5em;
+  overflow: hidden;
+  vertical-align: bottom;
+  transition: max-width 0.55s var(--ease-out), opacity 0.35s, padding 0.55s var(--ease-out);
+}
+.logo-word > span:not(:last-child) .logo-rest { padding-right: 0.26em; }
 
-/* Compact: a smaller capsule with only the mark and the name. */
+/* Compact: a smaller capsule with only the initials. */
 .hd[data-stuck] .bar-row { height: 54px; padding: 0 6px; }
 .hd[data-stuck] .logo { gap: 10px; height: 42px; margin-right: 0; padding-right: 16px; border-right-color: transparent; }
-.hd[data-stuck] .logo-mark { width: 42px; height: 42px; }
-.hd[data-stuck] .logo-text { font-size: 14.5px; }
+.hd[data-stuck] .logo-word { padding-left: 14px; font-size: 22px; letter-spacing: 0.04em; }
+.hd[data-stuck] .logo-rest { max-width: 0; padding-right: 0 !important; opacity: 0; }
 @media (hover: hover) {
   .hd[data-stuck] .bar:hover .logo,
   .hd[data-stuck] .bar:focus-within .logo { margin-right: 8px; border-right-color: rgb(246 240 219 / 0.12); }
@@ -136,7 +133,7 @@
   position: relative;
   z-index: 1;
   height: 48px;
-  padding: 0 18px 0 27px;
+  padding: 0 18px 0 34px;
   border: 0;
   background: transparent;
   color: rgb(246 240 219 / 0.74);
@@ -151,49 +148,88 @@
 .nav button[data-lit] { color: #17140c; }
 .nav button:focus-visible { outline: 2px solid var(--sun); outline-offset: -4px; border-radius: 14px; }
 
+/* The marker is an electronic shelf label clipped to the rail: light plastic
+   housing, an e-paper screen with a red promo block, a barcode and a status LED. */
 .price-tag {
   position: absolute;
-  top: 0;
+  top: 4px;
   left: 0;
   width: 0;
-  height: 48px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f8f9f9, #dfe2e3 60%, #cfd3d4);
+  box-shadow: inset 0 1px 0 #fff, inset 0 -1.5px 0 rgb(0 0 0 / 0.16), inset 1px 0 0 rgb(255 255 255 / 0.6), 0 1px 1px rgb(0 0 0 / 0.45), 0 9px 14px -5px rgb(0 0 0 / 0.55);
   opacity: 0;
   pointer-events: none;
-  transform-origin: 13px 24px;
-  filter: drop-shadow(0 6px 9px rgb(0 0 0 / 0.38));
+  transform-origin: 50% 0;
 }
 .price-tag[data-ready] { opacity: 1; transition: opacity 0.3s; }
-.price-tag::before {
-  content: "";
+.esl-screen {
   position: absolute;
-  inset: 0;
-  border-radius: 0 24px 24px 0;
-  background: linear-gradient(180deg, #ffd466, var(--sun) 70%, #eaa524);
-  clip-path: polygon(18px 0, 100% 0, 100% 100%, 18px 100%, 1px 55%, 0 50%, 1px 45%);
+  inset: 4px 6px 6px 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: linear-gradient(172deg, #efeee8, #dcdbd3);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.3), inset 0 0 0 0.5px rgb(0 0 0 / 0.28);
 }
-.price-tag-hole {
+/* Faint glass glare across the e-paper. */
+.esl-screen::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 40%, rgb(255 255 255 / 0.35) 48%, transparent 56%); pointer-events: none; }
+.esl-flag {
   position: absolute;
-  top: 50%;
-  left: 13px;
-  width: 7px;
-  height: 7px;
-  margin: -3.5px 0 0 -3.5px;
-  border-radius: 50%;
-  background: #0c1b15;
-  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.6), 0 1px 0 rgb(255 255 255 / 0.35);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  background: #d42a20;
+  color: #fde9e5;
+  font: normal 700 10px / 1 var(--font-sans);
 }
+.esl-code {
+  position: absolute;
+  right: 6px;
+  bottom: 2px;
+  left: 30px;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, #1b1b1b 0 1px, transparent 1px 2px, #1b1b1b 2px 4px, transparent 4px 5px, #1b1b1b 5px 6px, transparent 6px 9px);
+  opacity: 0.5;
+}
+.esl-led { position: absolute; top: 1px; right: 7px; width: 3px; height: 2px; border-radius: 1px; background: #2fbf6d; box-shadow: 0 0 4px #3ddc84; animation: esl-led 3.2s steps(1) infinite; }
+@keyframes esl-led { 0% { opacity: 1; } 8% { opacity: 0.15; } }
 
-.price-tag-string {
-  position: absolute;
-  top: -1px;
-  left: -14px;
-  width: 30px;
-  height: 30px;
-  overflow: visible;
-  fill: none;
-  stroke: rgb(246 240 219 / 0.75);
-  stroke-width: 1.4;
-  stroke-linecap: round;
+/* E-paper refresh: black, white, black, blank, then the label redraws with a
+   brief ghost. Stepped so every frame is a hard cut, like the real panels. */
+.nav[data-flash] .esl-screen { animation: esl-screen 0.8s steps(1) ; }
+.nav[data-flash] .esl-flag { animation: esl-flag 0.8s steps(1); }
+.nav[data-flash] .esl-code { animation: esl-code 0.8s steps(1); }
+.nav[data-flash] button[data-lit] .roll { animation: esl-text 0.8s steps(1); }
+@keyframes esl-screen {
+  0% { background: #141414; }
+  12% { background: #f3f2ec; }
+  24% { background: #141414; }
+  36% { background: #f6f5f0; }
+}
+@keyframes esl-flag {
+  0% { background: #141414; color: transparent; }
+  12% { background: #f3f2ec; color: transparent; }
+  24% { background: #141414; color: transparent; }
+  36% { background: #f6f5f0; color: transparent; }
+  58% { background: #e9a39d; color: #fde9e5; }
+  70% { background: #d42a20; }
+}
+@keyframes esl-code {
+  0% { opacity: 0; }
+  58% { opacity: 0.2; }
+  70% { opacity: 0.5; }
+}
+@keyframes esl-text {
+  0% { color: #efeee8; translate: 1px 0; }
+  12% { color: rgb(20 20 20 / 0.5); translate: -1px 0; }
+  24% { color: #efeee8; translate: 1px 0; }
+  36% { color: transparent; translate: 0 0; }
+  58% { color: rgb(20 20 20 / 0.45); translate: -0.5px 0; }
+  70% { color: #17140c; translate: 0 0; }
 }
 
 /* Rolling letters: each glyph has a twin underneath that slides up on hover. */
@@ -376,16 +412,15 @@
   .hd[data-open] .scrim { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 }
 @media (max-width: 380px) {
-  .logo-text { font-size: 14px; }
-  .logo-mark { width: 44px; height: 44px; }
+  .logo-word { font-size: 17px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .bar { animation: none; }
-  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .logo-mark, .logo-text, .logo-wheels, .roll-ch, .nav button, .cta, .cta::before, .cta::after, .burger i, .drawer, .drawer nav button, .drawer nav button > span, .drawer-cta, .drawer-foot, .scrim {
+  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .logo-word, .logo-rest, .roll-ch, .nav button, .cta, .cta::before, .cta::after, .burger i, .drawer, .drawer nav button, .drawer nav button > span, .drawer-cta, .drawer-foot, .scrim {
     transition-duration: 0.01ms;
     transition-delay: 0s;
   }
   .cta:hover .cta-arrow svg,
-  .logo:hover .logo-wheels { animation: none; }
+  .esl-led { animation: none; }
 }

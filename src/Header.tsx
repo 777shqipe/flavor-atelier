@@ -28,8 +28,8 @@ function Roll({ text }: { text: string }) {
 }
 
 /**
- * The active-page marker is a yellow price tag. It springs to whichever link
- * is hovered or current, and swings on its punched hole while it travels.
+ * The active-page marker is an electronic shelf label. It springs to whichever
+ * link is hovered or current, tilting a little on its rail clip while it travels.
  */
 function useTag() {
   const tag = useRef<HTMLSpanElement>(null);
@@ -64,7 +64,7 @@ function useTag() {
       x += vx * dt;
       w += vw * dt;
       // Swing: lean with the speed of travel, then wobble back to level.
-      const lean = Math.max(-11, Math.min(11, vx * 0.016));
+      const lean = Math.max(-4, Math.min(4, vx * 0.006));
       va += (300 * (lean - a) - 13 * va) * dt;
       a += va * dt;
       paint();
@@ -133,6 +133,25 @@ export function Header({
     placeTag();
   }, [page, placeTag]);
 
+  // E-paper refresh: the label flashes inverted and blank before redrawing, on
+  // every page change and then every 5–10s on its own.
+  useEffect(() => {
+    const el = nav.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let timer = 0;
+    const flash = () => {
+      delete el.dataset.flash;
+      void el.offsetWidth;
+      el.dataset.flash = "";
+      timer = window.setTimeout(flash, 5000 + Math.random() * 5000);
+    };
+    timer = window.setTimeout(flash, 450);
+    return () => {
+      window.clearTimeout(timer);
+      delete el.dataset.flash;
+    };
+  }, [page]);
+
   useEffect(() => {
     const el = nav.current;
     if (!el) return;
@@ -189,11 +208,13 @@ export function Header({
           <div className="bar-more">
             <div className="bar-more-in">
               <nav className="nav" ref={nav} aria-label="Main navigation" onPointerLeave={restTag}>
+                {/* Electronic shelf label: plastic housing, e-paper screen, red promo block, status LED. */}
                 <span className="price-tag" ref={tag} aria-hidden="true">
-                  <i className="price-tag-hole" />
-                  <svg className="price-tag-string" viewBox="0 0 30 30">
-                    <path d="M27 24C20 22 14 14 12 8S5 1 1 3" />
-                  </svg>
+                  <span className="esl-screen">
+                    <i className="esl-flag">★</i>
+                    <i className="esl-code" />
+                  </span>
+                  <i className="esl-led" />
                 </span>
                 {LINKS.map(([id, label]) => (
                   <button
