@@ -13,6 +13,7 @@ import { contactPanelStrings } from "./i18n/strings/ContactPanel";
 import { supplierDealStrings } from "./i18n/strings/SupplierDeal";
 import { gap, useLang, useT } from "./i18n";
 import { STORES } from "./stores";
+import { PalletDock, useDockReview } from "./PalletDock";
 import { useOpenStatus } from "./useOpenStatus";
 import "./contact.css";
 
@@ -27,8 +28,6 @@ export type Topic = "stock" | "shop" | "other";
 
 /** The ids are the structure; every visible word for them lives in `contactPanelStrings`. */
 const TOPICS: Array<{ id: Topic }> = [{ id: "stock" }, { id: "shop" }, { id: "other" }];
-
-const VOLUMES = [{ id: "small" }, { id: "medium" }, { id: "large" }, { id: "unsure" }] as const;
 
 const STEPS = ["need", "details", "reply", "review"] as const;
 
@@ -536,8 +535,7 @@ export function ContactPanel({
   };
 
   const first = values.name.trim().split(/\s+/)[0];
-  const volumeId = VOLUMES.find((item) => item.id === values.volume)?.id;
-  const volume = volumeId && s.volumes[volumeId];
+  const volume = useDockReview(values.volume);
   const store = STORES.find((item) => item.id === values.store);
   const nextLabel = step < LAST ? s.nextStep(s.steps[STEPS[step + 1]]) : s.send;
 
@@ -725,26 +723,7 @@ export function ContactPanel({
                           <p className="ct-hint">{current.hint}</p>
                         </div>
 
-                        {topic === "stock" && (
-                          <div className="ct-sub">
-                            <p className="ct-q" id="ct-volume-q">
-                              {s.howMuch} <small>{s.optional}</small>
-                            </p>
-                            <div className="ct-pills" role="group" aria-labelledby="ct-volume-q">
-                              {VOLUMES.map((item) => (
-                                <button
-                                  key={item.id}
-                                  type="button"
-                                  className="ct-pill"
-                                  aria-pressed={values.volume === item.id}
-                                  onClick={() => setValues((v) => ({ ...v, volume: v.volume === item.id ? "" : item.id }))}
-                                >
-                                  {s.volumes[item.id]}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                        {topic === "stock" && <PalletDock value={values.volume} onChange={(volume) => setValues((v) => ({ ...v, volume }))} />}
 
                         {topic === "shop" && (
                           <label className="ct-field">
