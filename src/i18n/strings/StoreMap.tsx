@@ -82,15 +82,15 @@ export const storeMapStrings = defineStrings({
     },
     north: "北",
     findNearest: "找最近的门店",
-    locating: "定位中…",
+    locating: "定位中……",
     nearest: (name, km) => (
       <>
-        最近：<b>{name}</b> · 相距 {km}
+        最近的门店：<b>{name}</b> · 距你 {km}
       </>
     ),
     locateError: {
       unsupported: "此浏览器不支持定位。",
-      denied: "你拒绝了定位权限。",
+      denied: "未获得定位权限。",
       failed: "无法确定你的位置。",
     },
     zoomIn: "放大",
@@ -108,15 +108,15 @@ export const storeMapStrings = defineStrings({
       zoo: "Zoo di Melbourne",
       cup: "Ippodromo di Flemington",
       star: "Melbourne Star",
-      reb: "Edificio delle Esposizioni",
-      park: "Parco Royal",
+      reb: "Palazzo delle Esposizioni",
+      park: "Royal Park",
     },
     north: "N",
     findNearest: "Trova il più vicino",
-    locating: "Ti localizzo…",
+    locating: "Ti sto localizzando…",
     nearest: (name, km) => (
       <>
-        Più vicino: <b>{name}</b> · a {km}
+        Il più vicino: <b>{name}</b> · a {km}
       </>
     ),
     locateError: {
@@ -130,17 +130,17 @@ export const storeMapStrings = defineStrings({
     all: "Tutti",
   },
   ja: {
-    mapLabel: "メルボルン中心部にあるCheaper Buy Milesの4店舗の地図",
+    mapLabel: "メルボルン市内にあるCheaper Buy Milesの4店舗の地図",
     pinTitle: (name) => `${name}店`,
-    you: "あなた",
+    you: "現在地",
     landmarks: {
-      cbd: "都心",
-      qvm: "クイーン・ヴィクトリア市場",
+      cbd: "シティ",
+      qvm: "ヴィクトリア・マーケット",
       zoo: "メルボルン動物園",
       cup: "フレミントン競馬場",
       star: "メルボルン・スター",
       reb: "王立展示館",
-      park: "ロイヤル公園",
+      park: "ロイヤル・パーク",
     },
     north: "北",
     findNearest: "最寄りの店舗を探す",

@@ -51,25 +51,25 @@ export const showcaseStrings = defineStrings({
   },
   vi: {
     products: {
-      fizz: { brand: "Blood orange", unit: "4 × 330ml", alt: "Bốn lon Blood orange fizz" },
+      fizz: { brand: "Cam máu", unit: "4 × 330ml", alt: "Bốn lon nước ngọt có ga vị cam máu" },
       ramen: { brand: "Mì ăn liền", unit: "4 gói", alt: "Gói mì ăn liền vị cay" },
-      choc: { brand: "Choc-biscuit", unit: "Có hạn", alt: "Thanh bánh quy sô-cô-la" },
+      choc: { brand: "Bánh quy sô-cô-la", unit: "Có hạn", alt: "Thanh bánh quy sô-cô-la" },
     },
     heading: (brand, name, price, unit) => `${brand} ${name}, ${price} — ${unit}`,
     was: (price) => `giá cũ ${price}`,
     save: (amount) => `tiết kiệm ${amount}`,
     crav: {
-      sticker: ["SỦI", "BÙNG!"],
+      sticker: ["SỦI", "TĂM!"],
       caption: "Bốn lon nắng Ý chỉ $4, tức mỗi lon $1. Tự tính thử đi!",
-      origin: "Làm từ cam Ý, đóng chai từ năm 1932, không một lời xin lỗi.",
+      origin: "Làm từ cam Ý, đóng chai đầy tự tin từ năm 1932.",
     },
     bucks: {
       chip: "Cay sang chảnh",
-      sub: "Gặp món mì giúp thứ Ba bớt buồn hơn.",
-      tasteTitle: "Hồ sơ hương vị",
-      taste: ["Nước dùng đậm đà dẫn đầu", "Vị cay len lên từ từ", "Sợi mì dai, ấm lòng thật sự", "Cay sang chảnh, không hề đáng sợ"],
+      sub: "Đây là món mì giúp thứ Ba bớt buồn.",
+      tasteTitle: "Hương vị",
+      taste: ["Mở đầu bằng nước dùng đậm đà", "Vị cay ngấm dần từ từ", "Sợi mì dai, ăn là ấm lòng", "Cay sang chảnh, không hề đáng sợ"],
       pairsTitle: "Ăn kèm với",
-      pairs: "Trứng lòng đào, hành lá, kim chi, một lát phô mai (tin chúng tôi đi), gà quay thừa, hành phi giòn và một kỳ nghỉ cuối tuần thật dài.",
+      pairs: "Trứng lòng đào, hành lá, kim chi, một lát phô mai (tin chúng tôi đi), gà quay còn dư, hành phi giòn và một kỳ nghỉ cuối tuần thật dài.",
       flame: "Cay sang chảnh",
       medal: "Cao cấp",
       pack: "4 gói",
@@ -85,17 +85,17 @@ export const showcaseStrings = defineStrings({
       sharing: ["CHIA SẺ", "TÙY Ý"],
       def: (
         <>
-          <b>/bích·quy/</b> (danh từ)<br />bánh quy mang tham vọng sô-cô-la.
+          <b>/bích·quy/</b> (danh từ)<br />bánh quy mơ thành sô-cô-la.
         </>
       ),
-      blurb: "Sô-cô-la gặp bánh quy, nghiêm túc lắm. Lấy một cái kẻo hết nhé!",
+      blurb: "Sô-cô-la gặp bánh quy. Và họ yêu nhau thật lòng. Lấy một thanh kẻo hết nhé!",
       find: "Tìm cửa hàng",
     },
   },
   zh: {
     products: {
-      fizz: { brand: "Blood orange", unit: "4 × 330ml", alt: "四罐 Blood orange fizz" },
-      ramen: { brand: "方便面", unit: "4 包装", alt: "一袋辣味方便面" },
+      fizz: { brand: "Blood orange", unit: "4 × 330ml", alt: "四罐血橙气泡水" },
+      ramen: { brand: "方便面", unit: "4 连包", alt: "一袋辣味方便面" },
       choc: { brand: "Choc-biscuit", unit: "限量", alt: "巧克力饼干棒" },
     },
     heading: (brand, name, price, unit) => `${brand} ${name}，${price} — ${unit}`,
@@ -104,20 +104,20 @@ export const showcaseStrings = defineStrings({
     crav: {
       sticker: ["气泡", "警报"],
       caption: "四罐意式阳光只要 $4。每罐才 $1，你算算！",
-      origin: "用意大利橙酿造，1932 年装瓶至今，从不道歉。",
+      origin: "用意大利橙子制成，自 1932 年起理直气壮地装瓶。",
     },
     bucks: {
       chip: "精致香辣",
       sub: "让周二没那么丧的那碗面。",
       tasteTitle: "风味档案",
       taste: ["浓郁鲜香的汤底打头阵", "辣味慢慢上头", "面条劲道，治愈感满满", "精致香辣，不吓人"],
-      pairsTitle: "搭配",
-      pairs: "溏心蛋、葱花、泡菜、一片芝士（相信我们）、剩烤鸡、香脆葱酥，还有一个超长的周末。",
+      pairsTitle: "推荐搭配",
+      pairs: "溏心蛋、葱花、泡菜、一片芝士（相信我们）、吃剩的烤鸡、香脆葱酥，还有一个超长的周末。",
       flame: "精致香辣",
       medal: "高端",
-      pack: "4 包装",
+      pack: "4 连包",
       pot: "一锅搞定",
-      find: "到门店找",
+      find: "门店有售",
       bowl: "每碗 $1",
     },
     cookie: {
@@ -125,7 +125,7 @@ export const showcaseStrings = defineStrings({
       inside: ["饼干", "夹心"],
       limited: ["限量", "发售"],
       only: "仅售",
-      sharing: ["分享", "随意"],
+      sharing: ["分享", "看心情"],
       def: (
         <>
           <b>/bǐng·gān/</b>（名词）<br />一块心怀巧克力梦想的饼干。
@@ -180,25 +180,25 @@ export const showcaseStrings = defineStrings({
   },
   ja: {
     products: {
-      fizz: { brand: "Blood orange", unit: "4 × 330ml", alt: "Blood orange fizzの4缶入り" },
+      fizz: { brand: "Blood orange", unit: "4 × 330ml", alt: "ブラッドオレンジソーダの4缶パック" },
       ramen: { brand: "インスタント麺", unit: "4食入り", alt: "ピリ辛インスタントラーメンの袋" },
       choc: { brand: "Choc-biscuit", unit: "限定", alt: "チョコビスケットバー" },
     },
     heading: (brand, name, price, unit) => `${brand} ${name}、${price} — ${unit}`,
-    was: (price) => `元値${price}`,
+    was: (price) => `通常${price}`,
     save: (amount) => `${amount}オフ`,
     crav: {
       sticker: ["シュワ", "注意報"],
-      caption: "イタリアの陽ざしを、4缶で$4。1缶あたり$1です。計算してみてください。",
+      caption: "イタリアの陽ざしが、4缶で$4。つまり1缶$1。計算するまでもありません。",
       origin: "イタリア産オレンジを使用。1932年から、堂々と瓶詰め。",
     },
     bucks: {
       chip: "本格ピリ辛",
       sub: "火曜日の憂うつを、少し和らげる麺です。",
-      tasteTitle: "味のプロフィール",
-      taste: ["コクのある旨みスープが主役", "辛さがじわじわ上昇", "もちもち麺、ほっとする安心感", "本格ピリ辛、でも怖くない"],
+      tasteTitle: "味の特徴",
+      taste: ["コクのある旨みスープが主役", "辛さはあとからじわじわ", "もちもち麺、ほっとする安心感", "本格ピリ辛、でも怖くない"],
       pairsTitle: "おすすめの組み合わせ",
-      pairs: "半熟卵、小ネギ、キムチ、チーズひと切れ（ほんとですよ）、ローストチキンの残り、カリカリのエシャロット、そして、とびきり長い週末。",
+      pairs: "半熟卵、小ネギ、キムチ、チーズひと切れ（ほんとですよ）、ローストチキンの残り、カリカリのフライドオニオン、そして、とびきり長い週末。",
       flame: "本格ピリ辛",
       medal: "プレミアム",
       pack: "4食入り",
@@ -214,7 +214,7 @@ export const showcaseStrings = defineStrings({
       sharing: ["シェアは", "お好みで"],
       def: (
         <>
-          <b>/bi·su·ketto/</b>（名詞）<br />チョコレートに夢を抱くビスケット。
+          <b>びす・こふ</b>（名詞）<br />チョコレートに憧れるビスケット。
         </>
       ),
       blurb: "チョコとビスケット、運命の出会いでした。なくなる前に、ぜひどうぞ。",

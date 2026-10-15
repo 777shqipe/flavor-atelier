@@ -23,7 +23,7 @@ export const pageSwapStrings = defineStrings({
   },
   zh: {
     labels: {
-      home: { title: "首页", line: "每周新鲜好物。" },
+      home: { title: "首页", line: "好物每周上新。" },
       stores: { title: "门店", line: "四家门店，一张地图。" },
       about: { title: "关于我们", line: "自 1995 年起，拯救好食物。" },
     },
@@ -35,20 +35,20 @@ export const pageSwapStrings = defineStrings({
     labels: {
       home: { title: "Home", line: "Nuovi affari ogni settimana." },
       stores: { title: "Negozi", line: "Quattro negozi, una mappa." },
-      about: { title: "Chi siamo", line: "Recuperiamo cibo buono dal 1995." },
+      about: { title: "Chi siamo", line: "Salviamo il buon cibo dal 1995." },
     },
     band: "Cheaper Buy Miles ✦ Prezzi stracciati ✦ ",
     nowShowing: "In proiezione",
-    toBrowse: "da curiosare",
+    toBrowse: "per curiosare",
   },
   ja: {
     labels: {
-      home: { title: "ホーム", line: "毎週、新しいお買い得品。" },
+      home: { title: "ホーム", line: "毎週、新しい掘り出し物。" },
       stores: { title: "店舗一覧", line: "4つのお店、ひとつの地図。" },
       about: { title: "私たちについて", line: "1995年から、おいしい食品をレスキュー。" },
     },
-    band: "Cheaper Buy Miles ✦ 在庫一掃 ✦ ",
+    band: "Cheaper Buy Miles ✦ 在庫処分価格 ✦ ",
     nowShowing: "上映中",
-    toBrowse: "見るだけOK",
+    toBrowse: "見放題",
   },
 });

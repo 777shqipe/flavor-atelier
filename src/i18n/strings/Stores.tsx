@@ -22,10 +22,10 @@ export const storeStrings = defineStrings({
   vi: {
     hours: "T2–T7 9:00–19:00 · CN 10:00–18:00",
     lines: {
-      footscray: "Điểm dừng phía Tây của chúng tôi. Hàng hiệu, giá nhỏ.",
-      flemington: "Racecourse Rd. Cược chắc ăn cho những món hời.",
+      footscray: "Điểm ghé phía Tây. Hàng hiệu, giá mềm.",
+      flemington: "Racecourse Rd. Cược vào món hời là chắc thắng.",
       fitzroy: "Johnston St. Làm ly cà phê rồi săn món hời.",
-      brunswick: "Sydney Road. Xuống tàu điện là lấp đầy giỏ ngay.",
+      brunswick: "Sydney Road. Xuống tàu điện, chất đầy giỏ.",
     },
     status: {
       openShort: "Đang mở cửa",
@@ -38,9 +38,9 @@ export const storeStrings = defineStrings({
   zh: {
     hours: "周一至周六 9:00–19:00 · 周日 10:00–18:00",
     lines: {
-      footscray: "我们的西区门店。大牌好货，小小价格。",
-      flemington: "Racecourse Rd。淘好价，稳赢不输。",
-      fitzroy: "Johnston St。先来杯咖啡，再来淘好价。",
+      footscray: "我们的西区门店。大牌好货，白菜价。",
+      flemington: "Racecourse Rd。想捡漏？押这家准赢。",
+      fitzroy: "Johnston St。先喝杯咖啡，再去捡个漏。",
       brunswick: "Sydney Road。下了电车，直接装满篮子。",
     },
     status: {
@@ -55,7 +55,7 @@ export const storeStrings = defineStrings({
     hours: "Lun–Sab 9:00–19:00 · Dom 10:00–18:00",
     lines: {
       footscray: "La nostra tappa a ovest. Grandi marche, piccoli prezzi.",
-      flemington: "Racecourse Rd. Una scommessa sicura per gli affari.",
+      flemington: "Racecourse Rd. Per gli affari è una scommessa vinta.",
       fitzroy: "Johnston St. Prendi un caffè, poi un affare.",
       brunswick: "Sydney Road. Scendi dal tram, riempi il cestino.",
     },
@@ -63,24 +63,24 @@ export const storeStrings = defineStrings({
       openShort: "Aperto ora",
       closedShort: "Chiuso",
       openNow: (closes) => `Aperto ora · chiude alle ${closes}:00`,
-      closedToday: (opens) => `Chiuso · oggi apre alle ${opens}:00`,
-      closedNext: (opens, sunday) => `Chiuso · ${sunday ? "domenica" : "domani"} apre alle ${opens}:00`,
+      closedToday: (opens) => `Chiuso · apre oggi alle ${opens}:00`,
+      closedNext: (opens, sunday) => `Chiuso · apre ${sunday ? "domenica" : "domani"} alle ${opens}:00`,
     },
   },
   ja: {
     hours: "月〜土 9:00〜19:00 · 日 10:00〜18:00",
     lines: {
-      footscray: "西エリアの店舗。人気ブランドが、お手ごろ価格。",
+      footscray: "西側エリアのお店。人気ブランドを、うれしい価格で。",
       flemington: "Racecourse Rd。掘り出し物なら、ここが当たり。",
-      fitzroy: "Johnston St。コーヒーを一杯、そのあとお買い得。",
+      fitzroy: "Johnston St。コーヒーを一杯、それから掘り出し物を。",
       brunswick: "Sydney Road。トラムを降りて、かごをいっぱいに。",
     },
     status: {
       openShort: "営業中",
-      closedShort: "閉店中",
+      closedShort: "営業時間外",
       openNow: (closes) => `営業中 · ${closes}:00閉店`,
-      closedToday: (opens) => `閉店中 · 本日${opens}:00開店`,
-      closedNext: (opens, sunday) => `閉店中 · ${sunday ? "日曜" : "明日"}${opens}:00開店`,
+      closedToday: (opens) => `営業時間外 · 本日${opens}:00開店`,
+      closedNext: (opens, sunday) => `営業時間外 · ${sunday ? "日曜" : "明日"}${opens}:00開店`,
     },
   },
 });

@@ -21,13 +21,13 @@ export const storesPageStrings = defineStrings({
   },
   vi: {
     title: "Các cửa hàng",
-    ring: "MỞ 7 NGÀY • CHỐNG LÃNG PHÍ •",
-    ringLabel: "Mở cửa 7 ngày mỗi tuần",
+    ring: "MỞ CỬA 7 NGÀY • CHỐNG LÃNG PHÍ •",
+    ringLabel: "Mở cửa cả 7 ngày trong tuần",
     sign: { open: "Mở cửa", closed: "Đóng cửa" },
     directions: "Chỉ đường",
     nextClosest: (name, km) => (
       <>
-        Gần nhất khác: <b>{name}</b> · cách {km}
+        Gần thứ hai: <b>{name}</b> · cách {km}
       </>
     ),
     storefront: (name) => `Mặt tiền cửa hàng ${name}`,
@@ -37,13 +37,13 @@ export const storesPageStrings = defineStrings({
   },
   zh: {
     title: "我们的门店",
-    ring: "每周营业 7 天 • 拒绝食物浪费 •",
+    ring: "每周营业 7 天 • 对抗食物浪费 •",
     ringLabel: "每周营业 7 天",
     sign: { open: "营业中", closed: "已打烊" },
-    directions: "路线",
+    directions: "导航",
     nextClosest: (name, km) => (
       <>
-        最近的另一家：<b>{name}</b> · 相距 {km}
+        离这家最近的：<b>{name}</b> · 相距 {km}
       </>
     ),
     storefront: (name) => `${name} 门店外观`,
@@ -59,7 +59,7 @@ export const storesPageStrings = defineStrings({
     directions: "Indicazioni",
     nextClosest: (name, km) => (
       <>
-        Il più vicino: <b>{name}</b> · a {km}
+        Il successivo più vicino: <b>{name}</b> · a {km}
       </>
     ),
     storefront: (name) => `Facciata del negozio ${name}`,
@@ -68,10 +68,10 @@ export const storesPageStrings = defineStrings({
     choose: "Scegli un negozio",
   },
   ja: {
-    title: "私たちの店舗",
-    ring: "毎週7日営業 • 食品ロスと戦う •",
-    ringLabel: "毎週7日営業",
-    sign: { open: "営業中", closed: "閉店中" },
+    title: "店舗一覧",
+    ring: "毎日営業 • 食品ロスと戦う •",
+    ringLabel: "毎日営業",
+    sign: { open: "営業中", closed: "準備中" },
     directions: "ルート",
     nextClosest: (name, km) => (
       <>

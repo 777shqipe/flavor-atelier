@@ -71,16 +71,16 @@ export const appStrings = defineStrings({
     },
   },
   vi: {
-    ticker: ["Hết là hết", "Món hời mới mỗi tuần", "Hàng hiệu, giá nhỏ", "Bớt lãng phí, thêm hương vị"],
-    tickerAlt: ["Giảm tới 70% so với giá niêm yết", "Được cứu, không lãng phí", "Bốn cửa hàng ở Melbourne", "Chống lãng phí thực phẩm từ 1995"],
+    ticker: ["Hết là hết", "Món hời mới mỗi tuần", "Hàng hiệu, giá mềm", "Bớt lãng phí, ăn ngon hơn"],
+    tickerAlt: ["Giảm tới 70% so với giá niêm yết", "Giải cứu, không bỏ phí", "Bốn cửa hàng ở Melbourne", "Chống lãng phí thực phẩm từ 1995"],
     products: {
       eyebrow: "Hàng mới mỗi tuần",
-      heading: "Có ngay tại cửa hàng",
+      heading: "Đang có tại cửa hàng",
       lead: "Hàng hiệu bất ngờ, giá khó tin. Hết là hết.",
     },
     mix: {
       label: "Món hời tuần này",
-      store: "Có ngay tại cửa hàng",
+      store: "Tại cửa hàng",
       feed: "Trên Instagram",
     },
     home: {
@@ -88,23 +88,23 @@ export const appStrings = defineStrings({
         <>
           Không
           <br />
-          chôn lấp
+          ra bãi rác
         </>
       ),
       sealSmall: "GIẢI CỨU",
       sealBig: "MỖI NGÀY",
-      purposeEyebrow: "Sứ mệnh của chúng tôi",
+      purposeEyebrow: "Điều chúng tôi theo đuổi",
       purposeTitle: (
         <>
           Từng <em>món hời</em> một.
         </>
       ),
-      tagIn: "Hàng dư vào",
-      tagOut: "Tiết kiệm ra",
-      copy: "Chúng tôi yêu đồ ăn và ghét lãng phí. Chúng tôi đã cứu hàng triệu kg thực phẩm ngon khỏi bị vứt bỏ, đồng thời mang lại khoản tiết kiệm lớn cho bạn.",
+      tagIn: "Hàng dư về",
+      tagOut: "Bạn đỡ tốn",
+      copy: "Chúng tôi mê đồ ăn và ghét lãng phí. Chúng tôi đã cứu hàng triệu kg thực phẩm ngon khỏi bị đem đổ bỏ, mà bạn còn tiết kiệm được rất nhiều tiền.",
       promise: (
         <>
-          <b>Cam kết hoàn tiền 100%.</b> Không ưng món nào? Cứ mang lại.
+          <b>Cam kết hoàn tiền 100%.</b> Không ưng món nào? Cứ mang trả lại.
         </>
       ),
       story: "Câu chuyện của chúng tôi",
@@ -113,13 +113,13 @@ export const appStrings = defineStrings({
     footer: {
       title: (
         <>
-          Thêm hương vị.
+          Ăn ngon hơn.
           <br />
           <em>Bớt lãng phí.</em>
         </>
       ),
-      ticketTag: "PHIẾU MỞ",
-      ticketTitle: "Có hàng dư hoặc thắc mắc?",
+      ticketTag: "PHIẾU LIÊN HỆ",
+      ticketTitle: "Có hàng dư hay cần hỏi gì?",
       ticketSub: "Nhắn cho đội thu mua hoặc cửa hàng →",
       navLabel: "Chân trang",
       explore: "Khám phá",
@@ -130,50 +130,50 @@ export const appStrings = defineStrings({
         suppliers: "Nhà cung cấp",
         contact: "Liên hệ",
       },
-      followLabel: "Theo dõi món hời",
-      followSub: "Hàng mới lên trang của chúng tôi mỗi ngày, trước khi lên kệ.",
+      followLabel: "Theo dõi để săn hời",
+      followSub: "Hàng mới được đăng lên trang của chúng tôi mỗi ngày, trước cả khi lên kệ.",
       socialStores: "4 cửa hàng của chúng tôi ở Melbourne",
       place: "Melbourne, Úc · Thành lập 1995",
-      tagline: "Đồ ăn ngon không nên bị lãng phí.",
-      privacy: "Riêng tư",
+      tagline: "Đồ ăn ngon thì đừng để phí.",
+      privacy: "Quyền riêng tư",
       cookies: "Cookie",
     },
   },
   zh: {
-    ticker: ["卖完即止", "每周新好物", "大牌好货，小小价格", "少浪费，多美味"],
-    tickerAlt: ["比建议零售价最高省 70%", "被拯救，不浪费", "墨尔本四家门店", "1995 年起对抗食物浪费"],
+    ticker: ["卖完即止", "每周都有新好物", "大牌好货，白菜价", "少点浪费，多点美味"],
+    tickerAlt: ["比建议零售价最高省 70%", "救回来，不扔掉", "墨尔本四家门店", "1995 年起对抗食物浪费"],
     products: {
       eyebrow: "每周上新",
       heading: "门店现货",
-      lead: "意想不到的大牌，难以相信的低价。卖完即止。",
+      lead: "意想不到的大牌，难以置信的低价。卖完即止。",
     },
     mix: {
       label: "本周好物",
       store: "门店现货",
-      feed: "在 Instagram 上",
+      feed: "Instagram 动态",
     },
     home: {
       sealUnder: (
         <>
-          不进
+          零
           <br />
-          垃圾场
+          填埋
         </>
       ),
-      sealSmall: "被拯救",
-      sealBig: "每天",
+      sealSmall: "每天都在",
+      sealBig: "救食物",
       purposeEyebrow: "我们的使命",
       purposeTitle: (
         <>
-          一件一件，件件<em>好价</em>。
+          从每一次<em>捡漏</em>做起。
         </>
       ),
       tagIn: "余货进",
       tagOut: "让利出",
-      copy: "我们热爱食物，也讨厌浪费。我们已把数百万公斤好食物从被丢弃的命运里拯救出来，同时让你省下大笔开销。",
+      copy: "我们热爱美食，更讨厌浪费。至今已让数百万公斤好好的食物免于被扔掉，也帮你省下了一大笔钱。",
       promise: (
         <>
-          <b>100% 退款保证。</b>对买的东西不满意？拿回来就行。
+          <b>100% 退款保证。</b>买了不满意？拿回来就行。
         </>
       ),
       story: "我们的故事",
@@ -182,13 +182,13 @@ export const appStrings = defineStrings({
     footer: {
       title: (
         <>
-          多美味。
+          多点美味。
           <br />
-          <em>少浪费。</em>
+          <em>少点浪费。</em>
         </>
       ),
       ticketTag: "留言单",
-      ticketTitle: "有余货或疑问？",
+      ticketTitle: "有余货要出，还是有问题？",
       ticketSub: "联系采购或门店团队 →",
       navLabel: "页脚",
       explore: "探索",
@@ -200,21 +200,21 @@ export const appStrings = defineStrings({
         contact: "联系我们",
       },
       followLabel: "关注好价",
-      followSub: "新品每天先在我们的动态里上线，再摆上货架。",
+      followSub: "新货每天先在我们的动态里亮相，然后才上架。",
       socialStores: "我们在墨尔本的 4 家门店",
-      place: "墨尔本，澳大利亚 · 1995 年成立",
+      place: "澳洲墨尔本 · 始于 1995 年",
       tagline: "好食物不该被浪费。",
-      privacy: "隐私",
-      cookies: "Cookie",
+      privacy: "隐私政策",
+      cookies: "Cookie 政策",
     },
   },
   it: {
-    ticker: ["Finito è finito", "Nuovi affari ogni settimana", "Grandi marche, piccoli prezzi", "Meno sprechi, più gusto"],
-    tickerAlt: ["Fino al 70% in meno sul listino", "Salvato, non sprecato", "Quattro negozi a Melbourne", "Contro lo spreco alimentare dal 1995"],
+    ticker: ["Quando è finito, è finito", "Nuovi affari ogni settimana", "Grandi marche, piccoli prezzi", "Meno sprechi, più gusto"],
+    tickerAlt: ["Fino al 70% di sconto sul listino", "Salvato, non sprecato", "Quattro negozi a Melbourne", "Contro lo spreco alimentare dal 1995"],
     products: {
       eyebrow: "Novità ogni settimana",
       heading: "Ora in negozio",
-      lead: "Marche inaspettate, prezzi incredibili. Finito è finito.",
+      lead: "Marche inaspettate, prezzi incredibili. Quando è finito, è finito.",
     },
     mix: {
       label: "Affari della settimana",
@@ -226,7 +226,7 @@ export const appStrings = defineStrings({
         <>
           Zero
           <br />
-          discariche
+          discarica
         </>
       ),
       sealSmall: "SALVATO",
@@ -237,12 +237,12 @@ export const appStrings = defineStrings({
           Un <em>affare</em> alla volta.
         </>
       ),
-      tagIn: "Eccedenze in",
-      tagOut: "Sconti fuori",
+      tagIn: "Eccedenze dentro",
+      tagOut: "Risparmi fuori",
       copy: "Amiamo il cibo e odiamo lo spreco. Abbiamo salvato milioni di chili di cibo buono dalla spazzatura, e intanto ti facciamo risparmiare un sacco.",
       promise: (
         <>
-          <b>Garanzia di rimborso al 100%.</b> Non ti soddisfa qualcosa? Riportalo da noi.
+          <b>Garanzia di rimborso al 100%.</b> Qualcosa non ti convince? Riportalo da noi.
         </>
       ),
       story: "La nostra storia",
@@ -256,7 +256,7 @@ export const appStrings = defineStrings({
           <em>Meno sprechi.</em>
         </>
       ),
-      ticketTag: "TICKET APERTO",
+      ticketTag: "BOLLA APERTA",
       ticketTitle: "Hai merce in più o una domanda?",
       ticketSub: "Scrivi al team acquisti o ai negozi →",
       navLabel: "Piè di pagina",
@@ -278,22 +278,22 @@ export const appStrings = defineStrings({
     },
   },
   ja: {
-    ticker: ["なくなり次第終了", "毎週、新しいお宝が入荷", "人気ブランドを、小さな価格で", "ムダを減らして、おいしさ増量"],
-    tickerAlt: ["希望小売価格から最大70%オフ", "レスキューされた、ムダなし", "メルボルンに4店舗", "1995年から食品ロスと戦う"],
+    ticker: ["なくなり次第終了", "毎週、掘り出し物が入荷", "人気ブランドを、うれしい価格で", "ムダは減量、おいしさは増量"],
+    tickerAlt: ["希望小売価格から最大70%オフ", "捨てずに、レスキュー", "メルボルンに4店舗", "1995年から食品ロスと戦う"],
     products: {
-      eyebrow: "毎週、新しいお宝",
-      heading: "店舗で販売中",
-      lead: "意外なブランドが、信じられない価格で。なくなり次第終了です。",
+      eyebrow: "毎週、新しい掘り出し物",
+      heading: "店頭で販売中",
+      lead: "意外なブランドが、まさかの価格で。なくなり次第終了です。",
     },
     mix: {
-      label: "今週のお宝",
-      store: "店舗で販売中",
+      label: "今週の掘り出し物",
+      store: "店頭で販売中",
       feed: "Instagramで",
     },
     home: {
       sealUnder: (
         <>
-          埋立
+          埋め立て
           <br />
           ゼロ
         </>
@@ -303,15 +303,15 @@ export const appStrings = defineStrings({
       purposeEyebrow: "私たちの使命",
       purposeTitle: (
         <>
-          一つずつ、<em>お買い得</em>を。
+          <em>お買い得</em>を、ひとつずつ。
         </>
       ),
-      tagIn: "余り品が入る",
-      tagOut: "お得が出る",
-      copy: "食べ物が大好きで、ムダは大嫌いです。まだおいしい食べ物を数百万キロ分、捨てずに救ってきました。その分、お得もたっぷりお届けします。",
+      tagIn: "余剰品を仕入れ",
+      tagOut: "お得にお届け",
+      copy: "食べることが大好きで、ムダが大嫌い。まだおいしい食べ物を数百万キロ、捨てられる前に救ってきました。しかも、お値段はぐっとお得に。",
       promise: (
         <>
-          <b>100%返金保証。</b>気に入らないものがあれば、お持ちください。
+          <b>100%返金保証。</b>ご満足いただけなかった商品は、お店にお持ちください。
         </>
       ),
       story: "私たちの歩み",
@@ -320,19 +320,19 @@ export const appStrings = defineStrings({
     footer: {
       title: (
         <>
-          おいしさ増量。
+          おいしさは増量。
           <br />
-          <em>ムダ削減。</em>
+          <em>ムダは減量。</em>
         </>
       ),
       ticketTag: "受付中",
-      ticketTitle: "余り在庫や、ご質問はありますか？",
+      ticketTitle: "余剰在庫やご質問はありますか？",
       ticketSub: "仕入れ担当か店舗までご連絡ください →",
       navLabel: "フッター",
       explore: "サイトマップ",
       links: {
         home: "ホーム",
-        stores: "私たちの店舗",
+        stores: "店舗一覧",
         about: "私たちについて",
         suppliers: "サプライヤー",
         contact: "お問い合わせ",
@@ -340,10 +340,10 @@ export const appStrings = defineStrings({
       followLabel: "お得をフォロー",
       followSub: "新入荷は、棚に並ぶ前に毎日フィードに登場します。",
       socialStores: "メルボルンの4店舗",
-      place: "メルボルン、オーストラリア · 1995年創業",
+      place: "オーストラリア・メルボルン｜1995年創業",
       tagline: "おいしい食べ物は、ムダにしたくないですよね。",
       privacy: "プライバシー",
-      cookies: "クッキー",
+      cookies: "Cookie",
     },
   },
 });

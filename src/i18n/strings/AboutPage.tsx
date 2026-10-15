@@ -65,19 +65,19 @@ export const aboutPageStrings = defineStrings({
         <em className="ah-italic">từ năm 1995.</em>
       </>
     ),
-    lead: "Tất cả bắt đầu từ một ý tưởng đơn giản: thực phẩm còn ngon thì không bao giờ nên bị lãng phí.",
+    lead: "Mọi chuyện bắt đầu từ một ý tưởng đơn giản: đồ ăn còn ngon thì đừng bao giờ để phí.",
     storyOne:
-      "Chúng tôi mua hàng gần hạn, hàng đã qua “tốt nhất trước ngày” và hàng tồn dư từ các nhà cung cấp khắp nước Úc, rồi bán lại với giá chỉ bằng một phần nhỏ. Vẫn là những thương hiệu quen thuộc, vẫn chất lượng ấy, chỉ rẻ hơn nhiều.",
+      "Chúng tôi mua hàng gần hạn, hàng đã qua ngày “dùng tốt nhất trước” và hàng dư từ các nhà cung cấp khắp nước Úc, rồi bán lại với giá chỉ bằng một phần nhỏ giá gốc. Vẫn những thương hiệu quen thuộc, chất lượng vẫn tốt như thường, chỉ là rẻ hơn nhiều.",
     storyTwo: (
       <>
-        Từ một cửa hàng nhỏ bán mứt, chúng tôi đã lớn thành bốn cửa hàng được nhiều người yêu mến. Giá rẻ đến khó tin,
-        còn sứ mệnh thì rất <em>nghiêm túc</em>.
+        Khởi đầu là một tiệm mứt nhỏ, giờ chúng tôi đã có bốn cửa hàng được nhiều người yêu mến. Giá rẻ đến khó tin,
+        còn mục đích thì rất <em>nghiêm túc</em>.
       </>
     ),
     why: (
       <>
-        <b>Vì sao điều này quan trọng:</b> thực phẩm bị lãng phí chiếm khoảng 6% lượng khí thải nhà kính toàn cầu, gấp
-        khoảng ba lần toàn bộ ngành hàng không.{" "}
+        <b>Vì sao điều này quan trọng:</b> thực phẩm bị lãng phí chiếm khoảng 6% lượng khí thải nhà kính toàn cầu, xấp xỉ gấp
+        ba lần lượng khí thải của cả ngành hàng không.{" "}
         <a href="https://ourworldindata.org/food-waste-emissions" target="_blank" rel="noreferrer">
           Nguồn: Our World in Data
         </a>
@@ -85,14 +85,14 @@ export const aboutPageStrings = defineStrings({
     ),
     pillars: [
       ["Giảm đến 70%", "Thực phẩm hàng hiệu"],
-      ["Không ra bãi rác", "Đồ ngon được ăn hết"],
+      ["Không ra bãi rác", "Đồ ngon đều có người ăn"],
       ["4 cửa hàng nội thành", "Hàng mới mỗi ngày"],
     ],
     sealUnder: (
       <>
         Vẫn
         <br />
-        ở đây.
+        còn đây.
       </>
     ),
     sealEst: "Từ",
@@ -107,10 +107,10 @@ export const aboutPageStrings = defineStrings({
     ),
     lead: "一切始于一个简单的想法：好好的食物，绝不该被浪费。",
     storyOne:
-      "我们从澳洲各地的供应商那里收购临近保质期、已过最佳食用期的货，以及多余的存货，再以原价几分之一的价格卖出。同样的大牌，同样的好品质，只是便宜多了。",
+      "我们从澳洲各地的供应商手里收购临期、已过最佳食用期的货和多余库存，再以原价几分之一的价格卖出。同样的大牌，同样的好品质，就是便宜多了。",
     storyTwo: (
       <>
-        从一家卖果酱的小店起步，如今已经发展成四家深受喜爱的门店。价格便宜到离谱，使命却很<em>认真</em>。
+        从一家卖果酱的小店起步，如今已经发展成四家深受喜爱的门店。价格低得离谱，干的却是<em>正经</em>事。
       </>
     ),
     why: (
@@ -122,15 +122,15 @@ export const aboutPageStrings = defineStrings({
       </>
     ),
     pillars: [
-      ["最高立减 70%", "大牌食品"],
-      ["不进垃圾场", "好东西都被吃光"],
+      ["最高省 70%", "大牌食品"],
+      ["零填埋", "好食物都有人吃"],
       ["墨尔本市区 4 家门店", "每天上新"],
     ],
     sealUnder: (
       <>
-        还在
+        一直
         <br />
-        这儿。
+        都在。
       </>
     ),
     sealEst: "始于",
@@ -147,7 +147,7 @@ export const aboutPageStrings = defineStrings({
     ),
     lead: "Tutto è nato da un’idea semplice: il cibo perfettamente buono non dovrebbe mai andare sprecato.",
     storyOne:
-      "Compriamo da fornitori di tutta l’Australia merce vicina alla scadenza, già oltre il “preferibilmente entro”, o in eccesso, e la vendiamo a una frazione del prezzo. Stesse grandi marche, stessa grande qualità, solo che costano molto meno.",
+      "Compriamo da fornitori di tutta l’Australia merce in scadenza, con il “preferibilmente entro” già passato o semplicemente in eccesso, e la rivendiamo a una frazione del prezzo. Stesse grandi marche, stessa qualità, solo molto più convenienti.",
     storyTwo: (
       <>
         Da un piccolo negozio di marmellate siamo diventati quattro negozi amatissimi. Prezzi pazzeschi, una missione <em>seria</em>.
@@ -155,16 +155,16 @@ export const aboutPageStrings = defineStrings({
     ),
     why: (
       <>
-        <b>Perché conta:</b> il cibo sprecato rappresenta circa il 6% delle emissioni globali di gas serra, quasi tre volte
-        quelle di tutta l’aviazione.{" "}
+        <b>Perché conta:</b> il cibo sprecato rappresenta circa il 6% delle emissioni globali di gas serra, circa tre volte
+        quelle dell’intera aviazione.{" "}
         <a href="https://ourworldindata.org/food-waste-emissions" target="_blank" rel="noreferrer">
           Fonte: Our World in Data
         </a>
       </>
     ),
     pillars: [
-      ["Fino al -70%", "Spesa di grandi marche"],
-      ["Zero discariche", "Tutto finisce in tavola"],
+      ["Fino a -70%", "Prodotti di grandi marche"],
+      ["Zero discarica", "Tutto finisce in tavola"],
       ["4 negozi in centro", "Novità ogni giorno"],
     ],
     sealUnder: (
@@ -181,15 +181,15 @@ export const aboutPageStrings = defineStrings({
     eyebrow: "私たちについて",
     title: (
       <>
-        {mark("食品ロス")}と戦う、<em className="ah-italic">1995年から。</em>
+        {mark("食品ロス")}と戦いつづけて、<em className="ah-italic">1995年から。</em>
       </>
     ),
-    lead: "始まりは、ひとつのシンプルな考えでした。まだおいしく食べられる食品は、ムダにしません。",
+    lead: "始まりは、シンプルな思いでした。まだおいしく食べられるものを、ムダにしてはいけない。",
     storyOne:
-      "オーストラリア各地のサプライヤーから、賞味期限が近いものや、期限を過ぎたもの、余剰在庫を仕入れて、通常の何分の一かの価格でお売りしています。人気ブランドも品質もそのままで、お値段はぐっとお手ごろです。",
+      "オーストラリア各地のサプライヤーから、賞味期限が近いもの・過ぎたものや余剰在庫を仕入れ、通常の何分の一かの価格で販売しています。おなじみのブランドも品質もそのままで、お値段だけぐっとお手ごろに。",
     storyTwo: (
       <>
-        ジャムを売る小さなお店から始まり、今では4店舗の人気店に成長しました。信じられないほどの安さと、<em>真剣</em>な使命。
+        ジャムを売る小さなお店から始まり、今では地元で愛される4店舗にまで成長しました。びっくり価格に、<em>本気</em>の想い。
       </>
     ),
     why: (
@@ -202,8 +202,8 @@ export const aboutPageStrings = defineStrings({
     ),
     pillars: [
       ["最大70%オフ", "人気ブランドの食品"],
-      ["埋め立てゼロ", "おいしい食品は食べきられる"],
-      ["中心部に4店舗", "毎日、新商品が入荷"],
+      ["埋め立てゼロ", "おいしいものは、ちゃんと食卓へ"],
+      ["メルボルン市内に4店舗", "毎日、続々入荷"],
     ],
     sealUnder: (
       <>

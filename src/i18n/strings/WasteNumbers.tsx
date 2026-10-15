@@ -35,7 +35,7 @@ export const wasteNumbersStrings = defineStrings({
   vi: {
     eyebrow: "Vì sao quan trọng",
     title: "Đồ ăn ngon, đổ đi cả tấn.",
-    lead: "Phần lớn những gì nước Úc vứt đi vốn vẫn còn ăn ngon. Đó chính là khoảng trống của chúng tôi: hàng dư, hàng tồn, hàng gần hết hạn, được mua trước khi thành một con số thống kê.",
+    lead: "Phần lớn những gì nước Úc vứt đi vẫn còn ăn được. Đó là chỗ chúng tôi vào cuộc: hàng dư, hàng tồn, hàng gần hạn, mua về trước khi chúng thành con số thống kê.",
     full: "Đầy rồi.",
     tower: {
       num: "250.000",
@@ -46,13 +46,13 @@ export const wasteNumbersStrings = defineStrings({
         </>
       ),
     },
-    bags: { connector: "trong", text: "túi hàng tạp hóa bị vứt vào thùng rác, khoảng chừng." },
+    bags: { connector: "trong", text: "túi đồ ăn mua về rốt cuộc bị bỏ vào thùng rác, ước chừng là vậy." },
     big: {
       num: "7,6",
       unit: "triệu tấn",
       text: (
         <>
-          thực phẩm bị lãng phí khắp nước Úc mỗi năm, từ nông trại đến bàn ăn. Trị giá khoảng <b>$36.6 tỷ</b>.
+          thực phẩm bị lãng phí khắp nước Úc mỗi năm, từ nông trại đến bàn ăn. Trị giá khoảng <b>$36,6 tỷ</b>.
         </>
       ),
     },
@@ -62,28 +62,28 @@ export const wasteNumbersStrings = defineStrings({
   zh: {
     eyebrow: "为什么重要",
     title: "好端端的食物，成吨地被扔掉。",
-    lead: "澳大利亚被扔掉的东西，大多本来都能吃。这正是我们的用武之地：富余货、积压货和临期货，在变成一个统计数字之前，就被我们买下。",
+    lead: "澳洲扔掉的食物，大多本来都能吃。这正是我们的用武之地：富余货、积压货和临期货，在变成一个统计数字之前，就被我们买下。",
     full: "满了。",
     tower: {
       num: "25",
       unit: "万吨",
       text: (
         <>
-          维多利亚州家庭每年扔掉的好食物，<b>足够填满 Eureka Tower。</b>
+          维多利亚州家庭每年扔掉的好食物，<b>足够填满整座尤里卡大厦。</b>
         </>
       ),
     },
-    bags: { connector: "/", text: "袋杂货，大约最后进了垃圾桶。" },
+    bags: { connector: "/", text: "的食品杂货，最后进了垃圾桶（粗略估算）。" },
     big: {
       num: "760",
       unit: "万吨",
       text: (
         <>
-          的食物在澳大利亚每年被浪费，从农场到餐桌，价值约 <b>$366 亿</b>。
+          食物每年在全澳洲被浪费掉，从农场到餐桌都有，价值约 <b>$366 亿</b>。
         </>
       ),
     },
-    edible: { num: "70", text: "其中仍然可以吃。" },
+    edible: { num: "70", text: "其实还能吃。" },
     cite: (name: string) => `来源：${name}`,
   },
   it: {
@@ -106,7 +106,7 @@ export const wasteNumbersStrings = defineStrings({
       unit: "milioni di tonnellate",
       text: (
         <>
-          di spreco alimentare in tutta l’Australia ogni anno, dai campi alla tavola. Vale circa <b>$36.6 miliardi</b>.
+          di spreco alimentare in tutta l’Australia ogni anno, dai campi alla tavola. Vale circa <b>$36,6 miliardi</b>.
         </>
       ),
     },
@@ -115,8 +115,8 @@ export const wasteNumbersStrings = defineStrings({
   },
   ja: {
     eyebrow: "なぜ大切？",
-    title: "食べられる食品が、トン単位で捨てられています。",
-    lead: "オーストラリアで捨てられる食品の大半は、もともと食べられるものです。私たちは、その隙間で働いています。余剰品や過剰在庫、期限の近い商品を、統計の数字になる前に仕入れています。",
+    title: "まだ食べられるのに、トン単位でゴミ箱へ。",
+    lead: "オーストラリアで捨てられる食品の大半は、まだ食べられるものでした。私たちの出番は、まさにそこ。余剰在庫や期限の近い商品を、統計の数字になる前に仕入れています。",
     full: "満杯。",
     tower: {
       num: "25",
@@ -127,7 +127,7 @@ export const wasteNumbersStrings = defineStrings({
         </>
       ),
     },
-    bags: { connector: "/", text: "買い物袋分の食品が、だいたいゴミ箱に入っています。" },
+    bags: { connector: "/", text: "買い物袋5つのうち、およそ1つ分の食品がゴミ箱行きに。" },
     big: {
       num: "760",
       unit: "万トン",

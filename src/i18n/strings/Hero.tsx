@@ -52,17 +52,17 @@ export const heroStrings = defineStrings({
     lines: [<>Đồ ăn ngon.</>, <>Giá {squiggle("hời.")}</>, <>Bớt {marker("lãng phí.")}</>],
     lead: (
       <>
-        <strong>Thực phẩm hàng hiệu, được cứu khỏi lãng phí</strong> và về giỏ của bạn với giá chỉ bằng một phần giá bình thường.
+        <strong>Thực phẩm hàng hiệu được giải cứu khỏi thùng rác</strong>, rồi vào giỏ của bạn với giá chỉ bằng một phần nhỏ giá thường.
       </>
     ),
     findStore: "Tìm cửa hàng",
     seeFinds: "Xem món hời tuần này",
-    ghost: ["Melbourne yêu thích", "siêu thị giảm giá"],
+    ghost: ["Siêu thị giá rẻ", "Melbourne yêu thích"],
     stickers: [
-      "Dầu ô liu nguyên chất",
+      "Dầu ô liu siêu nguyên chất",
       "Mì ramen cay",
       "Sữa yến mạch cho barista",
-      "Soda cam máu có ga",
+      "Soda cam máu",
       "Kem gelato dâu tây",
       "Mứt dâu tây",
       "Thanh bánh quy sô-cô-la",
@@ -70,7 +70,7 @@ export const heroStrings = defineStrings({
     stickerLink: (label: string) => `${label}. Xem món hời tuần này`,
     bursts: [
       { note: "Lốc 4", rrp: "Ối!" },
-      { note: "Giới hạn", rrp: "Thôi!" },
+      { note: "Có hạn", rrp: "Khỏi!" },
     ],
     rrp: "GIÁ GỐC",
     stats: [
@@ -85,13 +85,13 @@ export const heroStrings = defineStrings({
     lines: [<>好食材。</>, <>更{squiggle("实惠。")}</>, <>少{marker("浪费。")}</>],
     lead: (
       <>
-        <strong>大牌食品从浪费中被拯救出来</strong>，以平时几分之一的价格送进你的购物篮。
+        <strong>大牌食品，从浪费边缘抢救回来</strong>，只花平时几分之一的价钱，就能装进你的购物篮。
       </>
     ),
     findStore: "找门店",
     seeFinds: "看看本周好物",
-    ghost: ["墨尔本最爱", "折扣超市"],
-    stickers: ["特级初榨橄榄油", "辣味拉面", "咖啡师燕麦奶", "血橙气泡苏打水", "草莓意式冰淇淋", "草莓果酱", "巧克力饼干条"],
+    ghost: ["墨尔本人最爱的", "折扣超市"],
+    stickers: ["特级初榨橄榄油", "辣味拉面", "咖啡师燕麦奶", "血橙气泡水", "草莓意式冰淇淋", "草莓果酱", "巧克力饼干条"],
     stickerLink: (label: string) => `${label}。看看本周好物`,
     bursts: [
       { note: "4 件装", rrp: "哎哟" },
@@ -100,8 +100,8 @@ export const heroStrings = defineStrings({
     rrp: "原价",
     stats: [
       ["1995 年起", "对抗食物浪费"],
-      ["4 家门店", "遍布墨尔本内城"],
-      ["数百万", "公斤食物已被拯救"],
+      ["4 家门店", "遍布墨尔本市区"],
+      ["数百万", "公斤食物免于浪费"],
     ],
     ringText: "1995 年起 • 对抗食物浪费 •",
     ringLabel: "1995 年起，对抗食物浪费",
@@ -110,7 +110,7 @@ export const heroStrings = defineStrings({
     lines: [<>Buon cibo.</>, <>Prezzi {squiggle("bassi.")}</>, <>Meno {marker("sprechi.")}</>],
     lead: (
       <>
-        <strong>Alimentari di grandi marche, salvati dallo spreco</strong> e portati nel tuo cestino a una frazione del solito
+        <strong>Prodotti di grandi marche, salvati dallo spreco</strong> e portati nel tuo cestino a una frazione del solito
         prezzo.
       </>
     ),
@@ -120,8 +120,8 @@ export const heroStrings = defineStrings({
     stickers: [
       "Olio extravergine d’oliva",
       "Ramen piccante",
-      "Latte d’avena barista",
-      "Soda frizzante all’arancia rossa",
+      "Bevanda d’avena barista",
+      "Aranciata rossa frizzante",
       "Gelato alla fragola",
       "Marmellata di fragole",
       "Barretta di biscotti al cioccolato",
@@ -144,30 +144,30 @@ export const heroStrings = defineStrings({
     lines: [<>いい食材。</>, <>もっと{squiggle("お得。")}</>, <>ムダ{marker("控えめ。")}</>],
     lead: (
       <>
-        <strong>人気ブランドの食品を、食品ロスから救出</strong>して、いつもの価格のほんの一部でお届けします。
+        <strong>捨てられるはずだった人気ブランドの食品</strong>を、いつもよりずっと安く、あなたの買い物かごへ。
       </>
     ),
     findStore: "店舗を探す",
-    seeFinds: "今週のお買い得を見る",
-    ghost: ["メルボルンの人気店", "格安スーパー"],
+    seeFinds: "今週の掘り出し物を見る",
+    ghost: ["メルボルンで人気の", "格安スーパー"],
     stickers: [
       "エクストラバージンオリーブオイル",
       "ピリ辛ラーメン",
       "バリスタ用オーツミルク",
-      "ブラッドオレンジの炭酸飲料",
+      "ブラッドオレンジソーダ",
       "いちごジェラート",
       "いちごジャム",
       "チョコビスケットバー",
     ],
-    stickerLink: (label: string) => `${label}。今週のお買い得を見る`,
+    stickerLink: (label: string) => `${label}。今週の掘り出し物を見る`,
     bursts: [
       { note: "4個入り", rrp: "痛っ" },
       { note: "数量限定", rrp: "ムリ" },
     ],
-    rrp: "希望小売価格",
+    rrp: "定価",
     stats: [
-      ["1995年", "食品ロスと戦う"],
-      ["4店舗", "メルボルン中心部"],
+      ["1995年〜", "食品ロスと戦い続けて"],
+      ["4店舗", "メルボルン市内"],
       ["数百万", "kgの食品を救出"],
     ],
     ringText: "1995年から • 食品ロスと戦う •",

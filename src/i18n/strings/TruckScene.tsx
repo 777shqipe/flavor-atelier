@@ -19,6 +19,6 @@ export const truckSceneStrings = defineStrings({
   },
   ja: {
     label: "Cheaper Buy Milesのトラックがバックで倉庫に入り、商品を積んで走り去ります。",
-    distribution: "流通センター",
+    distribution: "物流センター",
   },
 });
