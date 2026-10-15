@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { gap, useLang, useT } from "./i18n";
 import { palletDockStrings } from "./i18n/strings/PalletDock";
 import { Odometer } from "./Odometer";
@@ -35,35 +35,36 @@ function hintFor(value: DockValue, count: number) {
 
 /* ---------- the drawings ------------------------------------------------- */
 
-/** The prime mover, nose to the left, roof a little lower than the trailer. */
+/** The prime mover, nose to the left: sleeper cab, stack, mirror. The wheels are HTML, so the cab can sit on its springs. */
 function Cab() {
   return (
-    <svg className="pd-cab" viewBox="0 0 56 74" aria-hidden="true">
-      <path d="M8 30c0-4 3-8 8-8h22c3 0 6 2 6 6v36H4V40c0-4 2-8 4-10z" fill="var(--green)" />
-      <path d="M12 26h18c2 0 4 2 4 4v12H8V34c0-5 2-8 4-8z" fill="#cfe7df" />
-      <path d="M4 46h40v18H4z" fill="var(--green-700)" />
-      <rect x="6" y="52" width="10" height="4" rx="1" fill="#f6b531" />
-      <path d="M44 20h8v44h-8z" fill="var(--green-900)" />
-      <circle cx="18" cy="64" r="7" fill="#17140c" />
-      <circle cx="18" cy="64" r="2.6" fill="#cfd5d0" />
+    <svg className="pd-cab-art" viewBox="0 0 64 78" aria-hidden="true">
+      <rect x="52" y="4" width="5" height="34" rx="2" fill="#5b6a63" />
+      <path d="M14 20c0-6 4-10 10-10h26c4 0 6 2 6 6v50H6V40c0-3 1-6 3-8z" fill="var(--green)" />
+      <path d="M8 40h10c3 0 5-2 5-5V22c0-2-2-4-4-4-5 0-9 4-11 9z" fill="#cfe7df" />
+      <path d="M24 10h24v22H24z" fill="var(--green-700)" />
+      <path d="M26 14h20v14H26z" fill="#cfe7df" />
+      <path d="M6 48h50v18H6z" fill="var(--green-700)" />
+      <path d="M2 62h58v6H2z" fill="#17140c" />
+      <rect x="6" y="52" width="9" height="5" rx="1.5" fill="#f6b531" />
+      <rect x="2" y="30" width="4" height="9" rx="1" fill="#17140c" />
     </svg>
   );
 }
 
-/** A forklift, forks to the left, drawn flat like the stickers. */
+/** A forklift, forks to the left, with its driver. Wheels are HTML so they can spin on the compositor. */
 function Forklift() {
   return (
-    <svg className="pd-fl-art" viewBox="0 0 72 56" aria-hidden="true">
-      <path d="M4 44h18" stroke="#17140c" strokeWidth="3" strokeLinecap="round" />
-      <path d="M10 10v34M14 10v34" stroke="#17140c" strokeWidth="3" strokeLinecap="round" />
-      <path d="M26 22h30c4 0 8 3 8 8v14H22V26c0-2 2-4 4-4z" fill="#f6b531" />
-      <path d="M56 24h8c4 0 8 3 8 8v12h-8z" fill="#d9951a" />
-      <path d="M26 24h22v-16c0-2-1-4-4-4H30c-2 0-4 2-4 4z" fill="none" stroke="#17140c" strokeWidth="3" strokeLinejoin="round" />
-      <rect x="34" y="18" width="12" height="7" rx="2" fill="#17140c" />
-      <circle cx="30" cy="46" r="8" fill="#17140c" />
-      <circle cx="30" cy="46" r="3" fill="#cfd5d0" />
-      <circle cx="58" cy="46" r="8" fill="#17140c" />
-      <circle cx="58" cy="46" r="3" fill="#cfd5d0" />
+    <svg className="pd-fl-art" viewBox="0 0 80 64" aria-hidden="true">
+      <path d="M2 50h20" stroke="#17140c" strokeWidth="3.2" strokeLinecap="round" />
+      <path d="M11 8v42M16 8v42" stroke="#17140c" strokeWidth="3.2" strokeLinecap="round" />
+      <path d="M26 30h34c5 0 10 4 10 10v12H22V34c0-2 2-4 4-4z" fill="#f6b531" />
+      <path d="M60 32h6c5 0 10 4 10 10v10H60z" fill="#d9951a" />
+      <path d="M27 30V14c0-3 2-5 5-5h18c3 0 5 2 5 5v16" fill="none" stroke="#17140c" strokeWidth="3.2" strokeLinejoin="round" />
+      <circle cx="43" cy="17" r="5" fill="#e8c39e" />
+      <path d="M37 15c1-4 4-6 7-6s5 2 6 5l-13 1z" fill="var(--green)" />
+      <path d="M36 30c0-5 3-8 7-8s7 3 7 8z" fill="var(--green)" />
+      <rect x="33" y="26" width="18" height="5" rx="2" fill="#17140c" />
     </svg>
   );
 }
@@ -71,15 +72,17 @@ function Forklift() {
 /* ---------- the dock ----------------------------------------------------- */
 
 /**
- * "How many pallets?", answered by loading a truck. Drag anywhere on the trailer (a range input lies over it):
- * pallets drop into the trailer front to back, two high, and the forklift backs out as the load grows.
- * The dispatch tag above counts along; past a full truck it reads 22+.
+ * "How many pallets?", answered by loading a truck at the dock. Drag anywhere on the scene (a range input
+ * lies over it): pallets drop into the trailer front to back, two high, the forklift backs out as the load
+ * grows, and the rig settles on its springs. The dispatch tag swings and counts along; a full truck gets its
+ * stamp, one more and the forklift is left holding a pallet on the dock. Hovering shows what a click would load.
  */
 export function PalletDock({ value, onChange }: { value: DockValue; onChange: (value: DockValue) => void }) {
   const s = useT(palletDockStrings);
   const { lang } = useLang();
   const count = dockCount(value);
   const unsure = value === "unsure";
+  const full = count >= FULL;
 
   // Each pallet remembers its last move so its animation plays once, with a short stagger when many land at once.
   // State adjusted during render: when the count changes, the pallets in between get their move.
@@ -93,9 +96,31 @@ export function PalletDock({ value, onChange }: { value: DockValue; onChange: (v
     setTrail({ count, moves });
   }
 
+  // The forklift's wheels turn for a moment after every move, the way it drove.
+  const [drive, setDrive] = useState<"in" | "out" | null>(null);
+  const lastCount = useRef(count);
+  useEffect(() => {
+    if (lastCount.current === count) return;
+    setDrive(count > lastCount.current ? "out" : "in");
+    lastCount.current = count;
+    const timer = window.setTimeout(() => setDrive(null), 650);
+    return () => window.clearTimeout(timer);
+  }, [count]);
+
+  // Hover shows what a click would load: ghost pallets up to the pointer and the number on a little tag.
+  const [preview, setPreview] = useState<{ n: number; x: number } | null>(null);
+  const onHover = (event: PointerEvent<HTMLInputElement>) => {
+    if (event.pointerType !== "mouse" || unsure) return;
+    const box = event.currentTarget.getBoundingClientRect();
+    const x = Math.min(Math.max(event.clientX - box.left, 0), box.width);
+    setPreview({ n: Math.round((x / box.width) * OVER), x });
+  };
+
   const hint = hintFor(value, count);
   const shown = unsure ? "?" : count > FULL ? `${FULL}+` : String(count);
+  const parity = count % 2 ? "a" : "b";
   const step = (delta: number) => onChange(String(Math.min(OVER, Math.max(0, count + delta))));
+  const ghost = preview && preview.n !== count ? preview.n : null;
 
   return (
     <div className="pd" data-unsure={unsure || undefined}>
@@ -104,47 +129,84 @@ export function PalletDock({ value, onChange }: { value: DockValue; onChange: (v
       </p>
 
       <div className="pd-head">
-        <div className="pd-tag" aria-hidden="true">
-          <b className="pd-num">
-            <Odometer value={shown} />
-          </b>
-          <span className="pd-unit">
-            {gap(lang)}
-            {s.unit(count)}
-          </span>
+        <div className="pd-hang" aria-hidden="true">
+          <span className="pd-string" />
+          <div className="pd-tag" data-swing={parity}>
+            <b className="pd-num">
+              <Odometer value={shown} />
+            </b>
+            <span className="pd-unit">
+              {gap(lang)}
+              {s.unit(count)}
+            </span>
+          </div>
         </div>
         <p className="pd-hint" key={hint}>
           {s.hints[hint]}
         </p>
       </div>
 
-      <div className="pd-scene" aria-hidden="true">
-        <Cab />
-        <div className="pd-trailer">
-          <div className="pd-slots">
-            {Array.from({ length: FULL }, (_, i) => {
-              const move = trail.moves[i];
-              return (
-                <i
-                  key={i}
-                  className="pd-pal"
-                  data-on={i < count || undefined}
-                  data-move={move?.dir}
-                  style={{ gridColumn: Math.floor(i / 2) + 1, gridRow: i % 2 ? 1 : 2, "--d": `${move?.delay ?? 0}ms` } as CSSProperties}
-                />
-              );
-            })}
-          </div>
-          <div className="pd-track" style={{ "--p": Math.min(count, FULL) / FULL } as CSSProperties}>
-            <span className="pd-fl" key={count}>
-              <Forklift />
-              {count > FULL && <i className="pd-pal pd-fl-load" data-on />}
-            </span>
+      <div className="pd-scene" aria-hidden="true" style={{ "--load": Math.min(count, FULL) / FULL } as CSSProperties}>
+        <div className="pd-wall">
+          <span className="pd-door" />
+          <span className="pd-sign">CBM · {s.dock} 02</span>
+        </div>
+        <span className="pd-platform" />
+        <span className="pd-bumper" />
+
+        <div className="pd-dip" data-thud={parity}>
+          <div className="pd-rig">
+            <div className="pd-cab">
+              <Cab />
+            </div>
+            <div className="pd-trailer">
+              <div className="pd-slots">
+                {Array.from({ length: FULL }, (_, i) => {
+                  const move = trail.moves[i];
+                  const ghostState = ghost === null ? undefined : i >= count && i < ghost ? "add" : i >= ghost && i < count ? "cut" : undefined;
+                  return (
+                    <i
+                      key={i}
+                      className="pd-pal"
+                      data-on={i < count || undefined}
+                      data-move={move?.dir}
+                      data-ghost={ghostState}
+                      style={{ gridColumn: Math.floor(i / 2) + 1, gridRow: i % 2 ? 1 : 2, "--d": `${move?.delay ?? 0}ms` } as CSSProperties}
+                    />
+                  );
+                })}
+              </div>
+              {full && <span className="pd-stamp">{s.full}</span>}
+            </div>
+            <span className="pd-legs" />
           </div>
         </div>
+
+        {/* Parked where the next pallet goes: deep inside for an empty trailer, out on the dock once it is full. */}
+        <div className="pd-track" style={{ "--p": Math.min(count, FULL) / FULL } as CSSProperties} data-out={count > FULL || undefined}>
+          <span className="pd-fl" data-moving={drive ?? undefined}>
+            <Forklift />
+            <span className="pd-fl-wheel pd-fl-wheel-a" />
+            <span className="pd-fl-wheel pd-fl-wheel-b" />
+            {count > FULL && <i className="pd-pal pd-fl-load" data-on />}
+          </span>
+        </div>
+
+        <span className="pd-wheel pd-wheel-cab" />
+        <span className="pd-wheel pd-wheel-cab2" />
         <span className="pd-wheel pd-wheel-a" />
         <span className="pd-wheel pd-wheel-b" />
-        <span className="pd-ramp" />
+        <div className="pd-ground">
+          <span>0</span>
+          <span>{SLOTS}</span>
+          <span>{FULL}</span>
+        </div>
+
+        {ghost !== null && preview && (
+          <span className="pd-cursor" style={{ translate: `${preview.x}px 0` }}>
+            {ghost > FULL ? `${FULL}+` : ghost}
+          </span>
+        )}
         <input
           className="pd-range"
           type="range"
@@ -155,21 +217,21 @@ export function PalletDock({ value, onChange }: { value: DockValue; onChange: (v
           aria-labelledby="pd-q"
           aria-valuetext={s.valueText(count)}
           onChange={(event) => onChange(event.target.value)}
+          onPointerMove={onHover}
+          onPointerLeave={() => setPreview(null)}
         />
       </div>
 
       <div className="pd-bar">
-        <button type="button" className="pd-btn" aria-label={s.fewer} disabled={unsure || count === 0} onClick={() => step(-1)}>
-          −
-        </button>
-        <div className="pd-ruler" aria-hidden="true">
-          <span>0</span>
-          <span>{SLOTS}</span>
-          <span>{FULL}+</span>
+        <div className="pd-steps">
+          <button type="button" className="pd-btn" aria-label={s.fewer} disabled={unsure || count === 0} onClick={() => step(-1)}>
+            −
+          </button>
+          <button type="button" className="pd-btn" aria-label={s.more} disabled={unsure || count === OVER} onClick={() => step(1)}>
+            +
+          </button>
         </div>
-        <button type="button" className="pd-btn" aria-label={s.more} disabled={unsure || count === OVER} onClick={() => step(1)}>
-          +
-        </button>
+        <p className="pd-tip">{s.tip}</p>
         <button type="button" className="ct-pill pd-unsure" aria-pressed={unsure} onClick={() => onChange(unsure ? "" : "unsure")}>
           {s.unsure}
         </button>

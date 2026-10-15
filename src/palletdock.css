@@ -1,19 +1,26 @@
-/* The loading dock: a cutaway trailer that fills with pallets, two high, front to back, as the forklift
-   backs out. The whole scene is a range input you can drag; the tag above counts along. All motion is
-   translate/opacity on plain elements, so it runs on the compositor (see the perf rules). */
+/* The loading dock: a diorama card with a rig backed up to the warehouse dock. The cutaway trailer fills
+   with pallets, two high, front to back, as the forklift backs out; the rig sinks on its springs as the
+   load grows and dips when a pallet lands; the dispatch tag swings and counts along. The whole scene is a
+   range input you can drag. All motion is translate/rotate/opacity on plain elements, so it runs on the
+   compositor (see the perf rules). */
 
 .pd {
   container-type: inline-size;
   display: grid;
   gap: 14px;
   --pd-ink: var(--green-900);
-  --pd-cab: clamp(36px, 9cqw, 56px);
-  --pd-pad: clamp(4px, 1.2cqw, 8px);
-  --fl-w: clamp(40px, 11cqw, 68px);
+  --pd-cab: clamp(34px, 9cqw, 62px);
+  --pd-dock: clamp(46px, 12cqw, 84px);
+  --pd-pad: clamp(3px, 1cqw, 7px);
+  --pd-ground: 26px;
+  --fl-w: clamp(40px, 11cqw, 70px);
 }
 
 /* ---------- the tag ------------------------------------------------------ */
-.pd-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.pd-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.pd-hang { position: relative; padding-top: 10px; }
+/* The string it hangs from. */
+.pd-string { position: absolute; top: 0; left: 14px; width: 2px; height: 14px; background: rgb(0 0 0 / 0.35); }
 .pd-tag {
   position: relative;
   display: inline-flex;
@@ -24,10 +31,15 @@
   background: var(--sun);
   color: #17140c;
   box-shadow: 0 1px 0 rgb(0 0 0 / 0.12), 0 8px 16px -10px rgb(0 0 0 / 0.5);
+  transform-origin: 15px 0;
   rotate: -1.5deg;
 }
-/* The punched hole and the string loop of a dispatch tag. */
-.pd-tag::before { content: ""; position: absolute; top: 50%; left: 9px; width: 7px; height: 7px; border-radius: 50%; translate: 0 -50%; background: var(--paper); box-shadow: inset 0 0 0 1.5px rgb(0 0 0 / 0.25); }
+.pd-tag::before { content: ""; position: absolute; top: 9px; left: 12px; width: 6px; height: 6px; border-radius: 50%; background: var(--paper); box-shadow: inset 0 0 0 1.5px rgb(0 0 0 / 0.3); }
+/* Swings on its string each time the number changes; two names so a new count always restarts it. */
+.pd-tag[data-swing="a"] { animation: pd-swing-a 0.9s var(--ease-out); }
+.pd-tag[data-swing="b"] { animation: pd-swing-b 0.9s var(--ease-out); }
+@keyframes pd-swing-a { 0% { rotate: -1.5deg; } 25% { rotate: 3deg; } 55% { rotate: -3.5deg; } 80% { rotate: -0.5deg; } 100% { rotate: -1.5deg; } }
+@keyframes pd-swing-b { 0% { rotate: -1.5deg; } 25% { rotate: 3deg; } 55% { rotate: -3.5deg; } 80% { rotate: -0.5deg; } 100% { rotate: -1.5deg; } }
 .pd-num { font: 400 clamp(30px, 7cqw, 40px) / 1 var(--font-display); letter-spacing: 0.02em; }
 .pd-num .odo-col { width: 0.56em; }
 .pd-num .odo-strip { transition: translate 0.5s var(--spring) calc(var(--c) * 40ms); }
@@ -39,31 +51,110 @@
 /* ---------- the scene ---------------------------------------------------- */
 .pd-scene {
   position: relative;
+  padding: 26px var(--pd-dock) var(--pd-ground) 10px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #eef3ee, #e3ebe4 70%, #d9e2da);
+  box-shadow: inset 0 0 0 1px rgb(0 56 42 / 0.12);
+  transition: opacity 0.3s, filter 0.3s;
+}
+.pd[data-unsure] .pd-scene { opacity: 0.5; filter: saturate(0.25); }
+.pd-scene:has(.pd-range:focus-visible) { box-shadow: inset 0 0 0 1px rgb(0 56 42 / 0.12), 0 0 0 3px rgb(0 88 66 / 0.3); }
+
+/* The warehouse at the right: wall, rolled-up door, the dock sign, a concrete platform with its rubber bumper. */
+.pd-wall { position: absolute; top: 0; right: 0; bottom: var(--pd-ground); width: var(--pd-dock); background: var(--green-700); }
+.pd-door {
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 34%;
+  background: repeating-linear-gradient(180deg, #0c261d 0 4px, #163d31 4px 7px);
+  box-shadow: 0 2px 0 #0a1f18;
+}
+.pd-sign {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  padding: 3px 5px;
+  border-radius: 2px;
+  background: var(--sun);
+  color: #17140c;
+  font: 700 8px / 1 var(--font-mono);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  translate: -50% 0;
+}
+.pd-platform {
+  position: absolute;
+  right: 0;
+  bottom: var(--pd-ground);
+  width: var(--pd-dock);
+  height: 22px;
+  background: linear-gradient(180deg, #b8bfb9, #9aa39c);
+  box-shadow: inset 0 3px 0 #cfd5cf;
+}
+/* Yellow and black at the edge of the platform. */
+.pd-platform::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; background: repeating-linear-gradient(135deg, #f6b531 0 5px, #17140c 5px 10px); }
+.pd-bumper { position: absolute; right: var(--pd-dock); bottom: calc(var(--pd-ground) + 2px); width: 5px; height: 16px; border-radius: 2px; background: #17140c; }
+
+/* The ground: asphalt with the dock markings painted on. */
+.pd-ground {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: var(--pd-ground);
+  padding: 7px calc(var(--pd-dock) + 10px) 0 calc(var(--pd-cab) + 18px);
+  background: repeating-linear-gradient(90deg, rgb(246 240 219 / 0.45) 0 1px, transparent 1px calc(100% / 11)) calc(var(--pd-cab) + 18px) 0 / calc(100% - var(--pd-cab) - var(--pd-dock) - 28px) 5px no-repeat, #2b332f;
+  color: rgb(246 240 219 / 0.7);
+  font: 700 9px / 1 var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+/* ---------- the rig ------------------------------------------------------ */
+/* Two wrappers: the outer dips when a pallet lands, the inner sinks with the load. Separate elements keep
+   both on the compositor. */
+.pd-dip { position: relative; margin-bottom: 10px; }
+.pd-dip[data-thud="a"] { animation: pd-thud-a 0.5s var(--spring); }
+.pd-dip[data-thud="b"] { animation: pd-thud-b 0.5s var(--spring); }
+@keyframes pd-thud-a { 30% { translate: 0 3px; } }
+@keyframes pd-thud-b { 30% { translate: 0 3px; } }
+.pd-rig {
   display: grid;
   grid-template-columns: var(--pd-cab) 1fr;
   align-items: end;
-  gap: 4px;
-  padding: 14px 0 22px;
-  border-bottom: 2px solid var(--pd-ink);
-  transition: opacity 0.3s, filter 0.3s;
+  gap: 5px;
+  translate: 0 calc(var(--load) * 5px);
+  transition: translate 0.6s var(--spring);
 }
-.pd[data-unsure] .pd-scene { opacity: 0.45; filter: saturate(0.3); }
-.pd-cab { display: block; width: 100%; height: auto; overflow: visible; }
+.pd-cab-art { display: block; width: 100%; height: auto; overflow: visible; }
 .pd-trailer {
   position: relative;
+  margin-right: 7px;
   padding: var(--pd-pad) 0 var(--pd-pad) var(--pd-pad);
   border: 2.5px solid var(--pd-ink);
   border-right: 0;
-  border-radius: 10px 0 0 8px;
+  border-radius: 9px 0 0 7px;
   background: #fff;
-  transition: box-shadow 0.2s;
 }
-.pd-scene:has(.pd-range:focus-visible) .pd-trailer { box-shadow: 0 0 0 4px rgb(0 88 66 / 0.25); }
-/* The floor runs on to a dock plate past the open end. */
-.pd-ramp { position: absolute; right: 0; bottom: 20px; width: 14px; height: 2.5px; background: var(--pd-ink); rotate: 24deg; transform-origin: left center; }
-.pd-wheel { position: absolute; bottom: 14px; width: 14px; height: 14px; border-radius: 50%; background: #17140c; box-shadow: inset 0 0 0 4px #17140c, inset 0 0 0 6px #cfd5d0; }
-.pd-wheel-a { right: 16%; }
-.pd-wheel-b { right: calc(16% + 20px); }
+/* The landing gear under the front of the trailer. */
+.pd-legs { position: absolute; left: calc(var(--pd-cab) + 18px); bottom: -10px; width: 4px; height: 10px; background: var(--pd-ink); box-shadow: 10px 0 0 var(--pd-ink); }
+.pd-legs::after { content: ""; position: absolute; left: -2px; right: -12px; bottom: 0; height: 2px; background: var(--pd-ink); }
+.pd-wheel {
+  position: absolute;
+  bottom: calc(var(--pd-ground) - 6px);
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #17140c;
+  box-shadow: inset 0 0 0 4px #17140c, inset 0 0 0 6px #cfd5d0;
+}
+.pd-wheel-cab { left: calc(10px + var(--pd-cab) * 0.22); }
+.pd-wheel-cab2 { left: calc(10px + var(--pd-cab) * 0.68); }
+.pd-wheel-a { right: calc(var(--pd-dock) + 26px); }
+.pd-wheel-b { right: calc(var(--pd-dock) + 44px); }
 
 .pd-slots {
   display: grid;
@@ -74,24 +165,26 @@
 }
 
 /* ---------- pallets ------------------------------------------------------ */
-/* A cardboard box on a wooden pallet, drawn with two gradients so twenty-two of them cost nothing. */
+/* A cardboard box on a wooden pallet, drawn with gradients so twenty-two of them cost nothing. Three kinds
+   take turns: a taped carton, two small boxes, and a shrink-wrapped stack. */
 .pd-pal {
   --box: #dcaa6e;
   --tape: #e3261b;
+  --face: linear-gradient(90deg, transparent 44%, var(--tape) 44% 56%, transparent 56%);
   position: relative;
   display: block;
   aspect-ratio: 1 / 0.86;
   opacity: 0;
 }
-.pd-pal:nth-child(3n) { --box: #e6bd86; --tape: #6bb8ff; }
-.pd-pal:nth-child(3n + 1) { --box: #cf9a5c; --tape: #f6b531; }
+.pd-pal:nth-child(3n) { --box: #e6bd86; --tape: #6bb8ff; --face: linear-gradient(90deg, transparent 47%, rgb(0 0 0 / 0.22) 47% 53%, transparent 53%), linear-gradient(0deg, transparent 50%, rgb(255 255 255 / 0.18) 50%); }
+.pd-pal:nth-child(3n + 1) { --box: #cf9a5c; --tape: #f6b531; --face: linear-gradient(118deg, transparent 38%, rgb(255 255 255 / 0.45) 38% 50%, transparent 50%), linear-gradient(0deg, rgb(120 160 190 / 0.25), rgb(120 160 190 / 0.25)); }
 .pd-pal::before {
   content: "";
   position: absolute;
   inset: 0 7% 21%;
   border: 1.5px solid var(--pd-ink);
   border-radius: 2px;
-  background: linear-gradient(90deg, transparent 44%, var(--tape) 44% 56%, transparent 56%), var(--box);
+  background: var(--face), var(--box);
   box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.1);
 }
 .pd-pal::after {
@@ -116,24 +209,82 @@
   from { translate: 0 0; opacity: 1; }
   to { translate: 0 -170%; opacity: 0; }
 }
+/* Hover: the pallets a click would add show as outlines; the ones it would take away go pale. */
+.pd-pal[data-ghost="add"] { opacity: 0.38; animation: none; }
+.pd-pal[data-ghost="cut"] { opacity: 0.45; }
+
+/* Slammed on once the truck is full. */
+.pd-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  padding: 4px 10px 3px;
+  border: 3px solid var(--tomato);
+  border-radius: 6px;
+  color: var(--tomato);
+  font: 400 clamp(16px, 4cqw, 26px) / 1 var(--font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  translate: -50% -50%;
+  rotate: -12deg;
+  opacity: 0.85;
+  animation: pd-stamp 0.45s var(--bounce) both;
+}
+@keyframes pd-stamp { from { scale: 1.8; opacity: 0; } 60% { opacity: 0.85; } }
 
 /* ---------- forklift ----------------------------------------------------- */
-/* Parked where the next pallet goes: deep inside for an empty trailer, at the door once it is full. */
+/* Parked where the next pallet goes: at the front wall for an empty trailer, out on the dock once it is full. */
 .pd-track {
   position: absolute;
-  left: var(--pd-pad);
-  bottom: var(--pd-pad);
-  width: calc(100% - var(--fl-w) - var(--pd-pad));
+  left: calc(10px + var(--pd-cab) + 5px + 2.5px + var(--pd-pad));
+  right: calc(var(--pd-dock) + 7px);
+  bottom: calc(var(--pd-ground) + 10px + var(--pd-pad) + 2px);
   height: 1px;
   translate: calc(var(--p) * 100%) 0;
   transition: translate 0.6s var(--spring);
   pointer-events: none;
 }
-.pd-fl { position: absolute; left: 0; bottom: 0; width: var(--fl-w); animation: pd-bump 0.45s var(--spring); }
+.pd-track[data-out] { translate: calc(100% + var(--pd-dock) * 0.18) 0; }
+.pd-fl { position: absolute; left: 0; bottom: 0; width: var(--fl-w); }
 .pd-fl-art { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.18)); }
-@keyframes pd-bump { 30% { translate: 0 -5%; } }
+/* Spoked wheels that turn while it drives, the right way for each direction. */
+.pd-fl-wheel {
+  position: absolute;
+  bottom: 2%;
+  width: 22%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(#cfd5d0 0 12%, #17140c 12% 50%, #cfd5d0 50% 62%, #17140c 62%);
+  box-shadow: inset 0 0 0 2.5px #17140c;
+}
+.pd-fl-wheel-a { left: 28%; }
+.pd-fl-wheel-b { left: 68%; }
+.pd-fl[data-moving="out"] .pd-fl-wheel { animation: pd-spin 0.6s var(--ease-out); }
+.pd-fl[data-moving="in"] .pd-fl-wheel { animation: pd-spin-back 0.6s var(--ease-out); }
+@keyframes pd-spin { to { rotate: 240deg; } }
+@keyframes pd-spin-back { to { rotate: -240deg; } }
 /* One pallet too many: it rides on the forks with nowhere to go. */
-.pd-fl-load { position: absolute; left: -4%; bottom: 26%; width: 30%; }
+.pd-fl-load { position: absolute; left: -6%; bottom: 30%; width: 30%; }
+
+/* ---------- hover preview ------------------------------------------------ */
+.pd-cursor {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  z-index: 3;
+  min-width: 22px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: var(--pd-ink);
+  color: var(--cream);
+  font: 700 11px / 1 var(--font-mono);
+  text-align: center;
+  margin-left: -11px;
+  pointer-events: none;
+}
+.pd-cursor::after { content: ""; position: absolute; top: 100%; left: 50%; border: 4px solid transparent; border-top-color: var(--pd-ink); translate: -50% 0; }
 
 /* ---------- the range over everything ------------------------------------ */
 .pd-range {
@@ -157,47 +308,40 @@
 .pd-range::-moz-range-track { background: none; }
 
 /* ---------- the bar below ------------------------------------------------ */
-.pd-bar { display: flex; align-items: center; gap: 10px; }
+.pd-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.pd-steps { display: inline-flex; border: 1.5px solid rgb(0 56 42 / 0.2); border-radius: 999px; background: #fff; }
 .pd-btn {
-  flex: none;
-  width: 44px;
-  height: 44px;
-  border: 1.5px solid rgb(0 56 42 / 0.2);
-  border-radius: 50%;
-  background: #fff;
+  width: 46px;
+  height: 42px;
+  border: 0;
+  background: none;
   color: var(--ct-ink);
-  font: 500 24px / 1 var(--font-sans);
+  font: 500 22px / 1 var(--font-sans);
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s, scale 0.3s var(--spring), opacity 0.2s;
+  transition: color 0.2s, scale 0.3s var(--spring), opacity 0.2s;
 }
-.pd-btn:hover:not(:disabled) { border-color: var(--green); }
-.pd-btn:active:not(:disabled) { scale: 0.92; }
-.pd-btn:disabled { opacity: 0.35; cursor: default; }
+.pd-btn + .pd-btn { border-left: 1.5px solid rgb(0 56 42 / 0.15); }
+.pd-btn:first-child { border-radius: 999px 0 0 999px; }
+.pd-btn:last-child { border-radius: 0 999px 999px 0; }
+.pd-btn:hover:not(:disabled) { color: var(--green); background: rgb(0 88 66 / 0.06); }
+.pd-btn:active:not(:disabled) { scale: 0.9; }
+.pd-btn:disabled { opacity: 0.3; cursor: default; }
 .pd-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-/* A dock ruler: eleven ticks for the eleven slots. */
-.pd-ruler {
-  position: relative;
-  flex: 1 1 80px;
-  display: flex;
-  justify-content: space-between;
-  height: 18px;
-  padding-top: 7px;
-  background: repeating-linear-gradient(90deg, rgb(0 56 42 / 0.35) 0 1px, transparent 1px calc(100% / 11)) top / calc(100% + 1px) 5px no-repeat;
-  color: var(--ct-muted);
-  font: 700 10px / 1 var(--font-mono);
-  letter-spacing: 0.06em;
-}
+.pd-tip { flex: 1 1 140px; margin: 0; color: var(--ct-muted); font: 500 13px / 1.35 var(--font-sans); }
 .pd-unsure { margin-left: auto; }
 
-@media (max-width: 440px) {
-  .pd-scene { padding-bottom: 20px; }
-  .pd-wheel { width: 11px; height: 11px; box-shadow: inset 0 0 0 3px #17140c, inset 0 0 0 5px #cfd5d0; }
-  .pd-wheel-b { right: calc(16% + 15px); }
-  .pd-ruler { display: none; }
-  .pd-unsure { margin-left: 0; }
+@media (max-width: 520px) {
+  .pd-sign { display: none; }
+  .pd-tip { display: none; }
+  .pd-wheel { width: 12px; height: 12px; box-shadow: inset 0 0 0 3px #17140c, inset 0 0 0 5px #cfd5d0; }
+  .pd-wheel-a { right: calc(var(--pd-dock) + 18px); }
+  .pd-wheel-b { right: calc(var(--pd-dock) + 32px); }
+  .pd-legs { display: none; }
+  .pd-platform { height: 16px; }
+  .pd-bumper { height: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pd-pal, .pd-fl, .pd-hint { animation: none !important; }
-  .pd-track, .pd-num .odo-strip { transition-duration: 0.01ms; }
+  .pd-pal, .pd-tag, .pd-dip, .pd-fl-wheel, .pd-hint, .pd-stamp { animation: none !important; }
+  .pd-track, .pd-rig, .pd-num .odo-strip { transition-duration: 0.01ms; }
 }
