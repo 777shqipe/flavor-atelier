@@ -1,15 +1,10 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { useLang, useT } from "./i18n";
 import { instaShelfStrings } from "./i18n/strings/InstaShelf";
 import { CutLine } from "./Flyer";
-import { LogoMark } from "./Logo";
 import { RingBadge } from "./RingBadge";
 import { useInstagramFeed, type InstagramFeedData, type QaItemData } from "./useInstagramFeed";
 import "./insta.css";
-
-/** Each print sits on the shelf a touch crooked; the pattern repeats so it never looks random-generated. */
-const TILTS = [-1.1, 0.8, -0.6, 1.05, -0.85, 0.7];
-const slotStyle = (i: number, scale = 1) => ({ "--i": i, "--tilt": `${(TILTS[i % TILTS.length] * scale).toFixed(2)}deg` }) as CSSProperties;
 
 const PROFILE = "https://www.instagram.com/cheaperbuymiles/";
 const HANDLE = "cheaperbuymiles";
@@ -310,54 +305,6 @@ const FALLBACK_FEED: InstagramFeedData = {
   ],
 };
 
-const FX: Record<string, "snap" | "till"> = {
-  lasagne: "snap",
-  icecream: "till",
-  tempeh: "till",
-  mikeike: "snap",
-  water: "snap",
-  almond: "till",
-  nuttelex: "snap",
-  bleach: "till",
-};
-
-function Fx({ id }: { id: string }) {
-  return <span className="ig-fx" data-fx={FX[id] ?? "snap"} aria-hidden="true" />;
-}
-
-function StoryLink() {
-  return (
-    <a className="ig-story" href={PROFILE} target="_blank" rel="noopener noreferrer">
-      <span className="ig-story-ring" aria-hidden="true">
-        <span className="ig-story-face">
-          <LogoMark />
-        </span>
-      </span>
-      <span className="ig-story-name">{HANDLE}</span>
-    </a>
-  );
-}
-
-function CommentLink({ href }: { href: string }) {
-  const s = useT(instaShelfStrings);
-  return (
-    <a className="ig-comment" href={href} target="_blank" rel="noopener noreferrer">
-      <span>{s.comment}</span>
-    </a>
-  );
-}
-
-function Price({ value }: { value: string }) {
-  const match = /^\$(\d+)$/.exec(value);
-  if (!match) return <span className="ig-price ig-price-long">{value}</span>;
-  return (
-    <span className="ig-price">
-      <sup>$</sup>
-      {match[1]}
-    </span>
-  );
-}
-
 export function InstaShelf() {
   const s = useT(instaShelfStrings);
   const { lang, locale } = useLang();
@@ -372,8 +319,6 @@ export function InstaShelf() {
   const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
   const issue = Math.ceil(((+monday - +new Date(monday.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
 
-  const heroPosts = feed.foodPosts.filter((p) => p.type === "hero");
-  const ticketPosts = feed.foodPosts.filter((p) => p.type === "ticket");
   const activeQa: QaItemData = feed.qa[activeQaIndex] || feed.qa[0];
 
   return (
@@ -401,231 +346,93 @@ export function InstaShelf() {
         </div>
       </header>
 
-      {/* TWO-WING SPLIT LAYOUT: Food bargains on the left, People & Employee video reels on the right */}
-      <div className="ig-wings-layout">
-        {/* LEFT WING: Food Bargains & Grocery Drops */}
+      <div className="ig-wings">
         <section className="ig-wing ig-food-wing" aria-label={s.foodWingTitle}>
-          <div className="ig-wing-head rv">
-            <span className="ig-wing-num" aria-hidden="true">01</span>
-            <div className="ig-wing-titles">
-              <h3 className="ig-wing-title">{s.foodWingTitle}</h3>
-              <p className="ig-wing-sub">{s.foodWingSub}</p>
-            </div>
-          </div>
-
-          {/* Hero food deals */}
-          <div className="ig-feature">
-            {heroPosts.map((post, i) => (
-              <div key={post.id} className="ig-slot rv" style={slotStyle(i, 0.45)}>
-                <article className="ig-card ig-hero">
-                  <StoryLink />
-                  <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
-                    <figure>
-                      <img src={post.img} alt={post.name[lang]} width={1080} height={1440} loading="lazy" decoding="async" />
-                      <span className="ig-sticker" aria-hidden="true">{post.size}</span>
-                      <p className="ig-quip">{post.quip[lang]}</p>
-                      <Fx id={post.id} />
-                    </figure>
-                    <div className="ig-body">
-                      <p className="ig-kicker">
-                        <span>{postDay(post.date)}</span>
-                        <span>{post.aisle ? post.aisle[lang] : ""}</span>
-                      </p>
-                      <h3>{post.name[lang]}</h3>
-                      <dl className="ig-cells">
-                        <div>
-                          <dt>{s.sizeLabel}</dt>
-                          <dd>{post.size}</dd>
-                        </div>
-                        <div>
-                          <dt>{s.whereLabel}</dt>
-                          <dd>{post.where ? post.where[lang] : ""}</dd>
-                        </div>
-                        <div>
-                          <dt>{s.fromLabel}</dt>
-                          <dd>Instagram</dd>
-                        </div>
-                      </dl>
-                      <div className="ig-bar">
-                        <span>{s.seePost}</span>
-                        <Price value={post.price} />
-                      </div>
-                    </div>
-                  </a>
-                  <CommentLink href={post.href} />
-                </article>
-              </div>
-            ))}
-          </div>
-
-          {/* Shelf-edge food tickets */}
-          <ul className="ig-grid ig-food-grid">
-            {ticketPosts.map((post, i) => (
-              <li key={post.id} className="ig-slot rv" style={slotStyle(i + 2)}>
-                <article className="ig-card ig-ticket">
-                  <StoryLink />
-                  <a className="ig-post" href={post.href} target="_blank" rel="noopener noreferrer">
-                    <figure>
-                      <img src={post.img} alt={post.name[lang]} width={1080} height={1440} loading="lazy" decoding="async" />
-                      {post.tag && <span className="ig-sticker" aria-hidden="true">{post.tag[lang]}</span>}
-                      <p className="ig-quip">{post.quip[lang]}</p>
-                      <Fx id={post.id} />
-                    </figure>
-                    <div className="ig-label">
-                      <Price value={post.price} />
-                      <span className="ig-label-meta">
-                        <b>{post.name[lang]}</b>
-                        {`${postDay(post.date)} · ${post.size}`}
-                      </span>
-                      <span className="ig-code" aria-hidden="true" />
-                    </div>
-                    <span className="sr-only">{s.opens}</span>
-                  </a>
-                  <CommentLink href={post.href} />
-                </article>
+          <header className="ig-wing-head">
+            <h3 className="ig-wing-title"><span>01</span> {s.foodWingTitle}</h3>
+            <p className="ig-wing-sub">{s.foodWingSub}</p>
+          </header>
+          <ul className="ig-foods">
+            {feed.foodPosts.map((post) => (
+              <li key={post.id}>
+                <a className="ig-card ig-food" href={post.href} target="_blank" rel="noopener noreferrer">
+                  <figure>
+                    <img src={post.img} alt="" width={800} height={800} decoding="async" />
+                    <span className="ig-price">{post.price}</span>
+                  </figure>
+                  <div className="ig-copy">
+                    <p className="ig-name">{post.name[lang]}</p>
+                    <p className="ig-quip">{post.quip[lang]}</p>
+                    <p className="ig-fine">{postDay(post.date)} · {post.size}</p>
+                  </div>
+                </a>
               </li>
             ))}
           </ul>
         </section>
 
-        {/* RIGHT WING: People & Employee Videos */}
         <section className="ig-wing ig-people-wing" aria-label={s.peopleWingTitle}>
-          <div className="ig-wing-head rv">
-            <span className="ig-wing-num" aria-hidden="true">02</span>
-            <div className="ig-wing-titles">
-              <h3 className="ig-wing-title">{s.peopleWingTitle}</h3>
-              <p className="ig-wing-sub">{s.peopleWingSub}</p>
-            </div>
-          </div>
-
-          <div className="ig-reels-grid">
-            {feed.peoplePosts.map((post, i) => (
-              <div key={post.id} className="ig-slot rv" style={slotStyle(i + 1, 0.5)}>
-                <article className="ig-card ig-reel-card">
-                  <div className="ig-reel-top">
-                    <StoryLink />
-                    <span className="ig-reel-author">{post.author}</span>
-                  </div>
-                  <a className="ig-post ig-reel-post" href={post.href} target="_blank" rel="noopener noreferrer">
-                    <figure className="ig-reel-media">
-                      <img src={post.img} alt={post.title[lang]} width={1080} height={1920} loading="lazy" decoding="async" />
-                      <div className="ig-reel-play-overlay" aria-hidden="true">
-                        <span className="ig-play-disc">
-                          <svg viewBox="0 0 24 24">
-                            <path d="M8 5.5v13l11-6.5z" />
-                          </svg>
-                        </span>
-                        <div className="ig-soundwave">
-                          <span /><span /><span /><span />
-                        </div>
-                      </div>
-                      <div className="ig-reel-badges" aria-hidden="true">
-                        <span className="ig-reel-format-badge">
-                          <i />
-                          {s.videoReel}
-                        </span>
-                        <span className="ig-reel-duration-badge">{post.duration}</span>
-                      </div>
-                      <p className="ig-quip">{post.quip[lang]}</p>
-                    </figure>
-                    <div className="ig-reel-body">
-                      <div className="ig-reel-meta-line">
-                        <span className="ig-reel-tag">{post.tag}</span>
-                        <span className="ig-reel-date">{postDay(post.date)}</span>
-                      </div>
-                      <h4 className="ig-reel-title">{post.title[lang]}</h4>
-                      <p className="ig-reel-highlight">{post.highlight[lang]}</p>
-                      <div className="ig-reel-bar">
-                        <span className="ig-reel-watch">{s.watchReel}</span>
-                        <span className="ig-reel-arrow" aria-hidden="true">↗</span>
-                      </div>
-                    </div>
-                  </a>
-                  <CommentLink href={post.href} />
-                </article>
-              </div>
+          <header className="ig-wing-head">
+            <h3 className="ig-wing-title"><span>02</span> {s.peopleWingTitle}</h3>
+            <p className="ig-wing-sub">{s.peopleWingSub}</p>
+          </header>
+          <div className="ig-people-list">
+            {feed.peoplePosts.map((post) => (
+              <a key={post.id} className="ig-card ig-reel" href={post.href} target="_blank" rel="noopener noreferrer">
+                <figure>
+                  <img src={post.img} alt="" width={800} height={640} decoding="async" />
+                  <span className="ig-play" aria-hidden="true">
+                    <svg viewBox="0 0 12 12"><path d="M3.2 1.8v8.4L10.2 6z" /></svg>
+                    {post.duration}
+                  </span>
+                </figure>
+                <div className="ig-copy">
+                  <p className="ig-fine">{post.tag} · {post.author}</p>
+                  <p className="ig-name">{post.title[lang]}</p>
+                  <p className="ig-quip">{post.quip[lang]}</p>
+                </div>
+              </a>
             ))}
           </div>
         </section>
       </div>
 
-      {/* COMMUNITY Q&A SECTION (Styled as an Instagram Story Q&A Sticker on tactile paper) */}
-      <section className="ig-qa-shelf rv" aria-labelledby="ig-qa-title">
-        <div className="ig-qa-card">
-          <div className="ig-qa-header">
-            <div className="ig-qa-brand">
-              <span className="ig-story-ring ig-qa-ring" aria-hidden="true">
-                <span className="ig-story-face">
-                  <LogoMark />
-                </span>
-              </span>
-              <div>
-                <span className="ig-qa-handle">@{HANDLE}</span>
-                <span className="ig-qa-tagline">Instagram Story Q&amp;A</span>
-              </div>
-            </div>
-            <span className="ig-qa-chip">Q&amp;A · FAQ</span>
-          </div>
-
-          <div className="ig-qa-titles">
+      <section className="ig-qa" aria-labelledby="ig-qa-title">
+        <div className="ig-qa-top">
+          <div>
             <h3 id="ig-qa-title" className="ig-qa-title">{s.qaTitle}</h3>
             <p className="ig-qa-dek">{s.qaDek}</p>
           </div>
-
-          {/* Interactive Question Selector Pills */}
-          <div className="ig-qa-tabs" role="tablist" aria-label="Instagram Q&A Questions">
-            {feed.qa.map((qaItem, idx) => (
-              <button
-                key={qaItem.id}
-                type="button"
-                role="tab"
-                aria-selected={idx === activeQaIndex}
-                className={`ig-qa-tab ${idx === activeQaIndex ? "active" : ""}`}
-                onClick={() => setActiveQaIndex(idx)}
-              >
-                <span className="ig-qa-tab-tag">{qaItem.tag[lang]}</span>
-                <span className="ig-qa-tab-label">{qaItem.question[lang]}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Active Question & Team Answer Bubble */}
-          <div className="ig-qa-stage">
-            <div className="ig-qa-bubble-box">
-              {/* Question bubble */}
-              <div className="ig-qa-question-bubble">
-                <span className="ig-qa-asker-badge">
-                  <span>{activeQa.asker}</span>
-                  <small>· {activeQa.badge[lang]}</small>
-                </span>
-                <p className="ig-qa-question-text">“{activeQa.question[lang]}”</p>
-              </div>
-
-              {/* Team Answer bubble */}
-              <div className="ig-qa-answer-bubble">
-                <div className="ig-qa-avatar" aria-hidden="true">
-                  <LogoMark />
-                </div>
-                <div className="ig-qa-answer-text-wrap">
-                  <span className="ig-qa-answer-author">{s.qaTeamAnswer}</span>
-                  <p className="ig-qa-answer-text">{activeQa.answer[lang]}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Q&A Footer with CTA */}
-            <div className="ig-qa-footer">
-              <span className="ig-qa-ask-prompt">{s.qaAskYours}</span>
-              <a
-                href={PROFILE}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button outline ig-qa-cta"
-              >
-                {s.qaAskButton}
-              </a>
-            </div>
-          </div>
+          <a className="button outline ig-qa-cta" href={PROFILE} target="_blank" rel="noopener noreferrer">
+            {s.qaAskButton}
+          </a>
+        </div>
+        <div className="ig-qa-tabs" role="tablist">
+          {feed.qa.map((qaItem, idx) => (
+            <button
+              key={qaItem.id}
+              type="button"
+              role="tab"
+              id={`ig-qa-tab-${qaItem.id}`}
+              aria-selected={idx === activeQaIndex}
+              aria-controls="ig-qa-panel"
+              className={idx === activeQaIndex ? "is-on" : undefined}
+              onClick={() => setActiveQaIndex(idx)}
+            >
+              {qaItem.tag[lang]}
+            </button>
+          ))}
+        </div>
+        <div
+          className="ig-qa-panel"
+          role="tabpanel"
+          id="ig-qa-panel"
+          aria-labelledby={`ig-qa-tab-${activeQa.id}`}
+        >
+          <p className="ig-qa-ask">{activeQa.asker} · {activeQa.badge[lang]}</p>
+          <p className="ig-qa-q">{activeQa.question[lang]}</p>
+          <p className="ig-qa-a">{activeQa.answer[lang]}</p>
+          <p className="ig-qa-by">{s.qaTeamAnswer}</p>
         </div>
       </section>
     </section>
