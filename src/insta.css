@@ -41,73 +41,91 @@
   text-transform: none;
 }
 .ig-foil {
-  --peel-back-a: #c9c4e4;
-  --peel-back-b: #fff;
-  --peel-back-c: #8d93c4;
+  --peel-back-a: #b7b3d8;
+  --peel-back-b: #f4f1ff;
+  --peel-back-c: #6e74b0;
   flex: none;
-  width: clamp(150px, 16vw, 198px);
-  height: clamp(88px, 9vw, 112px);
+  width: clamp(168px, 17vw, 214px);
+  height: clamp(100px, 10vw, 124px);
   margin: 0 4px 8px 0;
-  rotate: -8deg;
-  filter: drop-shadow(0 8px 8px rgb(80 30 40 / 0.16));
+  rotate: -7deg;
+  filter: drop-shadow(0 10px 12px rgb(60 20 40 / 0.18));
 }
 .ig-foil-face {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  display: grid;
+  place-items: center;
   overflow: hidden;
-  border: 3px solid rgb(255 255 255 / 0.92);
-  border-radius: 16px;
-  color: #1a1208;
+  border-radius: 18px;
+  color: #14110c;
   background:
-    linear-gradient(118deg, transparent 28%, rgb(255 255 255 / 0.15) 36%, rgb(255 255 255 / 0.85) 46%, transparent 54%),
-    conic-gradient(from 140deg, #ff3d6e, #ffb000, #fff15a, #3dff8a, #2ee7ff, #6a6bff, #ee4dff, #ff3d6e);
-  background-size: 220% 220%, 160% 160%;
-  background-position: 0% 40%, 20% 50%;
-  animation: ig-foil 3.2s ease-in-out infinite;
-  box-shadow: inset 0 0 16px rgb(255 255 255 / 0.45);
+    repeating-linear-gradient(
+      118deg,
+      #ff3b78 0 7%,
+      #ff9a1f 7% 14%,
+      #ffe14a 14% 21%,
+      #3dff9a 21% 30%,
+      #2ec8ff 30% 40%,
+      #6a6dff 40% 50%,
+      #ee4bff 50% 60%,
+      #ff3b78 60% 70%
+    );
+  background-size: 180% 180%;
+  animation: ig-foil 4.5s linear infinite;
+  box-shadow:
+    inset 0 0 0 3px #fff,
+    inset 0 0 0 4px rgb(20 16 12 / 0.18),
+    inset 0 10px 16px rgb(255 255 255 / 0.28);
+}
+.ig-foil-face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 .ig-foil-face::after {
   content: "";
   position: absolute;
-  inset: -50% -20%;
-  background: linear-gradient(100deg, transparent 38%, rgb(255 255 255 / 0.75) 50%, transparent 62%);
+  inset: -40% -30%;
+  background: linear-gradient(102deg, transparent 36%, rgb(255 255 255 / 0.15) 44%, rgb(255 255 255 / 0.92) 50%, rgb(255 255 255 / 0.15) 56%, transparent 64%);
   mix-blend-mode: screen;
-  animation: ig-foil-glint 2.4s ease-in-out infinite;
+  animation: ig-foil-glint 2.8s ease-in-out infinite;
   pointer-events: none;
 }
-.ig-foil-face b,
-.ig-foil-face small { position: relative; z-index: 1; }
 .ig-foil-face b {
-  font: 700 12.5px / 1 var(--font-sans);
-  letter-spacing: -0.03em;
-}
-.ig-foil-face small {
-  font: 400 20px / 1 var(--font-display);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+  padding: 0 12px;
+  font: 700 15px / 1.15 var(--font-sans);
+  letter-spacing: -0.04em;
+  text-align: center;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.55);
 }
 .ig-foil-under {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  border: 1.5px dashed var(--green-900);
-  border-radius: 16px;
-  background: var(--paper);
-  color: var(--tomato);
-  font: 400 28px / 1 var(--font-display);
+  padding: 10px 12px;
+  border-radius: 18px;
+  background:
+    radial-gradient(90% 80% at 50% 42%, #fff, var(--paper) 72%);
+  color: var(--green-900);
+  font: 400 22px / 0.95 var(--font-display);
+  letter-spacing: 0.03em;
+  text-align: center;
+  text-transform: uppercase;
 }
 @keyframes ig-foil {
-  50% { background-position: 100% 60%, 80% 10%; }
+  to { background-position: 180% 0; }
 }
 @keyframes ig-foil-glint {
-  0% { translate: -40% 0; }
-  100% { translate: 40% 0; }
+  0% { translate: -46% 0; }
+  100% { translate: 46% 0; }
 }
 .ig-dek-row {
   display: flex;
@@ -489,9 +507,9 @@
 @media (max-width: 640px) {
   .ig-shelf { padding: 28px var(--pad) 48px; }
   .ig-headline { align-items: flex-start; }
-  .ig-foil { width: 132px; height: 80px; }
-  .ig-foil-face b { font-size: 11px; }
-  .ig-foil-face small { font-size: 16px; }
+  .ig-foil { width: 146px; height: 92px; }
+  .ig-foil-face b { font-size: 12.5px; }
+  .ig-foil-under { font-size: 16px; }
   .ig-dek { font-size: 15.5px; }
   .ig-name { font-size: 16px; }
   .ig-qa-card { padding: 16px 14px 14px; }

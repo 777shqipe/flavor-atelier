@@ -339,13 +339,12 @@ export function InstaShelf() {
             className="ig-foil"
             from="tr"
             hover={0.42}
-            deep={0.72}
-            back={{ borderRadius: "16px" }}
-            under={<span className="ig-foil-under">{"<3"}</span>}
+            deep={0.86}
+            back={{ borderRadius: "18px" }}
+            under={<span className="ig-foil-under">Follow Us {"<3"}</span>}
           >
             <span className="ig-foil-face">
               <b>@{HANDLE}</b>
-              <small>Follow Us {"<3"}</small>
             </span>
           </Peel>
         </div>
