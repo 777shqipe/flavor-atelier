@@ -33,30 +33,110 @@ function awning(x0: number, y0: number, stripes: number, w: number, h: number, c
   return { fill: out, edge: `${edge}Z` };
 }
 
-/* ---------- store pin: a little CBM shopfront ------------------------------ */
-// Drawn light: thin deep-green line, no pointer. The anchor (the store's location)
-// is the middle of the doorstep: x 32, y 57 of 64 x 60.
+/* ---------- store pins: one CBM shopfront per neighbourhood ----------------- */
+// Drawn light: thin deep-green line, no pointer, a cream halo underneath. Each
+// store gets a front that belongs to its street; the CBM sign and the store's
+// colour tie them together. The anchor (the store's location) is the middle of
+// the doorstep: x 32, y 57 of 64 x 60.
+const LINE = "#0b3a2d";
+const GLASS = "#d7e8df";
+const HALO = "#fffdf6";
+
+const sign = (y: number, size = 6.6) =>
+  `<text x="32" y="${y}" fill="${CREAM}" stroke="none" font-family="Anton, sans-serif" font-size="${size}" letter-spacing="1" text-anchor="middle">CBM</text>`;
+const glare = (x: number, y: number) => `<path d="M${x} ${y}l5-5" stroke="${HALO}" stroke-width="1.3" fill="none"/>`;
+
+type Front = { halo: string; art: string; top?: string };
+
+/** Footscray, by the Maribyrnong: a sawtooth-roofed warehouse with a half-up
+    roller door and a red lantern for the food shops round the market. */
+const footscray = (c: string): Front => ({
+  halo: `<path d="M8 24V14L20 8V14L32 8V14L44 8V14L56 8V24Z"/><rect x="10" y="22" width="44" height="35" rx="2"/>
+    <circle cx="5.5" cy="35" r="4"/><path d="M2 59.5q3-2.4 6 0t6 0"/>`,
+  art: `<rect x="10" y="22" width="44" height="35" rx="2" fill="${CREAM}"/>
+    <path d="M8 24V14L20 8V14L32 8V14L44 8V14L56 8V24Z" fill="${c}"/>
+    <path d="M20 8V14M32 8V14M44 8V14" stroke-width="2.4"/>
+    <rect x="14" y="15.5" width="36" height="7.5" rx="1.5" fill="${DEEP}"/>
+    <rect x="14" y="32" width="17" height="13" rx="1.5" fill="${GLASS}"/>
+    <path d="M22.5 32V45" stroke-width="1.1"/>
+    <rect x="35" y="30" width="15" height="27" rx="1" fill="${DEEP}"/>
+    <path d="M35 30H50V42H35Z" fill="#c4d0cb"/>
+    <path d="M35 33.5H50M35 37H50M35 40.5H50" stroke-width="1"/>
+    <path d="M10 28H5.5V31" fill="none" stroke-width="1.3"/>
+    <ellipse cx="5.5" cy="35" rx="3.2" ry="3.8" fill="${TOMATO}"/>
+    <path d="M2.4 35H8.6M5.5 38.8V41.5" stroke-width="1"/>
+    <path d="M2 59.5q3-2.4 6 0t6 0" fill="none" stroke="#6bb8ff" stroke-width="1.6"/>`,
+  top: `${sign(21.6)}${glare(17, 41)}<circle cx="47.5" cy="49" r="1" fill="${SUN}" stroke="none"/>`,
+});
+
+/** Flemington, on Racecourse Rd: a stable with a lucky horseshoe in the gable,
+    a split stable door and the white running rail of the track. */
+const flemington = (c: string): Front => ({
+  halo: `<path d="M7 24L32 6L57 24Z"/><rect x="10" y="22" width="44" height="35" rx="2"/>
+    <path d="M2 49.5H10M2 54.5H10M54 49.5H62M54 54.5H62M3.5 48V57M60.5 48V57"/>`,
+  art: `<rect x="10" y="22" width="44" height="35" rx="2" fill="${CREAM}"/>
+    <path d="M7 24L32 6L57 24Z" fill="${c}"/>
+    <path d="M27.8 12.6V16a4.2 4.2 0 0 0 8.4 0V12.6" fill="none" stroke="${SUN}" stroke-width="2.6"/>
+    <rect x="15" y="26" width="34" height="7.5" rx="1.5" fill="${DEEP}"/>
+    <rect x="14" y="38" width="8.5" height="8.5" rx="1" fill="${GLASS}"/>
+    <rect x="41.5" y="38" width="8.5" height="8.5" rx="1" fill="${GLASS}"/>
+    <path d="M18.25 38V46.5M14 42.25H22.5M45.75 38V46.5M41.5 42.25H50" stroke-width="1"/>
+    <rect x="26" y="37" width="12" height="20" rx="1" fill="${DEEP}"/>
+    <path d="M26 46.5H38" stroke="${CREAM}" stroke-width="1.2"/>
+    <path d="M28 55L36 48.5" stroke="${CREAM}" stroke-width="1.2"/>
+    <path d="M2 49.5H10M2 54.5H10M54 49.5H62M54 54.5H62" fill="none" stroke-width="1.4"/>
+    <path d="M3.5 48V57M7.5 48V57M56.5 48V57M60.5 48V57" stroke-width="1.6"/>`,
+  top: `${sign(31.6)}<circle cx="28" cy="13.6" r=".55" fill="${LINE}" stroke="none"/><circle cx="36" cy="13.6" r=".55" fill="${LINE}" stroke="none"/><circle cx="35.6" cy="47.2" r=".9" fill="${SUN}" stroke="none"/>`,
+});
+
+/** Fitzroy, Johnston St: a Victorian terrace shop with a pedimented parapet,
+    a bullnose verandah trimmed in iron lace and a coffee cup in the window. */
+const lace = Array.from({ length: 11 }, (_, i) => `M${10 + i * 4} 30a2 2 0 0 0 4 0`).join("");
+const fitzroy = (c: string): Front => ({
+  halo: `<path d="M10 14H26L32 7L38 14H54V22H10Z"/><rect x="10" y="20" width="44" height="37" rx="1.5"/>
+    <path d="M6 30Q6 25.5 10.5 25.5H53.5Q58 25.5 58 30Z"/><path d="M9 30V57M55 30V57"/>`,
+  art: `<rect x="10" y="20" width="44" height="37" rx="1.5" fill="${CREAM}"/>
+    <path d="M10 14H26L32 7L38 14H54V22H10Z" fill="${DEEP}"/>
+    <circle cx="12" cy="12.4" r="1.6" fill="${CREAM}"/><circle cx="52" cy="12.4" r="1.6" fill="${CREAM}"/>
+    <path d="M6 30Q6 25.5 10.5 25.5H53.5Q58 25.5 58 30Z" fill="${c}"/>
+    <path d="${lace}" fill="none" stroke-width="1"/>
+    <path d="M9 30V57M55 30V57" stroke-width="1.8"/>
+    <rect x="14" y="37" width="19" height="15" rx="1" fill="${GLASS}"/>
+    <path d="M19.5 43.5H27V46.5A3.75 3.2 0 0 1 19.5 46.5Z" fill="${CREAM}" stroke-width="1.2"/>
+    <path d="M27 44.5h1.2a1.4 1.4 0 0 1 0 2.8H26.6" fill="none" stroke-width="1.1"/>
+    <path d="M37 57V40.5a5 5 0 0 1 10 0V57Z" fill="${DEEP}"/>`,
+  top: `${sign(19.8, 6.2)}<path d="M22 41.5q-1-1.2 0-2.4t0-2.4M24.6 41.5q-1-1.2 0-2.4t0-2.4" stroke="${HALO}" stroke-width="1.1" fill="none"/><circle cx="44.6" cy="49" r="1" fill="${SUN}" stroke="none"/>`,
+});
+
+/** Brunswick, Sydney Road: a stepped art-deco front under the tram wire, a
+    flat canopy, and the tram stop's pole and flag at the kerb. */
+const brunswick = (c: string): Front => ({
+  halo: `<path d="M12 22V13H20V10H26V7H38V10H44V13H52V22Z"/><rect x="10" y="20" width="44" height="37" rx="1.5"/>
+    <rect x="7" y="27" width="50" height="4.5" rx="1"/><path d="M60 2V57"/><rect x="56" y="11" width="7.5" height="9" rx="1"/>`,
+  art: `<path d="M0 4.5H64" fill="none" stroke-width="1"/>
+    <rect x="10" y="20" width="44" height="37" rx="1.5" fill="${CREAM}"/>
+    <path d="M12 22V13H20V10H26V7H38V10H44V13H52V22Z" fill="${DEEP}"/>
+    <rect x="7" y="27" width="50" height="4.5" rx="1" fill="${c}"/>
+    <rect x="14" y="35.5" width="11" height="15" rx="3" fill="${GLASS}"/>
+    <rect x="39" y="35.5" width="11" height="15" rx="3" fill="${GLASS}"/>
+    <rect x="27.5" y="35.5" width="9" height="21.5" rx="1" fill="${DEEP}"/>
+    <path d="M60 2.5V57" stroke-width="1.8"/>
+    <rect x="56" y="11" width="7.5" height="9" rx="1" fill="${SUN}"/>
+    <path d="M56 15.5H63.5" stroke-width="1"/>
+    <path d="M2 59.3H62" fill="none" stroke-width="1"/>`,
+  top: `${sign(19.2, 6.2)}<path d="M29.5 9.6h5" stroke="${CREAM}" stroke-width="1"/>${glare(16.5, 44)}${glare(41.5, 44)}<circle cx="34.6" cy="47" r="1" fill="${SUN}" stroke="none"/>`,
+});
+
+const FRONTS: Record<string, (colour: string) => Front> = { footscray, flemington, fitzroy, brunswick };
+
 export function shopPinSvg(store: Store) {
-  const line = "#0b3a2d";
-  const aw = awning(10, 19, 6, 44 / 6, 6, store.color);
+  const front = (FRONTS[store.id] ?? footscray)(store.color);
   return `
   <svg viewBox="0 0 64 60" aria-hidden="true" focusable="false">
     <g stroke-linejoin="round" stroke-linecap="round">
-      <g fill="#fffdf6" stroke="#fffdf6" stroke-width="5">
-        <rect x="10" y="22" width="44" height="35" rx="2.5"/>
-        <rect x="8" y="7" width="48" height="13" rx="3"/>
-        <path d="${aw.edge}"/>
-      </g>
-      <g stroke="${line}" stroke-width="1.6">
-        <rect x="10" y="22" width="44" height="35" rx="2.5" fill="${CREAM}"/>
-        <rect x="15" y="33" width="19" height="13" rx="1.5" fill="#d7e8df"/>
-        <rect x="38.5" y="33" width="10.5" height="24" rx="1" fill="${DEEP}"/>
-        <rect x="8" y="7" width="48" height="13" rx="3" fill="${DEEP}"/>
-        ${aw.fill}<path d="${aw.edge}" fill="none"/>
-      </g>
-      <path d="M19 43l7-7" stroke="#fffdf6" stroke-width="1.4"/>
-      <circle cx="41.5" cy="46" r="1" fill="${SUN}"/>
-      <text x="32" y="16.9" fill="${CREAM}" font-family="Anton, sans-serif" font-size="8.4" letter-spacing="1" text-anchor="middle">CBM</text>
+      <g fill="${HALO}" stroke="${HALO}" stroke-width="5">${front.halo}</g>
+      <g stroke="${LINE}" stroke-width="1.6">${front.art}</g>
+      ${front.top ?? ""}
     </g>
   </svg>`;
 }

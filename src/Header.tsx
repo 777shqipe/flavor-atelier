@@ -12,6 +12,8 @@ const LINKS: Page[] = ["home", "stores", "about"];
 
 /** The screen refreshes in vertical bands, left to right, like a big e-paper panel. */
 const BANDS = 12;
+/** A few ms of fixed jitter per band so the sweep reads as a panel, not a CSS loop. */
+const JITTER = [0, 14, 4, 19, 7, 0, 16, 9, 21, 3, 12, 6];
 
 /** Label whose letters roll up one after another on hover. */
 function Roll({ text }: { text: string }) {
@@ -95,6 +97,8 @@ export function Header({
     const flash = (mode: "full" | "soft") => {
       delete el.dataset.flash;
       void el.offsetWidth;
+      // Soft sweeps run either way across the panel; the full one always starts at the logo.
+      el.dataset.dir = mode === "soft" && Math.random() < 0.5 ? "rtl" : "ltr";
       el.dataset.flash = mode;
     };
     const tick = () => {
@@ -197,14 +201,11 @@ export function Header({
                   ))}
                 </nav>
 
-                {/* The red-ink promo box of the label: "now serving: you". */}
+                {/* The red-ink promo box of the label. */}
                 <button className="cta" type="button" data-calling={calling || undefined} onClick={call}>
                   <span className="sr-only">{s.contact}</span>
-                  <span className="cta-in" aria-hidden="true">
-                    <small>
-                      {s.nowServing} · <b>{s.you}</b>
-                    </small>
-                    <span className="cta-word">{s.contact}</span>
+                  <span className="cta-word" aria-hidden="true">
+                    {s.contact}
                   </span>
                   <Arrow />
                 </button>
@@ -265,11 +266,8 @@ export function Header({
                 onClick={call}
               >
                 <span className="sr-only">{s.contact}</span>
-                <span className="cta-in" aria-hidden="true">
-                  <small>
-                    {s.nowServing} · <b>{s.you}</b>
-                  </small>
-                  <span className="cta-word">{s.contact}</span>
+                <span className="cta-word" aria-hidden="true">
+                  {s.contact}
                 </span>
                 <Arrow />
               </button>
@@ -286,7 +284,7 @@ export function Header({
             <i className="scr-press" ref={press} />
             <i className="scr-glare" />
             {Array.from({ length: BANDS }, (_, i) => (
-              <i key={i} className="scr-band" style={{ "--i": i, left: `${(i * 100) / BANDS}%` } as CSSProperties} />
+              <i key={i} className="scr-band" style={{ "--i": i, "--r": BANDS - 1 - i, "--j": `${JITTER[i]}ms`, left: `${(i * 100) / BANDS}%` } as CSSProperties} />
             ))}
             <i className="scr-hearts">
               <span className="scr-motto">more taste less waste</span>
@@ -300,7 +298,7 @@ export function Header({
         <div className="hd-notice" role="region" aria-label={ns.badge}>
           <span className="hn-pill">
             <i aria-hidden="true" />
-            {ns.storeDates}
+            <span>{ns.storeDates}</span>
           </span>
           <span className="hn-text">{ns.message}</span>
           <button
