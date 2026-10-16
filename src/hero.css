@@ -16,7 +16,7 @@
 /* The grain is black, and over the hero's dark greens a plain alpha blend gives the same pixels as overlay (they only
    differ on channels above 50%). A blend mode would make Chrome redraw the whole hero on every frame of every loop in it. */
 .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grain) 0 0 / 180px 180px; opacity: 0.11; pointer-events: none; }
-.hero-grid { display: grid; grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.78fr); align-items: center; gap: clamp(24px, 4vw, 64px); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, max-content) minmax(300px, 440px); align-items: center; justify-content: start; gap: clamp(24px, 3.5vw, 54px); }
 .spark { position: absolute; z-index: -1; color: var(--sun); font-size: 22px; opacity: 0.8; animation: twinkle 3.4s ease-in-out infinite alternate; pointer-events: none; }
 .spark.s1 { left: 47%; top: 17%; }
 .spark.s2 { left: 5%; top: 62%; font-size: 15px; animation-delay: -1.2s; }
@@ -69,11 +69,12 @@
 .button.ghost:hover { background: rgb(246 240 219 / 0.12); box-shadow: inset 0 0 0 1.5px var(--cream); }
 .button.ghost svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: translate 0.4s var(--spring); }
 .button.ghost:hover svg { translate: 0 3px; }
-.stk:focus-visible { outline: 2px solid var(--cream); outline-offset: 4px; border-radius: 99px; }
+.stk:focus-visible,
+.apple-cut:focus-visible { outline: 2px solid var(--cream); outline-offset: 4px; border-radius: 20px; }
 
 /* ---------- sticker stage (everything in cqw) ------------------------- */
-/* 30% smaller than the old 600px stage, so the headline leads. */
-.hero-stage { container: stage / inline-size; position: relative; width: 100%; max-width: 420px; justify-self: center; aspect-ratio: 1 / 1.02; }
+/* Pulled left so it sits right next to the headline. */
+.hero-stage { container: stage / inline-size; position: relative; width: 100%; max-width: 430px; justify-self: start; aspect-ratio: 1 / 1.02; }
 
 /* The sun: warm glow, a slow ray wheel, a hairline inner ring and a dotted orbit. */
 .disc {
@@ -125,7 +126,7 @@
 @keyframes hero-float { from { translate: 0 -0.7cqw; rotate: -1deg; } to { translate: 0 0.7cqw; rotate: 1deg; } }
 /* back row: oil, ramen; middle: milk, soda, gelato; front: jam, choc */
 .stk.k-oil { --d: 10; --r: -7deg; --f: -1s; left: 23cqw; top: 5cqw; width: 14cqw; }
-.stk.k-ramen { --d: 14; --r: 8deg; --f: -2.4s; left: 50cqw; top: 7cqw; width: 30cqw; }
+.stk.k-ramen { --d: 14; --r: 7deg; --f: -2.4s; left: 44cqw; top: 8cqw; width: 29cqw; }
 .stk.k-milk { --d: 18; --r: -10deg; --f: -3.2s; left: 4cqw; top: 29cqw; width: 20cqw; }
 .stk.k-soda { --d: 20; --r: 11deg; --f: -0.6s; left: 73cqw; top: 41cqw; width: 15cqw; }
 .stk.k-gelato { --d: 24; --r: 7deg; --f: -4s; left: 59cqw; top: 67cqw; width: 25cqw; }
@@ -175,8 +176,150 @@
 .hb.b1 { --s: 17cqw; --r: -10deg; --e: 1000ms; left: 0; top: 6cqw; }
 .hb.b2 { --s: 16cqw; --r: 9deg; --e: 1140ms; left: 84cqw; top: 56cqw; }
 .hb.b2 .hb-fill { background: #7a4ce0; }
-.hero-stage .hero-ring { top: -3cqw; right: -3cqw; z-index: 8; width: 21cqw; height: 21cqw; }
-.hero-stage .hero-ring strong { font-size: 3.4cqw; }
+
+/* Interactive apple + paring knife replacing the old spinning '95 badge. */
+.apple-cut {
+  position: absolute;
+  top: -9cqw;
+  right: -14cqw;
+  z-index: 8;
+  width: 35cqw;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 0.6cqw 0.6cqw rgb(0 30 22 / 0.24)) drop-shadow(0 3cqw 2.6cqw rgb(0 30 22 / 0.38));
+  scale: 1;
+  transition: scale 1s var(--bounce) 0.9s, rotate 0.45s var(--spring);
+}
+.hero:not([data-ready]) .apple-cut { scale: 0; }
+.apple-cut:hover { scale: 1.05; z-index: 10; }
+.apple-cut .ac-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.apple-cut .ac-apple { transform-origin: 68px 88px; transition: transform 0.55s var(--spring); }
+.apple-cut .ac-piece {
+  transform-origin: 96px 68px;
+  transition: transform 0.65s var(--bounce), opacity 0.55s ease;
+}
+.apple-cut .ac-piece-flesh { opacity: 0; transition: opacity 0.2s; }
+.apple-cut .ac-flesh-copy {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  scale: 0.5;
+  transition: opacity 0.35s ease 0.12s, scale 0.55s var(--bounce) 0.12s;
+}
+.apple-cut .ac-cut-guide { transition: opacity 0.25s; }
+.apple-cut .ac-knife {
+  transform-origin: 88px 26px;
+  animation: ac-knife-idle 2.2s ease-in-out infinite alternate;
+  transition: transform 0.5s var(--spring);
+}
+@keyframes ac-knife-idle {
+  from { translate: -3px -4px; rotate: -4deg; }
+  to { translate: 4px 5px; rotate: 3deg; }
+}
+.apple-cut:hover:not([data-sliced]) .ac-knife {
+  animation-play-state: paused;
+  transform: translate(6px, 8px) rotate(4deg);
+}
+
+/* Sliced state: the knife cuts down along the seam, the dark spot pops off,
+   and both the flesh stamp and the under-apple ribbon appear. */
+.apple-cut[data-sliced] .ac-knife {
+  animation: none;
+  transform: translate(31px, 47px) rotate(8deg);
+}
+.apple-cut[data-sliced] .ac-piece {
+  transform: translate(27px, 31px) rotate(36deg);
+}
+.apple-cut[data-sliced] .ac-piece-flesh { opacity: 1; }
+.apple-cut[data-sliced] .ac-cut-guide { opacity: 0; }
+.apple-cut[data-sliced] .ac-flesh-copy { opacity: 1; scale: 1; }
+.apple-cut[data-sliced] .ac-apple { transform: translate(-2px, 1px) rotate(-2deg); }
+
+/* Juice/slice sparks */
+.apple-cut .ac-sparks circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  scale: 0;
+  transition: transform 0.55s var(--bounce) 0.06s, opacity 0.45s ease 0.06s, scale 0.55s var(--bounce) 0.06s;
+}
+.apple-cut[data-sliced] .ac-sparks .sp-1 { opacity: 1; scale: 1; transform: translate(8px, -10px); }
+.apple-cut[data-sliced] .ac-sparks .sp-2 { opacity: 1; scale: 1; transform: translate(14px, -2px); }
+.apple-cut[data-sliced] .ac-sparks .sp-3 { opacity: 1; scale: 1; transform: translate(10px, 10px); }
+
+/* Caption / revealed text underneath the apple ("e sotto appare la scritta") */
+.apple-cut .ac-under {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  margin-top: -3.2cqw;
+  pointer-events: none;
+}
+.apple-cut .ac-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7cqw;
+  padding: 0.7cqw 2cqw;
+  border-radius: 99px;
+  background: var(--cream);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+  font: 700 max(10px, 1.95cqw) / 1.1 var(--font-cond);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  rotate: -3deg;
+  transition: opacity 0.25s ease, scale 0.35s var(--spring), translate 0.35s var(--spring);
+}
+.apple-cut .ac-scissors { font-style: normal; font-size: 1.05em; }
+.apple-cut[data-sliced] .ac-hint {
+  opacity: 0;
+  scale: 0.7;
+  translate: 0 -1cqw;
+  position: absolute;
+}
+.apple-cut .ac-reveal {
+  display: grid;
+  justify-items: center;
+  gap: 0.3cqw;
+  padding: 1.1cqw 2.4cqw 1.2cqw;
+  border-radius: 1.8cqw;
+  background: var(--sun);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 0 0.5cqw 0 var(--ink), 0 2cqw 3cqw rgb(0 25 18 / 0.45);
+  white-space: nowrap;
+  rotate: -3deg;
+  opacity: 0;
+  scale: 0.5;
+  translate: 0 -2cqw;
+  transition: opacity 0.35s ease 0.08s, scale 0.55s var(--bounce) 0.08s, translate 0.55s var(--bounce) 0.08s;
+}
+.apple-cut:not([data-sliced]) .ac-reveal {
+  position: absolute;
+}
+.apple-cut[data-sliced] .ac-reveal {
+  opacity: 1;
+  scale: 1;
+  translate: 0 0;
+}
+.apple-cut .ac-reveal strong {
+  font: 400 max(11px, 2.5cqw) / 1 var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.apple-cut .ac-reveal small {
+  font: 700 max(9px, 1.75cqw) / 1.05 var(--font-cond);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5a3210;
+}
 
 /* ---------- stats ----------------------------------------------------- */
 .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 18px 0 0; border-top: 1px solid var(--line); list-style: none; }
@@ -189,7 +332,7 @@
 @media (max-width: 980px) {
   .hero { min-height: auto; padding-top: 104px; gap: 28px; }
   .hero-grid { grid-template-columns: 1fr; gap: 28px; }
-  .hero-stage { max-width: 410px; }
+  .hero-stage { max-width: 410px; justify-self: center; }
   .hero .lead { max-width: 520px; }
   .hero-ghost {
     left: -2%;
@@ -208,7 +351,7 @@
   .hero-stage { width: 96%; max-width: 380px; margin: 2px auto 4px; }
   .hb.b1 { --s: 19.5cqw; left: -1cqw; top: 4cqw; }
   .hb.b2 { --s: 18.5cqw; left: 81cqw; top: 55cqw; }
-  .hero-stage .hero-ring { width: 22.5cqw; height: 22.5cqw; top: -2cqw; right: -2cqw; }
+  .apple-cut { width: 34cqw; top: -6cqw; right: -5cqw; }
   .spark.s1 { left: 84%; top: 12%; font-size: 18px; }
   .spark.s2 { left: 4%; top: 48%; }
   .spark.s3 { right: 5%; bottom: 18%; }
@@ -229,7 +372,7 @@
   .hero-stats span { font-size: 10px; letter-spacing: 0.05em; line-height: 1.25; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spark, .hero-ghost, .stk-bob, .hb-peel, .ring-art, .disc::before, .disc-rays { animation: none; }
+  .spark, .hero-ghost, .stk-bob, .hb-peel, .ring-art, .disc::before, .disc-rays, .apple-cut .ac-knife { animation: none; }
   .squiggle path { stroke-dashoffset: 0; }
   .marker::before { scale: 1 1; }
   .marker { color: var(--green-900); }

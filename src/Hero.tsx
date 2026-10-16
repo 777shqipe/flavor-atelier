@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { AppleCut } from "./AppleCut";
 import type { Page } from "./Header";
 import { ChocBar, GoodsDefs, Gelato, Jam, OatMilk, OliveOil, Ramen, Soda } from "./HeroGoods";
 import { Peel } from "./Peel";
-import { RingBadge } from "./RingBadge";
 import { useT } from "./i18n";
 import { heroStrings } from "./i18n/strings/Hero";
 import "./hero.css";
@@ -125,7 +125,7 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
               </Peel>
             </div>
           ))}
-          <RingBadge className="hero-ring" text={s.ringText} center="95" label={s.ringLabel} />
+          <AppleCut className="hero-apple" copy={s.apple} />
         </div>
       </div>
 
