@@ -59,7 +59,7 @@ function CatIcon({ id }: { id: CatFilter }) {
  * Coupon edge along the top of the flyer: a pair of scissors cuts along the
  * dotted line as the section scrolls up into view.
  */
-export function CutLine() {
+export function CutLine({ className }: { className?: string }) {
   const s = useT(flyerStrings);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -93,7 +93,7 @@ export function CutLine() {
   }, []);
 
   return (
-    <div className="cut" ref={ref} aria-hidden="true">
+    <div className={className ? `cut ${className}` : "cut"} ref={ref} aria-hidden="true">
       <span className="cut-slit" />
       <span className="cut-label">{s.cut}</span>
       <svg className="scissors" viewBox="0 0 66 40">

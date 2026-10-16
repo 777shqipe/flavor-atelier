@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLang, useT } from "./i18n";
 import { instaShelfStrings } from "./i18n/strings/InstaShelf";
 import { CutLine } from "./Flyer";
+import { LogoMark } from "./Logo";
 import { RingBadge } from "./RingBadge";
 import { useInstagramFeed, type InstagramFeedData, type QaItemData } from "./useInstagramFeed";
 import "./insta.css";
@@ -323,13 +324,13 @@ export function InstaShelf() {
 
   return (
     <section className="ig-shelf" id="instagram" data-surface="cream" aria-labelledby="ig-title">
-      <CutLine />
       <header className="ig-head rv">
-        <p className="ig-mast" aria-hidden="true">
+        <div className="ig-mast" aria-hidden="true">
+          <CutLine className="ig-cut" />
           <span>{s.issue(issue)}</span>
           <span>{s.week(shortDay(monday))}</span>
           <span>@cheaperbuymiles</span>
-        </p>
+        </div>
         <div className="ig-headline">
           <h2 id="ig-title" className="ig-title">
             {s.title}
@@ -397,42 +398,68 @@ export function InstaShelf() {
         </section>
       </div>
 
-      <section className="ig-qa" aria-labelledby="ig-qa-title">
-        <div className="ig-qa-top">
-          <div>
+      <section className="ig-qa-shelf" aria-labelledby="ig-qa-title">
+        <div className="ig-qa-card">
+          <div className="ig-qa-header">
+            <div className="ig-qa-brand">
+              <span className="ig-story-ring ig-qa-ring" aria-hidden="true">
+                <LogoMark />
+              </span>
+              <div>
+                <span className="ig-qa-handle">@{HANDLE}</span>
+                <span className="ig-qa-tagline">Instagram Story Q&amp;A</span>
+              </div>
+            </div>
+            <span className="ig-qa-chip">Q&amp;A · FAQ</span>
+          </div>
+
+          <div className="ig-qa-titles">
             <h3 id="ig-qa-title" className="ig-qa-title">{s.qaTitle}</h3>
             <p className="ig-qa-dek">{s.qaDek}</p>
           </div>
-          <a className="button outline ig-qa-cta" href={PROFILE} target="_blank" rel="noopener noreferrer">
-            {s.qaAskButton}
-          </a>
-        </div>
-        <div className="ig-qa-tabs" role="tablist">
-          {feed.qa.map((qaItem, idx) => (
-            <button
-              key={qaItem.id}
-              type="button"
-              role="tab"
-              id={`ig-qa-tab-${qaItem.id}`}
-              aria-selected={idx === activeQaIndex}
-              aria-controls="ig-qa-panel"
-              className={idx === activeQaIndex ? "is-on" : undefined}
-              onClick={() => setActiveQaIndex(idx)}
-            >
-              {qaItem.tag[lang]}
-            </button>
-          ))}
-        </div>
-        <div
-          className="ig-qa-panel"
-          role="tabpanel"
-          id="ig-qa-panel"
-          aria-labelledby={`ig-qa-tab-${activeQa.id}`}
-        >
-          <p className="ig-qa-ask">{activeQa.asker} · {activeQa.badge[lang]}</p>
-          <p className="ig-qa-q">{activeQa.question[lang]}</p>
-          <p className="ig-qa-a">{activeQa.answer[lang]}</p>
-          <p className="ig-qa-by">{s.qaTeamAnswer}</p>
+
+          <div className="ig-qa-tabs" role="tablist">
+            {feed.qa.map((qaItem, idx) => (
+              <button
+                key={qaItem.id}
+                type="button"
+                role="tab"
+                aria-selected={idx === activeQaIndex}
+                className={idx === activeQaIndex ? "active" : undefined}
+                onClick={() => setActiveQaIndex(idx)}
+              >
+                <span className="ig-qa-tab-tag">{qaItem.tag[lang]}</span>
+                <span className="ig-qa-tab-label">{qaItem.question[lang]}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="ig-qa-stage">
+            <div className="ig-qa-bubble-box">
+              <div className="ig-qa-question-bubble">
+                <span className="ig-qa-asker-badge">
+                  <span>{activeQa.asker}</span>
+                  <small>· {activeQa.badge[lang]}</small>
+                </span>
+                <p className="ig-qa-question-text">“{activeQa.question[lang]}”</p>
+              </div>
+              <div className="ig-qa-answer-bubble">
+                <div className="ig-qa-avatar" aria-hidden="true">
+                  <LogoMark />
+                </div>
+                <div>
+                  <span className="ig-qa-answer-author">{s.qaTeamAnswer}</span>
+                  <p className="ig-qa-answer-text">{activeQa.answer[lang]}</p>
+                </div>
+              </div>
+            </div>
+            <div className="ig-qa-footer">
+              <span className="ig-qa-ask-prompt">{s.qaAskYours}</span>
+              <a className="button outline ig-qa-cta" href={PROFILE} target="_blank" rel="noopener noreferrer">
+                {s.qaAskButton}
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </section>
