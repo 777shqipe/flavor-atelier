@@ -102,11 +102,13 @@ export function Header({
     if (torn) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setTicket((n) => n + 1);
+      setOpen(false);
       onContact();
       return;
     }
     setTorn(true);
     tearTimer.current = window.setTimeout(() => {
+      setOpen(false);
       onContact();
       setTicket((n) => n + 1);
       setTorn(false);
@@ -201,35 +203,56 @@ export function Header({
         <div className="drawer" id="mobile-menu" aria-hidden={!open}>
           <div className="drawer-in">
             <nav aria-label={s.mobileNav}>
-              {LINKS.map(([id], index) => (
+              {LINKS.map(([id, tilt], index) => (
                 <button
                   key={id}
                   type="button"
                   tabIndex={open ? 0 : -1}
                   aria-current={page === id ? "page" : undefined}
-                  style={{ "--i": index } as CSSProperties}
+                  style={{ "--i": index, "--tilt": `${tilt}deg` } as CSSProperties}
                   onClick={() => go(id)}
                 >
                   <small>0{index + 1}</small>
-                  <span>{s.nav[id]}</span>
+                  <span className="drawer-link-word">
+                    <span className="drawer-gun" aria-hidden="true">
+                      <span className="gun-paper" />
+                    </span>
+                    {s.nav[id]}
+                  </span>
                   {page === id && <em>{s.here}</em>}
                 </button>
               ))}
             </nav>
             <button
-              className="drawer-cta"
+              className="cta drawer-ticket"
               type="button"
               tabIndex={open ? 0 : -1}
+              data-torn={torn || undefined}
               style={{ "--i": LINKS.length } as CSSProperties}
-              onClick={() => {
-                setOpen(false);
-                onContact();
-              }}
+              onClick={takeNumber}
             >
-              {s.contact}
-              <svg viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" />
-              </svg>
+              <span className="sr-only">{s.contact}</span>
+              <span className="cta-box" aria-hidden="true">
+                <small>{s.nowServing}</small>
+                <span className="cta-led">
+                  <b>{s.you}</b>
+                </span>
+              </span>
+              <span className="cta-ticket" key={`m-${ticket}`} aria-hidden="true">
+                <span className="cta-stub">
+                  <span className="cta-slide">
+                    <TicketArt />
+                  </span>
+                </span>
+                <span className="cta-tear">
+                  <span className="cta-slide">
+                    <TicketArt />
+                    <span className="cta-copy">
+                      <span className="cta-word">{s.contact}</span>
+                    </span>
+                  </span>
+                </span>
+              </span>
             </button>
             <LangSwitch variant="list" tabIndex={open ? 0 : -1} />
             <p className="drawer-foot" style={{ "--i": LINKS.length + 1 } as CSSProperties}>

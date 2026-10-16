@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useLang, useT } from "./i18n";
 import { instaShelfStrings } from "./i18n/strings/InstaShelf";
 import { CutLine } from "./Flyer";
@@ -150,6 +150,7 @@ function Price({ value }: { value: string }) {
 export function InstaShelf() {
   const s = useT(instaShelfStrings);
   const { locale } = useLang();
+  const rootRef = useRef<HTMLElement>(null);
   const shortDay = (date: Date) => date.toLocaleDateString(locale, { day: "numeric", month: "short" });
   // Read at noon, so no time zone can slip a post onto the day before.
   const postDay = (iso: string) => shortDay(new Date(`${iso}T12:00`));
@@ -159,8 +160,50 @@ export function InstaShelf() {
   const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
   const issue = Math.ceil(((+monday - +new Date(monday.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
 
+  // On coarse/touch screens where :hover doesn't fire as you browse, lift cards and fire their camera shutter / till laser as they cross the shelf focus zone.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    if (
+      !window.matchMedia("(hover: none), (pointer: coarse)").matches ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+    const timers = new Map<Element, number>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const card = entry.target as HTMLElement;
+          if (entry.isIntersecting) {
+            card.dataset.active = "";
+            card.dataset.fxGo = "";
+            const prev = timers.get(card);
+            if (prev) window.clearTimeout(prev);
+            timers.set(
+              card,
+              window.setTimeout(() => {
+                delete card.dataset.fxGo;
+                timers.delete(card);
+              }, 1050),
+            );
+          } else {
+            delete card.dataset.active;
+          }
+        }
+      },
+      { rootMargin: "-16% 0px -16% 0px", threshold: 0.55 },
+    );
+    const cards = el.querySelectorAll<HTMLElement>(".ig-card");
+    cards.forEach((c) => io.observe(c));
+    return () => {
+      io.disconnect();
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, []);
+
   return (
-    <section className="ig-shelf" id="instagram" data-surface="cream" aria-labelledby="ig-title">
+    <section className="ig-shelf" id="instagram" ref={rootRef} data-surface="cream" aria-labelledby="ig-title">
       <CutLine />
       <header className="ig-head rv">
         <p className="ig-mast" aria-hidden="true">

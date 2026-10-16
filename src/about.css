@@ -149,14 +149,18 @@
   .wn-bags { grid-column: span 2; }
 }
 @media (max-width: 640px) {
-  .story-pillars { grid-template-columns: 1fr; }
+  .story-pillars { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .story-pillars li { padding: 26px 10px 11px; }
+  .story-pillars li::before { top: 9px; left: 10px; font-size: 9px; }
+  .story-pillars b { font-size: 18px; }
+  .story-pillars span { font-size: 11px; line-height: 1.2; }
   .waste-grid { grid-template-columns: 1fr; }
   .wn-tower, .wn-bags { grid-column: auto; }
   .wn-tower { grid-template-columns: 0.8fr 1fr; }
   .tower { min-height: 320px; }
   .wn-bags { grid-template-columns: 1fr; }
   .wn-bags .bags { grid-row: auto; }
-  .ah-seal { top: -14%; right: 0; }
+  .ah-seal { top: -10%; right: 2%; width: 92px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

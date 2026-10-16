@@ -331,12 +331,12 @@
 .pd-unsure { margin-left: auto; }
 
 @media (max-width: 520px) {
-  .pd-sign { display: none; }
-  .pd-tip { display: none; }
+  .pd-sign { top: 8px; left: 10px; padding: 3px 6px 2px; font-size: 8.5px; }
+  .pd-tip { flex-basis: 100%; order: 3; font-size: 12px; }
   .pd-wheel { width: 12px; height: 12px; box-shadow: inset 0 0 0 3px #17140c, inset 0 0 0 5px #cfd5d0; }
   .pd-wheel-a { right: calc(var(--pd-dock) + 18px); }
   .pd-wheel-b { right: calc(var(--pd-dock) + 32px); }
-  .pd-legs { display: none; }
+  .pd-legs { bottom: 16px; height: 9px; }
   .pd-platform { height: 16px; }
   .pd-bumper { height: 12px; }
 }

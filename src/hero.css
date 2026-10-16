@@ -189,17 +189,46 @@
 .hero-stats span { color: var(--fg-body); font: 600 12px / 1.3 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; }
 
 @media (max-width: 980px) {
-  .hero { min-height: auto; padding-top: 108px; }
-  .hero-grid { grid-template-columns: 1fr; gap: 36px; }
-  .hero-stage { max-width: 400px; }
+  .hero { min-height: auto; padding-top: 104px; gap: 28px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .hero-stage { max-width: 410px; }
   .hero .lead { max-width: 520px; }
+  .hero-ghost {
+    left: -2%;
+    top: 43%;
+    bottom: auto;
+    font-size: clamp(68px, 19vw, 136px);
+    -webkit-text-stroke: 1.2px rgb(246 240 219 / 0.08);
+  }
 }
 @media (max-width: 560px) {
-  .hero h1 { font-size: 54px; }
-  .hero-stats { gap: 12px; }
-  .hero-stats span { font-size: 10.5px; letter-spacing: 0.06em; }
-  .hero-stats li + li { padding-left: 10px; }
-  .spark.s1 { display: none; }
+  .hero { padding-top: 96px; padding-bottom: 28px; gap: 22px; }
+  .hero h1 { font-size: clamp(50px, 14.2vw, 62px); }
+  .hero .lead { margin: 18px 0 22px; font-size: 17px; }
+  .hero-ctas { gap: 10px; }
+  .hero-ctas .button { flex: 1 1 auto; justify-content: center; padding: 14px 18px; }
+  .hero-stage { width: 96%; max-width: 380px; margin: 2px auto 4px; }
+  .hb.b1 { --s: 19.5cqw; left: -1cqw; top: 4cqw; }
+  .hb.b2 { --s: 18.5cqw; left: 81cqw; top: 55cqw; }
+  .hero-stage .hero-ring { width: 22.5cqw; height: 22.5cqw; top: -2cqw; right: -2cqw; }
+  .spark.s1 { left: 84%; top: 12%; font-size: 18px; }
+  .spark.s2 { left: 4%; top: 48%; }
+  .spark.s3 { right: 5%; bottom: 18%; }
+  .hero-stats {
+    gap: 0;
+    padding: 12px 6px;
+    border-top: 0;
+    border-radius: 16px;
+    background: rgb(0 28 20 / 0.34);
+    box-shadow:
+      inset 0 1px 0 rgb(246 240 219 / 0.14),
+      inset 0 0 0 1px rgb(246 240 219 / 0.12),
+      0 14px 28px -18px rgb(0 18 12 / 0.65);
+  }
+  .hero-stats li { padding: 2px 10px; gap: 3px; }
+  .hero-stats li + li { padding-left: 10px; border-left: 1px solid rgb(246 240 219 / 0.14); }
+  .hero-stats strong { font-size: clamp(22px, 6.4vw, 28px); color: var(--sun); }
+  .hero-stats span { font-size: 10px; letter-spacing: 0.05em; line-height: 1.25; }
 }
 @media (prefers-reduced-motion: reduce) {
   .spark, .hero-ghost, .stk-bob, .hb-peel, .ring-art, .disc::before, .disc-rays { animation: none; }

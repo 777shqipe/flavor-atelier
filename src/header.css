@@ -478,13 +478,15 @@
 
 @media (max-width: 920px) {
   .hd { inset: 10px 0 auto; padding: 0 10px; }
-  .bar { --r: 16px; width: 100%; }
+  .bar { --r: 16px; width: 100%; max-width: 100%; transition: box-shadow 0.5s var(--ease-out), max-width 0.55s var(--spring); }
   .bar-row { justify-content: space-between; height: 64px; padding: 0 7px 0 0; }
   .bar-more { display: none; }
   .esl-code { left: 12px; right: 12px; }
   .logo-word { padding: 0 14px 4px; font-size: 22px; }
-  .hd[data-stuck] .bar-row { height: 60px; padding-right: 7px; }
-  .hd[data-stuck] .menu-btn { height: 42px; }
+  /* Scrolled & closed: contract into a tight floating capsule around CBM + Menu, just like desktop's pill. */
+  .hd[data-stuck]:not([data-open]) .bar { max-width: 236px; }
+  .hd[data-stuck] .bar-row { height: 58px; padding-right: 6px; }
+  .hd[data-stuck] .menu-btn { height: 44px; }
   .hd[data-stuck] .burger { width: 32px; height: 32px; }
   .hd[data-stuck] .burger i { left: 10px; right: 10px; }
   .hd[data-stuck] .burger i:first-child { top: 12px; }
@@ -495,14 +497,17 @@
     align-items: center;
     gap: 10px;
     height: 48px;
-    padding: 0 6px 0 18px;
+    padding: 0 6px 0 16px;
     border: 0;
     border-radius: 12px;
     background: var(--cream);
     color: var(--green-900);
     font: 700 14px / 1 var(--font-sans);
+    box-shadow: inset 0 1px 0 #fff, 0 6px 14px -6px rgb(0 0 0 / 0.5);
     cursor: pointer;
+    transition: height 0.45s var(--ease-out), scale 0.25s var(--spring);
   }
+  .menu-btn:active { scale: 0.95; }
   .menu-word { min-width: 2.7em; text-align: left; }
   .burger { position: relative; width: 36px; height: 36px; border-radius: 8px; background: var(--green-900); }
   .burger i { position: absolute; left: 11px; right: 11px; height: 2px; border-radius: 2px; background: var(--cream); transition: translate 0.5s var(--spring), rotate 0.5s var(--spring); }
@@ -516,61 +521,119 @@
   .drawer-in { min-height: 0; overflow: hidden; padding: 0 12px; }
   .drawer nav { display: grid; border-top: 1px solid rgb(246 240 219 / 0.1); }
   .drawer nav button {
+    position: relative;
     display: flex;
     align-items: baseline;
     gap: 14px;
-    padding: 16px 6px 14px;
+    padding: 15px 6px 14px;
     border: 0;
     border-bottom: 1px solid rgb(246 240 219 / 0.08);
     background: transparent;
     color: var(--cream);
-    font: 400 clamp(30px, 8.4vw, 40px) / 1 var(--font-serif);
+    font: 400 clamp(28px, 7.8vw, 38px) / 1 var(--font-serif);
     letter-spacing: -0.02em;
     text-align: left;
     cursor: pointer;
   }
-  .drawer nav button > span { transition: translate 0.45s var(--spring); }
-  .drawer nav button:hover > span,
-  .drawer nav button:active > span { translate: 8px 0; }
-  .drawer nav button:active { background: rgb(246 240 219 / 0.05); }
+  /* Checkout scanner red laser sweep on tap/hover inside the mobile drawer */
+  .drawer nav button::after {
+    content: "";
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 28px;
+    z-index: 3;
+    width: 2px;
+    border-radius: 1px;
+    background: #ff3b2a;
+    box-shadow: 0 0 6px 1px rgb(255 50 30 / 0.85), 0 0 18px 4px rgb(255 50 30 / 0.35);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .drawer nav button:active::after,
+  .drawer nav button:hover::after { animation: laser 0.55s var(--ease-soft); }
+  .drawer-link-word {
+    position: relative;
+    isolation: isolate;
+    display: inline-block;
+    padding: 2px 10px 4px;
+    transition: translate 0.45s var(--spring), color 0.2s;
+  }
+  .drawer nav button:hover .drawer-link-word,
+  .drawer nav button:active .drawer-link-word { translate: 6px 0; }
+  .drawer nav button[aria-current="page"] .drawer-link-word { color: #17140c; }
+  .drawer-gun {
+    position: absolute;
+    inset: 2px -8px 0;
+    z-index: -1;
+    opacity: 0;
+    rotate: var(--tilt, -1.5deg);
+    pointer-events: none;
+  }
+  .drawer nav button[aria-current="page"] .drawer-gun {
+    opacity: 1;
+    filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.35));
+  }
+  .hd[data-open] .drawer nav button[aria-current="page"] .drawer-gun {
+    animation: gun-slap 0.55s var(--ease-out) 0.18s both;
+  }
   .drawer nav small { color: var(--sun); font: 700 11px / 1 var(--font-mono); letter-spacing: 0.06em; }
   .drawer nav em {
     align-self: center;
     margin-left: auto;
     padding: 7px 11px 6px 16px;
     border-radius: 0 7px 7px 0;
-    background: var(--sun);
-    color: #17140c;
-    font: 700 10px / 1 var(--font-sans);
+    background: rgb(246 240 219 / 0.12);
+    box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.22);
+    color: var(--sun);
+    font: 700 10px / 1 var(--font-mono);
     font-style: normal;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     clip-path: polygon(9px 0, 100% 0, 100% 100%, 9px 100%, 0 50%);
   }
-  .drawer-cta {
+
+  /* Deli "Take a number" ticket dispenser inside the mobile drawer */
+  .drawer-ticket {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     width: 100%;
-    height: 56px;
-    margin-top: 18px;
-    padding: 0 22px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--sun);
-    color: #17140c;
-    font: 700 15px / 1 var(--font-sans);
-    cursor: pointer;
+    height: 62px;
+    margin: 16px 0 0;
+    padding: 4px 10px 4px 4px;
+    border-radius: 14px;
+    background:
+      radial-gradient(80% 120% at 15% 50%, rgb(216 55 42 / 0.18), transparent 70%),
+      rgb(6 15 11 / 0.55);
+    box-shadow:
+      inset 0 0 0 1px rgb(246 240 219 / 0.1),
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 14px 26px -14px rgb(0 0 0 / 0.75);
   }
+  .drawer-ticket .cta-box {
+    flex: none;
+    width: 72px;
+    height: 54px;
+    border-radius: 10px 4px 4px 10px;
+  }
+  .drawer-ticket .cta-ticket {
+    flex: 1;
+    max-width: 236px;
+    width: auto;
+    height: 44px;
+  }
+  .drawer-ticket .cta-slide {
+    width: min(240px, calc(100% + 34px));
+  }
+  .drawer-ticket:active .cta-ticket { scale: 0.98; }
+
   .drawer-foot { margin: 14px 0 18px; color: rgb(246 240 219 / 0.6); font-size: 12px; letter-spacing: 0.04em; text-align: center; }
-  .drawer-cta svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .drawer-cta { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 14px 24px -14px rgb(0 0 0 / 0.8); }
-  .drawer-cta:active { scale: 0.98; }
   .drawer nav button,
-  .drawer-cta,
+  .drawer-ticket,
   .drawer-foot { opacity: 0; translate: -14px 18px; transition: opacity 0.25s, translate 0.55s var(--spring), scale 0.2s; }
   .hd[data-open] .drawer nav button,
-  .hd[data-open] .drawer-cta,
+  .hd[data-open] .drawer-ticket,
   .hd[data-open] .drawer-foot { opacity: 1; translate: 0 0; transition-delay: calc(var(--i) * 55ms + 120ms); }
   .hd[data-open] .scrim { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 }
@@ -584,17 +647,20 @@
 @media (max-width: 340px) {
   .menu-word { display: none; }
   .menu-btn { padding-left: 6px; }
+  .hd[data-stuck]:not([data-open]) .bar { max-width: 184px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .bar { animation: none; }
-  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .esl, .logo-word, .logo-rest, .roll-ch, .nav button, .gun, .cta-box, .cta-ticket, .cta-slide, .cta-tear, .cta-stub, .burger i, .drawer, .drawer nav button, .drawer nav button > span, .drawer-cta, .drawer-foot, .scrim {
+  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .esl, .logo-word, .logo-rest, .roll-ch, .nav button, .gun, .drawer-gun, .cta-box, .cta-ticket, .cta-slide, .cta-tear, .cta-stub, .burger i, .drawer, .drawer nav button, .drawer-link-word, .drawer-ticket, .drawer-foot, .scrim {
     transition-duration: 0.01ms;
     transition-delay: 0s;
   }
   .esl-led,
   .gun,
+  .drawer-gun,
   .nav button::after,
+  .drawer nav button::after,
   .cta-slide,
   .cta-tear,
   .cta-stub,

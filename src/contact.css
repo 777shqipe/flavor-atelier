@@ -845,9 +845,233 @@ html.ct-lock { overflow: hidden; }
 .ct-stores a:hover svg { stroke: var(--sun); rotate: -12deg; }
 .ct-stores a:focus-visible { outline: 2px solid var(--sun); outline-offset: -2px; border-radius: 8px; }
 
-/* ---------- Stickers ----------------------------------------------------- */
-.ct-stickers,
-.ct-ghost { display: none; }
+/* ---------- Stickers: holographic foil vinyl on all screens -------------- */
+.ct-stickers {
+  --star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='50,9 67.5,30 92.8,40.1 78.2,63.2 76.5,90.4 50,83.7 23.5,90.4 21.8,63.2 7.2,40.1 32.5,30' fill='white' stroke='white' stroke-width='8' stroke-linejoin='round'/%3E%3C/svg%3E");
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-items: center;
+  gap: 20px 12px;
+  width: min(100%, 460px);
+  margin: 12px auto 0;
+  padding: 0;
+  list-style: none;
+}
+.ct-peel-hint {
+  width: min(100%, 460px);
+  margin: 8px auto -12px;
+  color: var(--sun);
+  font: 700 11.5px / 1 var(--font-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.ct-stickers li {
+  --W: 154px;
+  --H: 154px;
+  --mx: 0.5;
+  --my: 0.5;
+  --d: calc(var(--W) + var(--H) - 34px);
+  position: relative;
+  width: var(--W);
+  height: var(--H);
+  rotate: var(--r, 0deg);
+  pointer-events: auto;
+  transition: --d 0.7s var(--spring);
+}
+.ct-stickers li:nth-child(1) { --r: -6deg; }
+.ct-stickers li:nth-child(2) { --r: 4deg; }
+.ct-stickers li:nth-child(3) { --r: 6deg; }
+.ct-stickers li:nth-child(4) { --r: -4deg; }
+.ct-stickers li:hover { --d: calc(var(--W) + var(--H) - 70px); transition-duration: 0.5s; }
+.ct-stickers li[data-peeled] { --d: calc((var(--W) + var(--H)) * 0.24); transition: --d 0.9s var(--ease-out); }
+
+.ct-stickers li[data-look="sun"] { --shape: 50%; --bg: radial-gradient(circle at 32% 26%, #ffe58a, #f6b531 46%, #ff8a3d); --fg: #261a04; --align: center; }
+.ct-stickers li[data-look="lilac"] { --shape: 16px; --bg: linear-gradient(150deg, #d5c6ff, #a98bf3 48%, #78b4ff); --fg: #1b1240; }
+.ct-stickers li[data-look="star"] { --shape: 0; }
+.ct-stickers li[data-look="tomato"] { --shape: 999px 999px 28px 28px; --bg: linear-gradient(165deg, #ff7448, #e3261b 70%); --fg: #fff6e6; --align: center; }
+
+/* What the sticker was hiding: printed on the backing paper. */
+.ct-reveal {
+  position: absolute;
+  inset: 1px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 24% 12px 12px 24%;
+  border-radius: var(--shape);
+  background:
+    repeating-linear-gradient(135deg, rgb(0 56 42 / 0.05) 0 2px, transparent 2px 9px),
+    #f4efe2;
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.18);
+  color: var(--green-900);
+  text-align: center;
+  font: 700 12.5px / 1.25 var(--font-sans);
+}
+.ct-reveal small { color: var(--tomato); font: 700 10px / 1 var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; }
+
+.ct-peel {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.35)) drop-shadow(0 18px 16px rgb(0 0 0 / 0.4));
+  transform: perspective(700px) rotateX(calc((var(--my) - 0.5) * -14deg)) rotateY(calc((var(--mx) - 0.5) * 14deg));
+  transition: transform 0.25s var(--ease-out);
+}
+.ct-peel:focus-visible { outline: 2px solid var(--sun); outline-offset: 8px; border-radius: 12px; }
+
+.ct-face {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  display: grid;
+  align-content: center;
+  justify-items: var(--align, start);
+  gap: 4px;
+  padding: 14px 16px;
+  overflow: hidden;
+  border: 4px solid #fffdf6;
+  border-radius: var(--shape);
+  background: var(--bg);
+  color: var(--fg);
+  text-align: var(--align, left);
+  clip-path: polygon(
+    0 0,
+    min(var(--d), var(--W)) 0,
+    min(var(--d), var(--W)) max(var(--d) - var(--W), 0px),
+    max(var(--d) - var(--H), 0px) min(var(--d), var(--H)),
+    0 min(var(--d), var(--H))
+  );
+}
+/* Holographic foil and a glare that follow the pointer. */
+.ct-face::before,
+.ct-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ct-face::before {
+  background:
+    linear-gradient(115deg, transparent 8%, #ff5ec4 24%, #ffe45e 36%, #5effc1 48%, #5ec8ff 60%, #b45eff 72%, transparent 90%);
+  background-size: 300% 300%;
+  background-position: calc(var(--mx) * 100%) calc(var(--my) * 100%);
+  mix-blend-mode: color-dodge;
+  opacity: var(--foil, 0.38);
+}
+.ct-face::after {
+  background:
+    radial-gradient(circle at calc(var(--mx) * 100%) calc(var(--my) * 100%), rgb(255 255 255 / 0.55), transparent 50%),
+    var(--grain);
+  background-size: auto, 140px 140px;
+  mix-blend-mode: soft-light;
+  opacity: 0.8;
+}
+.ct-face > * { position: relative; z-index: 1; }
+.ct-face small { font: 700 10px / 1.15 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+.ct-face strong { font: 400 34px / 0.92 var(--font-display); letter-spacing: 0.01em; text-transform: uppercase; }
+.ct-face-line { margin-top: 2px; font: 650 11.5px / 1.25 var(--font-sans); }
+li[data-look="sun"] .ct-face strong { font-size: 54px; line-height: 0.85; }
+li[data-look="sun"] .ct-face-line { max-width: 14ch; font-size: 11px; }
+li[data-look="tomato"] .ct-face { padding-top: 24px; }
+li[data-look="tomato"] .ct-face strong { font-size: 30px; }
+
+/* The sticker's white back, folded over the fold line. */
+.ct-flap-wrap { position: absolute; inset: 0; filter: drop-shadow(0 4px 5px rgb(0 0 0 / 0.3)); pointer-events: none; }
+.ct-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--W);
+  height: var(--H);
+  border-radius: var(--shape);
+  background: linear-gradient(135deg, #ffffff, #efebe2 55%, #d8d2c4);
+  transform-origin: 0 0;
+  transform: translate(var(--d), var(--d)) matrix(0, -1, -1, 0, 0, 0);
+  clip-path: polygon(
+    min(var(--d), var(--W)) max(var(--d) - var(--W), 0px),
+    var(--W) max(var(--d) - var(--W), 0px),
+    var(--W) var(--H),
+    max(var(--d) - var(--H), 0px) var(--H),
+    max(var(--d) - var(--H), 0px) min(var(--d), var(--H))
+  );
+}
+
+/* Star: a die-cut holographic seal. The star is a mask so the peel's clip-path still works. */
+li[data-look="star"] .ct-face,
+li[data-look="star"] .ct-flap,
+li[data-look="star"] .ct-reveal {
+  border-radius: 0;
+  -webkit-mask: var(--star) center / 100% 100% no-repeat;
+  mask: var(--star) center / 100% 100% no-repeat;
+}
+li[data-look="star"] .ct-face { padding: 0; border: 0; background: #fffdf6; }
+li[data-look="star"] .ct-face::before,
+li[data-look="star"] .ct-face::after { content: none; }
+li[data-look="star"] .ct-reveal { padding: 34% 18% 26% 30%; font-size: 12px; }
+li[data-look="star"] .ct-face > .ct-holo {
+  position: absolute;
+  inset: 6px;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(120deg, #c9a8ff, #8db6ff 16%, #ffb0d6 30%, #fff0a0 40%, #a6ffdc 50%, #8fb0ff 62%, #e2a8ff 76%, #ffc2a0 88%, #b9c6ff);
+  background-size: 320% 320%;
+  -webkit-mask: var(--star) center / 100% 100% no-repeat;
+  mask: var(--star) center / 100% 100% no-repeat;
+  animation: ct-holo 7s ease-in-out infinite alternate;
+}
+.ct-holo::before,
+.ct-holo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ct-holo::before {
+  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.7) 45%, rgb(255 120 220 / 0.5) 50%, rgb(120 255 230 / 0.5) 55%, transparent 70%);
+  background-size: 250% 100%;
+  mix-blend-mode: overlay;
+  animation: ct-sweep 3.2s ease-in-out infinite;
+}
+.ct:not([data-open]) .ct-holo,
+.ct:not([data-open]) .ct-holo::before { animation-play-state: paused !important; }
+.ct-holo::after {
+  background:
+    radial-gradient(circle at calc(var(--mx) * 100%) calc(var(--my) * 100%), rgb(255 255 255 / 0.65), transparent 45%),
+    conic-gradient(from calc(var(--mx) * 360deg) at 50% 54%, #ff8ad8, #ffe680, #8affd6, #8ac4ff, #c68aff, #ff8ad8);
+  mix-blend-mode: soft-light;
+  opacity: 0.9;
+}
+.ct-holo svg { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; }
+.ct-holo-arc { fill: #161936; font: 800 5.4px / 1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; }
+.ct-holo-arc + .ct-holo-arc { font-size: 4.6px; letter-spacing: 0.08em; }
+.ct-holo-big { fill: #11142e; font: 400 18px / 1 var(--font-display); letter-spacing: 0.01em; }
+.ct[data-open] .ct-peel { animation: ct-slap 0.55s var(--bounce) backwards; animation-delay: calc(0.45s + var(--i) * 0.09s); }
+
+.ct-ghost {
+  display: block;
+  position: absolute;
+  top: 24px;
+  right: -8px;
+  color: transparent;
+  font: 400 clamp(76px, 22vw, 136px) / 0.8 var(--font-display);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  -webkit-text-stroke: 1.3px rgb(246 240 219 / 0.08);
+  rotate: -5deg;
+  pointer-events: none;
+  user-select: none;
+}
 
 /* ---------- Wide screens: clipboard centre stage, cut by the screen edge -- */
 @media (min-width: 1100px) and (min-height: 640px) {
@@ -935,219 +1159,40 @@ html.ct-lock { overflow: hidden; }
   .ct-field textarea { min-height: calc(96px + var(--air) * 2.4); }
   .ct-review > div { padding-block: calc(16px + var(--air) * 0.5); }
 
-  /* Stickers: foil vinyl in the side columns. Hover lifts a corner,
-     click peels it back (fold line at x + y = --d) to show the note underneath. */
-  .ct-stickers { display: block; position: absolute; inset: 0; z-index: 2; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+  /* Stickers: foil vinyl in the side columns. */
+  .ct-stickers { display: block; position: absolute; inset: 0; z-index: 2; width: auto; margin: 0; pointer-events: none; }
   .ct-stickers li {
-    --mx: 0.5;
-    --my: 0.5;
     --d: calc(var(--W) + var(--H) + 2px);
     position: absolute;
-    width: var(--W);
-    height: var(--H);
-    rotate: var(--r, 0deg);
-    pointer-events: auto;
-    transition: --d 0.7s var(--spring);
   }
-  .ct-stickers li:hover { --d: calc(var(--W) + var(--H) - 70px); transition-duration: 0.5s; }
-  .ct-stickers li[data-peeled] { --d: calc((var(--W) + var(--H)) * 0.24); transition: --d 0.9s var(--ease-out); }
   .ct-stickers li:nth-child(1) { --W: 180px; --H: 180px; --r: -8deg; left: calc((var(--side) - var(--W) - 28px) * 0.3 + 12px); top: max(42vh, 330px); }
   .ct-stickers li:nth-child(2) { --W: 206px; --H: 186px; --r: 5deg; left: calc((var(--side) - var(--W) - 28px) * 0.85 + 12px); bottom: clamp(40px, 8vh, 96px); }
   .ct-stickers li:nth-child(3) { --W: 228px; --H: 228px; --r: 8deg; right: calc((var(--side) - var(--W) - 28px) * 0.6 + 12px); top: max(44vh, 370px); }
   .ct-stickers li:nth-child(4) { --W: 200px; --H: 200px; --r: -5deg; right: calc((var(--side) - var(--W) - 28px) * 0.1 + 12px); bottom: clamp(28px, 6vh, 72px); }
-
-  .ct-stickers li[data-look="sun"] { --shape: 50%; --bg: radial-gradient(circle at 32% 26%, #ffe58a, #f6b531 46%, #ff8a3d); --fg: #261a04; --align: center; }
-  .ct-stickers li[data-look="lilac"] { --shape: 16px; --bg: linear-gradient(150deg, #d5c6ff, #a98bf3 48%, #78b4ff); --fg: #1b1240; }
-  .ct-stickers li[data-look="star"] { --shape: 0; }
-  .ct-stickers li[data-look="tomato"] { --shape: 999px 999px 28px 28px; --bg: linear-gradient(165deg, #ff7448, #e3261b 70%); --fg: #fff6e6; --align: center; }
-
-  /* What the sticker was hiding: printed on the backing paper. */
-  .ct-reveal {
-    position: absolute;
-    inset: 1px;
-    display: grid;
-    align-content: center;
-    justify-items: center;
-    gap: 6px;
-    margin: 0;
-    padding: 26% 16px 16px 26%;
-    border-radius: var(--shape);
-    background:
-      repeating-linear-gradient(135deg, rgb(0 56 42 / 0.05) 0 2px, transparent 2px 9px),
-      #f4efe2;
-    box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.18);
-    color: var(--green-900);
-    text-align: center;
-    font: 700 15px / 1.3 var(--font-sans);
-  }
-  .ct-reveal small { color: var(--tomato); font: 700 11px / 1 var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; }
-
-  .ct-peel {
-    position: absolute;
-    inset: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: inherit;
-    cursor: pointer;
-    filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.35)) drop-shadow(0 18px 16px rgb(0 0 0 / 0.4));
-    transform: perspective(700px) rotateX(calc((var(--my) - 0.5) * -14deg)) rotateY(calc((var(--mx) - 0.5) * 14deg));
-    transition: transform 0.25s var(--ease-out);
-  }
-  .ct-peel:focus-visible { outline: 2px solid var(--sun); outline-offset: 8px; border-radius: 12px; }
-
-  .ct-face {
-    position: absolute;
-    inset: 0;
-    box-sizing: border-box;
-    display: grid;
-    align-content: center;
-    justify-items: var(--align, start);
-    gap: 6px;
-    padding: 16px 20px;
-    overflow: hidden;
-    border: 5px solid #fffdf6;
-    border-radius: var(--shape);
-    background: var(--bg);
-    color: var(--fg);
-    text-align: var(--align, left);
-    clip-path: polygon(
-      0 0,
-      min(var(--d), var(--W)) 0,
-      min(var(--d), var(--W)) max(var(--d) - var(--W), 0px),
-      max(var(--d) - var(--H), 0px) min(var(--d), var(--H)),
-      0 min(var(--d), var(--H))
-    );
-  }
-  /* Holographic foil and a glare that follow the pointer. */
-  .ct-face::before,
-  .ct-face::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-  .ct-face::before {
-    background:
-      linear-gradient(115deg, transparent 8%, #ff5ec4 24%, #ffe45e 36%, #5effc1 48%, #5ec8ff 60%, #b45eff 72%, transparent 90%);
-    background-size: 300% 300%;
-    background-position: calc(var(--mx) * 100%) calc(var(--my) * 100%);
-    mix-blend-mode: color-dodge;
-    opacity: var(--foil, 0.38);
-  }
-  .ct-face::after {
-    background:
-      radial-gradient(circle at calc(var(--mx) * 100%) calc(var(--my) * 100%), rgb(255 255 255 / 0.55), transparent 50%),
-      var(--grain);
-    background-size: auto, 140px 140px;
-    mix-blend-mode: soft-light;
-    opacity: 0.8;
-  }
-  .ct-face > * { position: relative; z-index: 1; }
-  .ct-face small { font: 700 11.5px / 1.2 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
-  .ct-face strong { font: 400 46px / 0.92 var(--font-display); letter-spacing: 0.01em; text-transform: uppercase; }
-  .ct-face-line { margin-top: 4px; font: 650 14px / 1.3 var(--font-sans); }
-  li[data-look="sun"] .ct-face strong { font-size: 76px; line-height: 0.85; }
-  li[data-look="sun"] .ct-face-line { max-width: 14ch; font-size: 13px; }
+  .ct-reveal { gap: 6px; padding: 26% 16px 16px 26%; font-size: 15px; }
+  .ct-reveal small { font-size: 11px; }
+  .ct-face { gap: 6px; padding: 16px 20px; border-width: 5px; }
+  .ct-face small { font-size: 11.5px; }
+  .ct-face strong { font-size: 46px; }
+  .ct-face-line { margin-top: 4px; font-size: 14px; }
+  li[data-look="sun"] .ct-face strong { font-size: 76px; }
+  li[data-look="sun"] .ct-face-line { font-size: 13px; }
   li[data-look="tomato"] .ct-face { padding-top: 34px; }
   li[data-look="tomato"] .ct-face strong { font-size: 42px; }
-
-  /* The sticker's white back, folded over the fold line. */
-  .ct-flap-wrap { position: absolute; inset: 0; filter: drop-shadow(0 4px 5px rgb(0 0 0 / 0.3)); pointer-events: none; }
-  .ct-flap {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: var(--W);
-    height: var(--H);
-    border-radius: var(--shape);
-    background: linear-gradient(135deg, #ffffff, #efebe2 55%, #d8d2c4);
-    transform-origin: 0 0;
-    transform: translate(var(--d), var(--d)) matrix(0, -1, -1, 0, 0, 0);
-    clip-path: polygon(
-      min(var(--d), var(--W)) max(var(--d) - var(--W), 0px),
-      var(--W) max(var(--d) - var(--W), 0px),
-      var(--W) var(--H),
-      max(var(--d) - var(--H), 0px) var(--H),
-      max(var(--d) - var(--H), 0px) min(var(--d), var(--H))
-    );
-  }
-
-  /* Star: a die-cut holographic seal. The star is a mask so the peel's clip-path still works. */
-  .ct-stickers { --star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='50,9 67.5,30 92.8,40.1 78.2,63.2 76.5,90.4 50,83.7 23.5,90.4 21.8,63.2 7.2,40.1 32.5,30' fill='white' stroke='white' stroke-width='8' stroke-linejoin='round'/%3E%3C/svg%3E"); }
-  li[data-look="star"] .ct-face,
-  li[data-look="star"] .ct-flap,
-  li[data-look="star"] .ct-reveal {
-    border-radius: 0;
-    -webkit-mask: var(--star) center / 100% 100% no-repeat;
-    mask: var(--star) center / 100% 100% no-repeat;
-  }
-  li[data-look="star"] .ct-face { padding: 0; border: 0; background: #fffdf6; }
-  li[data-look="star"] .ct-face::before,
-  li[data-look="star"] .ct-face::after { content: none; }
-  li[data-look="star"] .ct-reveal { padding: 34% 18% 26% 30%; font-size: 14px; }
-  li[data-look="star"] .ct-face > .ct-holo {
-    position: absolute;
-    inset: 7px;
-    z-index: 0;
-    overflow: hidden;
-    background:
-      linear-gradient(120deg, #c9a8ff, #8db6ff 16%, #ffb0d6 30%, #fff0a0 40%, #a6ffdc 50%, #8fb0ff 62%, #e2a8ff 76%, #ffc2a0 88%, #b9c6ff);
-    background-size: 320% 320%;
-    -webkit-mask: var(--star) center / 100% 100% no-repeat;
-    mask: var(--star) center / 100% 100% no-repeat;
-    animation: ct-holo 7s ease-in-out infinite alternate;
-  }
-  /* Rainbow band that sweeps on its own, plus a glare that follows the pointer. */
-  .ct-holo::before,
-  .ct-holo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-  .ct-holo::before {
-    background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.7) 45%, rgb(255 120 220 / 0.5) 50%, rgb(120 255 230 / 0.5) 55%, transparent 70%);
-    background-size: 250% 100%;
-    mix-blend-mode: overlay;
-    animation: ct-sweep 3.2s ease-in-out infinite;
-  }
-  /* Panel closed: it is hidden, but these two loops (background-position, so never on the GPU) would still wake the
-     main thread on every frame of every page. They run while it is open, as before. */
-  .ct:not([data-open]) .ct-holo,
-  .ct:not([data-open]) .ct-holo::before { animation-play-state: paused !important; }
-  .ct-holo::after {
-    background:
-      radial-gradient(circle at calc(var(--mx) * 100%) calc(var(--my) * 100%), rgb(255 255 255 / 0.65), transparent 45%),
-      conic-gradient(from calc(var(--mx) * 360deg) at 50% 54%, #ff8ad8, #ffe680, #8affd6, #8ac4ff, #c68aff, #ff8ad8);
-    mix-blend-mode: soft-light;
-    opacity: 0.9;
-  }
-  .ct-holo svg { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; }
-  .ct-holo-arc { fill: #161936; font: 800 5.4px / 1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; }
-  .ct-holo-arc + .ct-holo-arc { font-size: 4.6px; letter-spacing: 0.08em; }
-  .ct-holo-big { fill: #11142e; font: 400 18px / 1 var(--font-display); letter-spacing: 0.01em; }
+  li[data-look="star"] .ct-reveal { font-size: 14px; }
+  li[data-look="star"] .ct-face > .ct-holo { inset: 7px; }
 
   /* Ghost lettering down the left column, behind everything, slipped a few degrees. */
   .ct-ghost {
-    display: block;
-    position: absolute;
     top: 52%;
+    right: auto;
     left: calc(var(--side) * 0.5);
-    color: transparent;
     font: 400 min(34vh, var(--side) * 1.05) / 0.8 var(--font-display);
-    letter-spacing: 0.01em;
-    text-transform: uppercase;
-    white-space: nowrap;
     -webkit-text-stroke: 1.5px rgb(246 240 219 / 0.14);
     translate: -50% -50%;
     rotate: -86deg;
     opacity: 0;
     transition: opacity 0.3s, rotate 0.3s;
-    pointer-events: none;
-    user-select: none;
   }
   .ct[data-open] .ct-ghost { opacity: 1; rotate: -84deg; transition: opacity 0.8s var(--ease-out) 0.2s, rotate 1.1s var(--spring) 0.2s; }
 
@@ -1156,15 +1201,12 @@ html.ct-lock { overflow: hidden; }
     top: calc(max(42vh, 330px) - 44px);
     left: calc(var(--edge) + 4px);
     z-index: 2;
+    width: auto;
     margin: 0;
-    color: var(--sun);
-    font: 700 12px / 1 var(--font-sans);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font-size: 12px;
+    text-align: left;
     pointer-events: none;
   }
-
-  .ct[data-open] .ct-peel { animation: ct-slap 0.55s var(--bounce) backwards; animation-delay: calc(0.5s + var(--i) * 0.09s); }
 }
 @keyframes ct-holo { to { background-position: 100% 100%; } }
 @keyframes ct-sweep { 0%, 15% { background-position: 120% 0; } 85%, 100% { background-position: -20% 0; } }
@@ -1199,11 +1241,11 @@ html.ct-lock { overflow: hidden; }
   .ct-topics { grid-template-columns: 1fr; grid-auto-rows: 1fr; }
   .ct-topics::before { width: 100%; height: calc((100% - 28px) / 3); translate: 0 calc(var(--sel, 0) * (100% + 14px)); }
   .ct-stamp { top: 60px; right: 14px; font-size: 18px; }
-  .ct-topic { min-height: 0; flex-direction: row; align-items: center; gap: 16px; padding: 14px 44px 14px 14px; }
+  .ct-topic { min-height: 0; flex-direction: row; align-items: center; gap: 14px; padding: 14px 42px 14px 14px; }
   .ct-topic::before { top: 50%; margin-top: -11px; }
   .ct-topic-icon { flex: none; width: 60px; height: 60px; border-radius: 18px; }
   .ct-topic-icon svg { width: 44px; height: 44px; }
-  .ct-topic-text { margin-top: 0; padding-top: 0; border-top: 0; }
+  .ct-topic-text { margin-top: 0; padding-top: 0; padding-left: 14px; border-top: 0; border-left: 1.5px dashed rgb(0 56 42 / 0.22); }
   .ct-done-actions { grid-template-columns: 1fr; }
 }
 

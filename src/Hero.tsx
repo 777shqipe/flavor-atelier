@@ -34,12 +34,11 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  // Pointer parallax for the sticker layers, eased in a rAF loop that sleeps when idle.
+  // Pointer + scroll parallax for the sticker layers, eased in a rAF loop that sleeps when idle.
   useEffect(() => {
     const el = root.current;
-    if (!el) return;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (!fine || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let tx = 0;
     let ty = 0;
     let cx = 0;
@@ -61,14 +60,30 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
     const move = (event: PointerEvent) => {
       if (!onScreen) return;
       const box = el.getBoundingClientRect();
-      tx = ((event.clientX - box.left) / box.width - 0.5) * 2;
-      ty = ((event.clientY - box.top) / box.height - 0.5) * 2;
+      tx = Math.max(-1, Math.min(1, ((event.clientX - box.left) / box.width - 0.5) * 2));
+      ty = Math.max(-1, Math.min(1, ((event.clientY - box.top) / box.height - 0.5) * 2));
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+    const onScroll = () => {
+      if (!onScreen) return;
+      const box = el.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const p = Math.max(-1, Math.min(1, (vh * 0.48 - (box.top + box.height * 0.5)) / (vh * 0.65)));
+      tx = Math.sin(p * Math.PI) * 0.6;
+      ty = p * 0.78;
       if (!raf) raf = requestAnimationFrame(tick);
     };
     window.addEventListener("pointermove", move, { passive: true });
+    if (!fine) {
+      window.addEventListener("pointerdown", move, { passive: true });
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    }
     return () => {
       io.disconnect();
       window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerdown", move);
+      window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
   }, []);

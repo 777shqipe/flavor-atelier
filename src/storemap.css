@@ -119,15 +119,16 @@
 }
 .finder[data-far] .lm[data-minor],
 .finder[data-far] .lm-cap { display: none; }
-/* Phone-sized maps: smaller shops, one name tag, just the two big landmarks. */
+/* Phone-sized maps: compact shop pins and tags, plus the two major landmarks. */
 @container (max-width: 760px) {
   .lm:not(.lm-cbd, .lm-cup) { display: none; }
   .lm { scale: 0.62; }
   .lm-cap { display: none; }
   .pin { --pw: 50px; }
-  /* only the picked store keeps its name tag; the picks below name the rest */
-  .pin-tag { display: none; height: 26px; font-size: 12px; }
-  .sm-marker.active .pin-tag { display: inline-flex; }
+  .pin-tag { height: 22px; padding: 0 8px 0 7px; gap: 5px; font-size: 11px; }
+  .pin-tag i { width: 6px; height: 6px; }
+  .sm-marker.active { z-index: 600 !important; }
+  .sm-marker.active .pin-tag { height: 26px; padding: 0 11px 0 9px; font-size: 12.5px; }
 }
 
 /* ---------- you are here ----------------------------------------------------- */
@@ -202,7 +203,7 @@
 @container (max-width: 760px) {
   .finder-top.left { top: 10px; left: calc(var(--inset-l) + 10px); }
   .finder-top.right { top: 10px; right: calc(var(--inset-r) + 10px); }
-  .finder-compass { display: none; }
+  .finder-compass { bottom: 52px; right: calc(var(--inset-r) + 14px); width: 38px; height: 38px; }
 }
 @media (max-width: 520px) {
   .locate { height: 46px; padding: 0 16px 0 13px; font-size: 13px; }

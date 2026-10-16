@@ -29,6 +29,8 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
   const frame = useRef<HTMLDivElement>(null);
   // Remember the previous photo so the new one can wipe in over it.
   const [pair, setPair] = useState({ cur: active, before: -1 });
+  const [peek, setPeek] = useState(false);
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
   if (pair.cur !== active) setPair({ cur: active, before: pair.cur });
 
   const go = (direction: number) => onSelect((active + direction + STORES.length) % STORES.length);
@@ -49,14 +51,29 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
   // The photo drifts slightly against the pointer, like looking through a window.
   const look = (event: PointerEvent<HTMLDivElement>) => {
     const el = frame.current;
-    if (!el || event.pointerType !== "mouse") return;
+    if (!el) return;
     const box = el.getBoundingClientRect();
-    el.style.setProperty("--px", (((event.clientX - box.left) / box.width - 0.5) * 2).toFixed(3));
-    el.style.setProperty("--py", (((event.clientY - box.top) / box.height - 0.5) * 2).toFixed(3));
+    el.style.setProperty("--px", Math.max(-1, Math.min(1, ((event.clientX - box.left) / box.width - 0.5) * 2)).toFixed(3));
+    el.style.setProperty("--py", Math.max(-1, Math.min(1, ((event.clientY - box.top) / box.height - 0.5) * 2)).toFixed(3));
   };
   const rest = () => {
     frame.current?.style.setProperty("--px", "0");
     frame.current?.style.setProperty("--py", "0");
+  };
+  const onPhotoDown = (event: PointerEvent<HTMLDivElement>) => {
+    swipeStart.current = { x: event.clientX, y: event.clientY };
+  };
+  const onPhotoUp = (event: PointerEvent<HTMLDivElement>) => {
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    if (!start) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      go(dx < 0 ? 1 : -1);
+    } else if (!status.open && Math.hypot(dx, dy) < 12) {
+      setPeek((p) => !p);
+    }
   };
 
   const store = STORES[active];
@@ -127,11 +144,12 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                 className="sh-window"
                 ref={frame}
                 data-closed={!status.open || undefined}
+                data-peek={peek || undefined}
                 style={{ "--c": store.color } as CSSProperties}
                 onPointerMove={look}
                 onPointerLeave={rest}
               >
-                <div className="sh-photo">
+                <div className="sh-photo" onPointerDown={onPhotoDown} onPointerUp={onPhotoUp}>
                   {STORES.map((item, index) => (
                     <img
                       key={item.id}
@@ -172,7 +190,12 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
             </StoreMap>
           </div>
 
-          <div className="sh-picks" role="tablist" aria-label={s.choose} style={{ "--i": active } as CSSProperties}>
+          <div
+            className="sh-picks"
+            role="tablist"
+            aria-label={s.choose}
+            style={{ "--i": active, "--col": active % 2, "--row": Math.floor(active / 2) } as CSSProperties}
+          >
             <span className="pick-lens" aria-hidden="true" />
             {STORES.map((item, index) => (
               <button

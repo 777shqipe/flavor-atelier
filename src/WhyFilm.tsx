@@ -365,10 +365,12 @@ export function WhyFilm() {
   useLayoutEffect(() => {
     const el = stage.current;
     if (!el) return;
-    // On a phone the canvas may lose a little of its far edges, so the packs and the till come out bigger.
+    // On a phone the canvas trims its empty side margins, so the packs, Eureka Tower and till come out ~26% bigger.
     const fit = () => {
-      const w = el.clientWidth < 600 ? 680 : 760;
-      el.style.setProperty("--k", Math.min(el.clientWidth / w, el.clientHeight / 520).toFixed(4));
+      const narrow = el.clientWidth < 600;
+      const w = narrow ? 540 : 760;
+      const h = narrow ? 470 : 520;
+      el.style.setProperty("--k", Math.min(el.clientWidth / w, el.clientHeight / h).toFixed(4));
     };
     fit();
     const ro = new ResizeObserver(fit);

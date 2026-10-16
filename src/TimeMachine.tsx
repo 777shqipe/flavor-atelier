@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import { gap, useLang, useT } from "./i18n";
 import { timeMachineStrings } from "./i18n/strings/TimeMachine";
 import { CART_SVG } from "./mapArt";
@@ -165,6 +165,21 @@ export function TimeMachine() {
     rail.current?.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus();
   };
 
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const onWindowDown = (event: PointerEvent<HTMLElement>) => {
+    swipeStart.current = { x: event.clientX, y: event.clientY };
+  };
+  const onWindowUp = (event: PointerEvent<HTMLElement>) => {
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    if (!start) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      pick((index + (dx < 0 ? 1 : -1) + ERAS.length) % ERAS.length);
+    }
+  };
+
   return (
     <section
       className="tm"
@@ -241,7 +256,14 @@ export function TimeMachine() {
           </button>
         </div>
 
-        <article className="tm-window" id="tm-panel" role="tabpanel" aria-labelledby={`tm-tab-${index}`}>
+        <article
+          className="tm-window"
+          id="tm-panel"
+          role="tabpanel"
+          aria-labelledby={`tm-tab-${index}`}
+          onPointerDown={onWindowDown}
+          onPointerUp={onWindowUp}
+        >
           <figure className="tm-photo">
             {ERAS.map((item, i) => (
               <img

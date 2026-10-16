@@ -166,9 +166,12 @@
 .ig-fx[data-fx="snap"]::after { content: ""; position: absolute; left: 0; right: 0; height: 52%; background: #12100e; }
 .ig-fx[data-fx="snap"]::before { top: 0; translate: 0 -110%; }
 .ig-fx[data-fx="snap"]::after { bottom: 0; translate: 0 110%; }
-.ig-card:hover .ig-fx[data-fx="snap"] { animation: ig-flash 0.72s linear; }
-.ig-card:hover .ig-fx[data-fx="snap"]::before { animation: ig-shut-top 0.72s cubic-bezier(0.45, 0, 0.2, 1); }
-.ig-card:hover .ig-fx[data-fx="snap"]::after { animation: ig-shut-bot 0.72s cubic-bezier(0.45, 0, 0.2, 1); }
+.ig-card:hover .ig-fx[data-fx="snap"],
+.ig-card[data-fx-go] .ig-fx[data-fx="snap"] { animation: ig-flash 0.72s linear; }
+.ig-card:hover .ig-fx[data-fx="snap"]::before,
+.ig-card[data-fx-go] .ig-fx[data-fx="snap"]::before { animation: ig-shut-top 0.72s cubic-bezier(0.45, 0, 0.2, 1); }
+.ig-card:hover .ig-fx[data-fx="snap"]::after,
+.ig-card[data-fx-go] .ig-fx[data-fx="snap"]::after { animation: ig-shut-bot 0.72s cubic-bezier(0.45, 0, 0.2, 1); }
 @keyframes ig-shut-top {
   0% { translate: 0 -110%; }
   34% { translate: 0 0; }
@@ -210,9 +213,12 @@
   box-shadow: 0 6px 14px -8px rgb(0 20 14 / 0.6);
   opacity: 0;
 }
-.ig-card:hover .ig-fx[data-fx="till"]::before { animation: ig-laser 0.95s ease; }
-.ig-card:hover .ig-fx[data-fx="till"]::after { animation: ig-pass 0.95s cubic-bezier(0.4, 0, 0.2, 1); }
-.ig-card:has(.ig-fx[data-fx="till"]):hover .ig-price { animation: ig-beep 0.4s 0.42s var(--bounce); }
+.ig-card:hover .ig-fx[data-fx="till"]::before,
+.ig-card[data-fx-go] .ig-fx[data-fx="till"]::before { animation: ig-laser 0.95s ease; }
+.ig-card:hover .ig-fx[data-fx="till"]::after,
+.ig-card[data-fx-go] .ig-fx[data-fx="till"]::after { animation: ig-pass 0.95s cubic-bezier(0.4, 0, 0.2, 1); }
+.ig-card:has(.ig-fx[data-fx="till"]):hover .ig-price,
+.ig-card[data-fx-go]:has(.ig-fx[data-fx="till"]) .ig-price { animation: ig-beep 0.4s 0.42s var(--bounce); }
 @keyframes ig-laser {
   0%, 100% { opacity: 0; }
   18% { opacity: 0.45; }
@@ -333,26 +339,37 @@
   .ig-hero .ig-post { grid-template-columns: 1fr; }
   .ig-hero figure { aspect-ratio: 4 / 5; min-height: 0; }
   .ig-body h3 { font-size: 36px; }
-  .ig-cells div:nth-child(2) { display: none; }
-  .ig-cells { grid-template-columns: 1fr 1fr; }
+  .ig-cells { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ig-cells div { padding: 8px 9px; }
+  .ig-cells dd { font-size: 12px; }
   .ig-quip { left: 8px; right: 8px; bottom: 8px; padding: 6px 8px; font-size: 12.5px; }
   .ig-card { border-radius: 18px; }
-  .ig-code { display: none; }
   .ig-label {
-    grid-template-columns: 1fr;
-    gap: 2px;
-    padding: 10px 12px 11px;
+    grid-template-columns: 1fr auto;
+    gap: 5px 8px;
+    padding: 9px 11px 10px;
   }
-  .ig-label .ig-price { font-size: 36px; }
-  .ig-label .ig-price-long { max-width: none; font-size: 22px; line-height: 1; }
-  .ig-label-meta b { white-space: normal; font-size: 18px; text-overflow: clip; }
+  .ig-label-meta {
+    grid-column: 1 / -1;
+    order: -1;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed rgb(23 20 12 / 0.22);
+  }
+  .ig-label .ig-price { font-size: 34px; }
+  .ig-label .ig-price-long { max-width: none; font-size: 21px; line-height: 1; }
+  .ig-label-meta b { white-space: normal; font-size: 16.5px; line-height: 1.02; text-overflow: clip; }
+  .ig-code { width: 26px; height: 22px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ig-card:hover .ig-fx,
   .ig-card:hover .ig-fx::before,
   .ig-card:hover .ig-fx::after,
-  .ig-card:hover .ig-price { animation: none; }
+  .ig-card:hover .ig-price,
+  .ig-card[data-fx-go] .ig-fx,
+  .ig-card[data-fx-go] .ig-fx::before,
+  .ig-card[data-fx-go] .ig-fx::after,
+  .ig-card[data-fx-go] .ig-price { animation: none; }
   .ig-ticket img { transition: none; }
   .ig-card { transition: none; }
 }
@@ -405,7 +422,8 @@
   filter: blur(4px);
   transition: scale 0.5s var(--spring), opacity 0.5s;
 }
-.ig-slot:hover::before { scale: 0.92 1.5; opacity: 0.6; }
+.ig-slot:hover::before,
+.ig-slot:has(.ig-card[data-active])::before { scale: 0.92 1.5; opacity: 0.6; }
 
 .ig-card {
   rotate: var(--tilt, 0deg);
@@ -421,8 +439,9 @@
   transition: translate 0.55s var(--spring), rotate 0.55s var(--spring), scale 0.55s var(--spring), transform 0.55s var(--spring), box-shadow 0.45s;
 }
 .ig-card:hover,
+.ig-card[data-active],
 .ig-card:has(.ig-post:focus-visible) {
-  translate: 0 -12px;
+  translate: 0 -10px;
   rotate: calc(var(--tilt, 0deg) * -0.5);
   scale: 1.015;
   transform: perspective(1100px) rotateX(3deg);
@@ -469,7 +488,8 @@
 .ig-slot:nth-child(3n + 2) .ig-sticker { background: var(--mint); }
 .ig-slot:nth-child(3n) .ig-sticker { background: var(--lilac); }
 .ig-hero .ig-sticker { background: var(--tomato); color: var(--cream); outline-color: rgb(246 240 219 / 0.5); font-size: clamp(14px, 1.3vw, 18px); }
-.ig-card:hover .ig-sticker { scale: 1.12; rotate: calc(var(--tilt, 0deg) * -5 - 4deg); }
+.ig-card:hover .ig-sticker,
+.ig-card[data-active] .ig-sticker { scale: 1.12; rotate: calc(var(--tilt, 0deg) * -5 - 4deg); }
 
 /* the quip is a taped note, not a caption bar */
 .ig-quip {
@@ -490,7 +510,8 @@
   background: rgb(255 236 170 / 0.6);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
 }
-.ig-card:hover .ig-quip { translate: 0 -3px; rotate: 0.5deg; }
+.ig-card:hover .ig-quip,
+.ig-card[data-active] .ig-quip { translate: 0 -3px; rotate: 0.5deg; }
 
 /* story ring spins a full turn when the card is picked up, the way a fresh story would */
 .ig-story-ring { position: relative; isolation: isolate; overflow: hidden; background: none; }
@@ -501,7 +522,8 @@
   z-index: -1;
   background: conic-gradient(from 210deg, #f9ce34, #ee2a7b 38%, #6228d7 72%, #f9ce34);
 }
-.ig-card:hover .ig-story-ring::before { animation: ig-spin 1.1s var(--ease-out); }
+.ig-card:hover .ig-story-ring::before,
+.ig-card[data-active] .ig-story-ring::before { animation: ig-spin 1.1s var(--ease-out); }
 @keyframes ig-spin { to { rotate: 1turn; } }
 
 /* shelf-edge ticket reads as a plastic sleeve: a glossy rail and a lit face */
@@ -510,7 +532,8 @@
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 0 rgb(0 0 0 / 0.12);
 }
 .ig-ticket .ig-label .ig-price { transition: scale 0.45s var(--bounce); transform-origin: 0 100%; }
-.ig-ticket:hover .ig-label .ig-price { scale: 1.06; }
+.ig-ticket:hover .ig-label .ig-price,
+.ig-ticket[data-active] .ig-label .ig-price { scale: 1.06; }
 
 /* masthead: the headline's serif word lands crooked with a sun stroke under it; a live dot by the handle */
 .ig-title em { position: relative; z-index: 0; display: inline-block; isolation: isolate; rotate: -2.5deg; transform-origin: 0 100%; }
@@ -547,8 +570,8 @@
 .ig-dek-row .button:hover::after { translate: 3px -3px; }
 
 @media (max-width: 860px) {
-  .ig-slot { padding-bottom: 20px; }
-  .ig-slot::after { left: -6px; right: -6px; height: 14px; }
+  .ig-slot { padding-bottom: 22px; }
+  .ig-slot::after { left: -6px; right: -6px; height: 16px; }
   .ig-slot:nth-child(odd)::after { left: 0; }
   .ig-slot:nth-child(even)::after { right: 0; }
   .ig-feature .ig-slot::after { left: 0; right: 0; }
@@ -559,7 +582,8 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .ig-card,
-  .ig-card:hover { transform: none; translate: 0 0; scale: 1; transition: none; }
+  .ig-card:hover,
+  .ig-card[data-active] { transform: none; translate: 0 0; scale: 1; transition: none; }
   .ig-slot::before,
   .ig-sticker,
   .ig-quip,

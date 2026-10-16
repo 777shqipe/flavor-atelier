@@ -661,7 +661,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
   });
   ro.observe(el);
 
-  // ---- pointer: drag and throw with a mouse, tap to flick on touch ------------------
+  // ---- pointer: drag and throw with mouse or finger, or quick-tap to toss toward till/bin ----
   const toWorld = (event: PointerEvent) => {
     const box = el.getBoundingClientRect();
     return { x: event.clientX - box.left, y: event.clientY - box.top };
@@ -672,21 +672,23 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
     listeners.push([node, type, fn as EventListener]);
   };
 
+  let tapToBin = false;
   items.forEach((it) => {
-    let lastType = "";
+    let downAt = 0;
+    let downPos = { x: 0, y: 0 };
     on(it.node, "pointerdown", (event) => {
       // First touch ends the idle sway for the whole pile.
       el.dataset.touched = "";
       it.touched = true;
-      lastType = event.pointerType;
-      if (event.pointerType === "touch") return;
+      downAt = performance.now();
+      const p = toWorld(event);
+      downPos = p;
       event.preventDefault();
       try {
         it.node.setPointerCapture(event.pointerId);
       } catch {
         // Synthetic or already-released pointers cannot be captured; dragging still works while over the item.
       }
-      const p = toWorld(event);
       const c = Constraint.create({
         pointA: p,
         bodyB: it.body,
@@ -709,21 +711,30 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
       Sleeping.set(it.body, false);
       kick();
     });
-    const release = () => {
+    const release = (event: PointerEvent) => {
       if (!dragging || dragging.body !== it.body) return;
+      const p = toWorld(event);
+      const dt = performance.now() - downAt;
+      const dist = Math.hypot(p.x - downPos.x, p.y - downPos.y);
       letGo();
+      // A quick tap without dragging arcs the grocery toward the till scanner or the red-lid bin.
+      if (dt < 240 && dist < 14 && it.added) {
+        tapToBin = !tapToBin;
+        const targetX = tapToBin
+          ? (mouth.x0 + mouth.x1) * 0.5
+          : (counter.x0 + counter.x1) * 0.5;
+        const dx = targetX - it.body.position.x;
+        Sleeping.set(it.body, false);
+        Body.setVelocity(it.body, {
+          x: Math.max(-14, Math.min(14, dx * 0.045)),
+          y: -(11.5 + Math.random() * 3.5),
+        });
+        Body.setAngularVelocity(it.body, (Math.random() - 0.5) * 0.38);
+      }
       kick();
     };
     on(it.node, "pointerup", release);
     on(it.node, "pointercancel", release);
-    // Safari's click is not a PointerEvent, so remember what pressed it.
-    on(it.node, "click", () => {
-      if (lastType !== "touch" || !it.added) return;
-      Sleeping.set(it.body, false);
-      Body.setVelocity(it.body, { x: (Math.random() - 0.5) * 10, y: -(10 + Math.random() * 5) });
-      Body.setAngularVelocity(it.body, (Math.random() - 0.5) * 0.45);
-      kick();
-    });
   });
 
   return () => {

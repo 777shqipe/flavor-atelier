@@ -20,7 +20,7 @@
   z-index: 1;
   visibility: hidden;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   will-change: transform;
@@ -283,13 +283,15 @@
 }
 
 @media (max-width: 640px) {
-  .pile { --tw: 118px; --bw: 84px; height: 400px; }
-  .pile-copy { top: 56px; }
-  .pile-title { font-size: 40px; }
-  .pile-bubble { font-size: 12.5px; }
+  .pile { --tw: 136px; --bw: 94px; height: 420px; }
+  .pile-copy { top: 48px; }
+  .pile-title { font-size: clamp(36px, 10vw, 44px); }
+  .till-lcd { font-size: max(6.8px, calc(var(--tw) * 0.052)); }
+  .pile-bubble { right: 34%; font-size: 12.5px; max-width: min(220px, 62vw); }
+  .till-bubble { left: 24%; right: auto; }
   .pile-bubble[data-tone="warn"],
   .pile-bubble[data-tone="tip"],
-  .pile-bubble[data-tone="ok"] { max-width: min(220px, 62vw); }
+  .pile-bubble[data-tone="ok"] { max-width: min(230px, 64vw); }
 }
 @media (prefers-reduced-motion: reduce) {
   .pile-bin[data-spit], .pile-bin[data-spit] .bin-lid, .bin-blink, .till-laser, .till-screen, .till-glass { animation: none !important; }

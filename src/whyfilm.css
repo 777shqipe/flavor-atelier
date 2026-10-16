@@ -448,33 +448,36 @@ a.fc-fine:focus-visible { opacity: 0.9; }
 
 /* ---------- narrow ------------------------------------------------------ */
 @media (max-width: 899px) {
-  .film { height: auto; }
+  .film { height: max(760px, 136svh); }
   .film-screen {
-    position: relative;
+    position: sticky;
+    top: 0;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas: "copy" "stage" "ctrl";
-    align-content: center;
-    height: auto;
-    min-height: 100svh;
-    scale: calc(0.82 + 0.18 * var(--p));
+    align-content: stretch;
+    height: 100svh;
+    min-height: 580px;
+    scale: calc(0.84 + 0.16 * var(--p));
   }
   .film-copy {
-    padding: 64px 24px 0;
+    padding: 52px 22px 0;
     transform-origin: 50% 50%;
     translate: 0 calc(var(--tilt) * 12px);
   }
-  .film-ctrl { padding: 4px 24px 22px; }
-  .fc-head { font-size: clamp(28px, 7vw, 42px); }
-  .fc-num { margin-top: 24px; font-size: clamp(64px, 16vw, 96px); }
-  .film-stage { aspect-ratio: 760 / 520; margin: 8px 8px 0; }
+  .film-ctrl { padding: 4px 22px 18px; }
+  .fc-head { margin-top: 8px; font-size: clamp(24px, 6.2vw, 38px); }
+  .fc-sub { margin-top: 8px; font-size: 14px; }
+  .fc-num { margin-top: 14px; font-size: clamp(54px, 13.5vw, 84px); }
+  .film-stage { aspect-ratio: auto; min-height: 220px; margin: 4px 6px 0; }
 }
 @media (max-width: 599px) {
-  .film-stage { aspect-ratio: 680 / 520; }
+  .film-stage { margin: 2px 4px 0; }
 }
 @media (max-width: 560px) {
-  .film-title { left: 24px; }
-  .film-ctrl { gap: 12px; }
+  .film-title { left: 20px; top: 18px; }
+  .film-copy { padding: 48px 20px 0; }
+  .film-ctrl { gap: 10px; padding: 2px 20px 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

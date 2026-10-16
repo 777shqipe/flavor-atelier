@@ -36,7 +36,7 @@ export function Peel({
   const front = useRef<HTMLDivElement>(null);
   const flap = useRef<HTMLDivElement>(null);
   const backEl = useRef<HTMLElement>(null);
-  const api = useRef<{ set: (target: number) => void; state: { over: boolean; pinned: boolean } } | null>(null);
+  const api = useRef<{ set: (target: number) => void; state: { over: boolean; pinned: boolean; idle: number } } | null>(null);
 
   useEffect(() => {
     const el = root.current;
@@ -88,7 +88,7 @@ export function Peel({
       raf = requestAnimationFrame(tick);
     };
 
-    const state = { over: false, pinned: false };
+    const state = { over: false, pinned: false, idle: 0 };
     api.current = {
       state,
       set(next) {
@@ -111,17 +111,43 @@ export function Peel({
       paint();
     });
     ro.observe(el);
+
+    // Touch screens have no hover to hint that a sticker peels: curl a corner once it is in view.
+    const coarse = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    let curlTimer = 0;
+    const io = coarse
+      ? new IntersectionObserver(
+          ([entry]) => {
+            window.clearTimeout(curlTimer);
+            if (entry.isIntersecting) {
+              curlTimer = window.setTimeout(() => {
+                state.idle = hover * 0.78;
+                if (!state.pinned && !state.over) api.current?.set(state.idle);
+              }, 320);
+            } else {
+              state.idle = 0;
+              state.pinned = false;
+              api.current?.set(0);
+            }
+          },
+          { threshold: 0.35 },
+        )
+      : null;
+    io?.observe(el);
+
     return () => {
+      window.clearTimeout(curlTimer);
       cancelAnimationFrame(raf);
       ro.disconnect();
+      io?.disconnect();
       api.current = null;
     };
-  }, [from, bleed]);
+  }, [from, bleed, hover]);
 
   const update = () => {
     const a = api.current;
     if (!a) return;
-    a.set(a.state.pinned ? deep : a.state.over ? hover : 0);
+    a.set(a.state.pinned ? deep : a.state.over ? hover : a.state.idle);
   };
 
   return (

@@ -144,8 +144,11 @@
   .route-truck { bottom: auto; left: 50%; width: 46px; translate: -50% calc(-50% - 23px - var(--pin) / 2 - 4px); rotate: 90deg; }
   .route.in .route-fill { animation-name: route-fill-y; }
   .route.in .route-truck { animation-name: route-drive-y; }
-  .deal-proof li + li { padding-left: 0; border-left: 0; }
-  .deal-proof ul { flex-direction: column; }
+  .deal-proof ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 12px; }
+  .deal-proof li + li { padding-left: 12px; border-left: 1px solid rgb(246 240 219 / 0.2); }
+  .deal-proof strong { font-size: clamp(22px, 5.8vw, 32px); }
+  .deal-proof span { font-size: 10px; letter-spacing: 0.08em; }
+  .deal-proof .button { width: 100%; justify-content: center; }
 }
 @keyframes route-drive-y {
   0%, 8% { top: 0; animation-timing-function: cubic-bezier(0.55, 0, 0.35, 1); }

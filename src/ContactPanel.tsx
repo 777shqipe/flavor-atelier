@@ -923,14 +923,14 @@ export function ContactPanel({
           </ul>
         </section>
 
+        <p className="ct-peel-hint" aria-hidden="true">
+          {s.peelHint}
+        </p>
         <ul className="ct-stickers" aria-label={s.suppliersWhy}>
           {STICKERS.map((item, index) => (
             <Sticker key={item.look} item={item} index={index} />
           ))}
         </ul>
-        <p className="ct-peel-hint" aria-hidden="true">
-          {s.peelHint}
-        </p>
 
         <p className="sr-only" role="status">
           {sent ? s.sentStatus : s.stepOf(step + 1, STEPS.length, s.steps[STEPS[step]])}
