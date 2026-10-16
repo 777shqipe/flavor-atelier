@@ -23,7 +23,7 @@ const Icon = ({ d, circle }: { d: string; circle?: boolean }) => (
 
 export function StoresPage({ active, onSelect }: { active: number; onSelect: (index: number) => void }) {
   const s = useT(storesPageStrings);
-  const { locale } = useLang();
+  const { lang, locale } = useLang();
   const shared = useT(storeStrings);
   const status = useOpenStatus();
   // Remember the previous photo so the new one can wipe in over it.
@@ -95,6 +95,24 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
             <p className="sh-line" key={`line-${store.id}`}>
               {shared.lines[store.id]}
             </p>
+            {store.notice && (
+              <div className="sh-notice" role="alert" key={`notice-${store.id}`}>
+                <div className="sh-notice-head">
+                  <span className="sh-notice-badge">⚠️ {store.notice.badge[lang]}</span>
+                  <span className="sh-notice-dates">📅 {store.notice.dates[lang]}</span>
+                </div>
+                <strong className="sh-notice-title">{store.notice.title[lang]}</strong>
+                <p className="sh-notice-body">{store.notice.desc[lang]}</p>
+                <div className="sh-notice-foot">
+                  <span className="sh-notice-reopen">✨ {store.notice.reopen[lang]}</span>
+                  {store.notice.postUrl && (
+                    <a href={store.notice.postUrl} target="_blank" rel="noopener noreferrer" className="sh-notice-link">
+                      {lang === "it" ? "Post Instagram ↗" : "Instagram post ↗"}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
             <ul className="sh-info" key={`info-${store.id}`}>
               <li>
                 <Icon d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" circle />
@@ -196,6 +214,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                 <span className="pick-text">
                   <small>0{index + 1}</small>
                   <b>{item.name}</b>
+                  {item.notice && <em className="pick-notice-chip" title={item.notice.badge[lang]}>⚠️</em>}
                 </span>
               </button>
             ))}

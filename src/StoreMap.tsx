@@ -3,7 +3,7 @@ import type * as L from "leaflet";
 import { loadLeaflet, type Lib } from "./leaflet";
 import { LANDMARKS, landmarkHtml, shopPinSvg } from "./mapArt";
 import { STORES, distanceKm, formatKm, type Store } from "./stores";
-import { useLang, useT } from "./i18n";
+import { useLang, useT, type Lang } from "./i18n";
 import { storeMapStrings } from "./i18n/strings/StoreMap";
 import "./storemap.css";
 
@@ -17,11 +17,12 @@ import "./storemap.css";
 /** Name tags hang to the right of the shop, except where a landmark already sits there. */
 const TAG_LEFT = new Set(["flemington"]);
 
-const pinHtml = (store: Store) => `
+const pinHtml = (store: Store, lang: Lang = "en") => `
   <div class="pin" style="--c:${store.color}">
     <span class="pin-shadow"></span>
     <span class="pin-art">${shopPinSvg(store)}</span>
     <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><i></i>${store.name}</span>
+    ${store.notice ? `<span class="pin-notice-pill${TAG_LEFT.has(store.id) ? " left" : ""}">⚠️ ${store.notice.badge[lang]}</span>` : ""}
   </div>`;
 
 /**
@@ -91,7 +92,7 @@ export function StoreMap({
   const [ready, setReady] = useState(false);
   const [near, setNear] = useState<Near>({ status: "idle" });
   const s = useT(storeMapStrings);
-  const { locale } = useLang();
+  const { lang, locale } = useLang();
   // The map build and the geolocation callback run outside render, so they read the language from here.
   const text = useRef(s);
 
@@ -151,7 +152,7 @@ export function StoreMap({
 
     markers.current = STORES.map((store, index) => {
       const marker = L.marker(points[index], {
-        icon: L.divIcon({ className: "sm-marker", html: pinHtml(store), iconSize: [0, 0] }),
+        icon: L.divIcon({ className: "sm-marker", html: pinHtml(store, lang), iconSize: [0, 0] }),
         title: text.current.pinTitle(store.name),
         alt: text.current.pinTitle(store.name),
         riseOnHover: true,

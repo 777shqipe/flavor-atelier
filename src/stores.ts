@@ -4,6 +4,16 @@ import { storeStrings } from "./i18n/strings/Stores";
 
 export type Glyph = "bridge" | "horseshoe" | "cup" | "tram";
 
+export type StoreNotice = {
+  type: "temporary_closure";
+  badge: Record<Lang, string>;
+  title: Record<Lang, string>;
+  dates: Record<Lang, string>;
+  reopen: Record<Lang, string>;
+  desc: Record<Lang, string>;
+  postUrl: string;
+};
+
 export type Store = {
   id: string;
   name: string;
@@ -19,6 +29,7 @@ export type Store = {
   color: string;
   glyph: Glyph;
   line: string;
+  notice?: StoreNotice;
 };
 
 const HOURS = "Mon–Sat 9:00am–7:00pm · Sun 10:00am–6:00pm";
@@ -65,6 +76,45 @@ export const STORES: Store[] = [
     color: "#6bb8ff",
     glyph: "cup",
     line: "Johnston St. Grab a coffee, then a bargain.",
+    notice: {
+      type: "temporary_closure",
+      badge: {
+        en: "Closed Tue 20 & Wed 21 Oct",
+        it: "Chiuso 20–21 Ottobre",
+        vi: "Đóng cửa 20–21/10",
+        zh: "10月20-21日休业",
+        ja: "10月20日〜21日休業",
+      },
+      title: {
+        en: "Temporary Store Update",
+        it: "Chiusura Temporanea per Rinnovo",
+        vi: "Tạm thời đóng cửa nâng cấp",
+        zh: "门店升级改造暂停营业",
+        ja: "店舗改装による臨時休業",
+      },
+      dates: {
+        en: "Tuesday 20 & Wednesday 21 October 2026",
+        it: "Martedì 20 e Mercoledì 21 Ottobre 2026",
+        vi: "Thứ Ba 20 & Thứ Tư 21 Tháng 10 2026",
+        zh: "2026年10月20日（周二）与21日（周三）",
+        ja: "2026年10月20日(火)・21日(水)",
+      },
+      reopen: {
+        en: "Reopening Thursday 22 October",
+        it: "Riapertura regolare Giovedì 22 Ottobre",
+        vi: "Mở cửa bình thường lại vào Thứ Năm 22/10",
+        zh: "10月22日（周四）正常营业",
+        ja: "10月22日(木)より通常営業再開",
+      },
+      desc: {
+        en: "Our Fitzroy store is closing on Tuesday 20th and Wednesday 21st for a store update! Be sure to pop in before to stock up. Back open as usual on Thursday! Brunswick, Flemington and Footscray stores remain open as usual.",
+        it: "Lo store di Fitzroy chiude martedì 20 e mercoledì 21 ottobre per un rinnovo del negozio! Fai un salto prima per fare scorta. Riapriremo come al solito giovedì 22! Gli store di Brunswick, Flemington e Footscray rimangono regolarmente aperti.",
+        vi: "Cửa hàng Fitzroy sẽ đóng cửa vào Thứ Ba ngày 20 và Thứ Tư ngày 21 để nâng cấp cửa hàng! Mở cửa lại bình thường vào Thứ Năm! Brunswick, Flemington và Footscray vẫn mở cửa bình thường.",
+        zh: "我们的 Fitzroy 门店将于10月20日（周二）和21日（周三）因店内升级改造暂停营业两天！周四将按正常时间恢复营业！Brunswick、Flemington 和 Footscray 门店均正常营业。",
+        ja: "Fitzroy店は店舗改装のため、10月20日(火)・21日(水)の2日間臨時休業いたします。木曜日より通常営業を再開いたします！なお、Brunswick店、Flemington店、Footscray店は通常通り営業しております。",
+      },
+      postUrl: "https://www.instagram.com/p/DefpGShTr0g/",
+    },
   },
   {
     id: "brunswick",

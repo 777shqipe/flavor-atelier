@@ -90,6 +90,30 @@
 }
 .pin-tag.left { left: auto; right: calc(var(--pw) * 0.56); }
 .pin-tag i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1px rgb(0 56 42 / 0.25); }
+.pin-notice-pill {
+  position: absolute;
+  left: calc(var(--pw) * 0.56);
+  top: calc(var(--pw) * -0.22);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: #e3261b;
+  color: #fff;
+  box-shadow: 0 0 0 1px rgb(0 56 42 / 0.3), 0 4px 10px -2px rgb(0 0 0 / 0.35);
+  font: 700 10.5px / 1 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: pulse-notice 2s infinite ease-in-out;
+}
+.pin-notice-pill.left { left: auto; right: calc(var(--pw) * 0.56); }
+@keyframes pulse-notice {
+  0%, 100% { scale: 1; opacity: 0.95; }
+  50% { scale: 1.05; opacity: 1; }
+}
 .sm-marker:hover .pin-art,
 .sm-marker:focus-visible .pin-art { translate: 0 -5px; }
 .sm-marker:hover .pin-shadow { scale: 0.8; opacity: 0.7; }
