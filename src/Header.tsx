@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { headerStrings } from "./i18n/strings/Header";
 import { topNoticeStrings } from "./i18n/strings/TopNotice";
 import { useT } from "./i18n";
@@ -8,19 +8,17 @@ import "./header.css";
 
 export type Page = "home" | "stores" | "about";
 
-/** Each link's price-gun label lands at its own slight angle, as if stuck on by hand. */
-const LINKS: Array<[Page, number]> = [
-  ["home", -2],
-  ["stores", 1.5],
-  ["about", -1.5],
-];
+const LINKS: Page[] = ["home", "stores", "about"];
+
+/** The screen refreshes in vertical bands, left to right, like a big e-paper panel. */
+const BANDS = 12;
 
 /** Label whose letters roll up one after another on hover. */
 function Roll({ text }: { text: string }) {
   return (
     <span className="roll" aria-hidden="true">
       {[...text].map((char, i) => {
-        const glyph = char === " " ? " " : char;
+        const glyph = char === " " ? "\u00a0" : char;
         return (
           <span key={i} className="roll-ch" data-c={glyph} style={{ "--i": i } as CSSProperties}>
             {glyph}
@@ -31,16 +29,10 @@ function Roll({ text }: { text: string }) {
   );
 }
 
-/**
- * A deli "take a number" ticket on its side, pointed at the far end with thin
- * yellow edge stripes. Longer than what shows: the rest waits inside the
- * dispenser and slides out on hover.
- */
-function TicketArt() {
+function Arrow() {
   return (
-    <svg viewBox="0 0 240 44" focusable="false">
-      <path d="M0 .5h208c14 6 24.5 15.5 27.6 19.9a2.8 2.8 0 0 1 0 3.2C232.5 28 222 37.5 208 43.5H0z" fill="#fffdf7" />
-      <path d="M0 3.5h205v2H0zM0 38.5h205v2H0z" fill="#f5c400" />
+    <svg className="cta-arrow" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
     </svg>
   );
 }
@@ -61,10 +53,11 @@ export function Header({
   const [noticeDismissed, setNoticeDismissed] = useState(false);
   // Touch screens wide enough for the full nav cannot hover the compact bar open, so they tap to peek.
   const [peek, setPeek] = useState(false);
-  // Each ticket taken feeds a fresh one out of the slot.
-  const [ticket, setTicket] = useState(0);
-  const [torn, setTorn] = useState(false);
-  const tearTimer = useRef(0);
+  // The CTA blinks its call before the contact sheet opens.
+  const [calling, setCalling] = useState(false);
+  const callTimer = useRef(0);
+  const screen = useRef<HTMLDivElement>(null);
+  const press = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let frame = 0;
@@ -93,176 +86,214 @@ export function Header({
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  useEffect(() => () => window.clearTimeout(tearTimer.current), []);
+  // E-paper refresh: a full one (with the hearts easter egg) on every page change,
+  // then a lighter band sweep every 7–13s, with the hearts again every third time.
+  useEffect(() => {
+    const el = screen.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let count = 0;
+    const flash = (mode: "full" | "soft") => {
+      delete el.dataset.flash;
+      void el.offsetWidth;
+      el.dataset.flash = mode;
+    };
+    const tick = () => {
+      if (!document.hidden) flash(++count % 3 === 0 ? "full" : "soft");
+      timer = window.setTimeout(tick, 7000 + Math.random() * 6000);
+    };
+    const first = window.setTimeout(() => flash("full"), 450);
+    let timer = window.setTimeout(tick, 7000 + Math.random() * 6000);
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(timer);
+      delete el.dataset.flash;
+    };
+  }, [page]);
+
+  useEffect(() => () => window.clearTimeout(callTimer.current), []);
+
+  // Pressure bloom: the dark smudge a finger leaves on a pressed LCD, following
+  // the pointer. Moved with translate only, at most once a frame.
+  const rect = useRef<DOMRect | null>(null);
+  const frame = useRef(0);
+  const point = useRef({ x: 0, y: 0 });
+  const place = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!rect.current) rect.current = event.currentTarget.getBoundingClientRect();
+    point.current = { x: event.clientX - rect.current.left, y: event.clientY - rect.current.top };
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      const el = press.current;
+      if (el) el.style.translate = `${point.current.x}px ${point.current.y}px`;
+    });
+  };
+  const release = (event: ReactPointerEvent<HTMLDivElement>) => {
+    delete event.currentTarget.dataset.press;
+  };
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   const go = (next: Page) => {
     setOpen(false);
     setPeek(false);
     onNavigate(next);
   };
-  // Tear the ticket off, then open the sheet; a fresh ticket feeds out behind it.
-  const takeNumber = () => {
-    if (torn) return;
+  const call = () => {
+    if (calling) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setTicket((n) => n + 1);
       setOpen(false);
       onContact();
       return;
     }
-    setTorn(true);
-    tearTimer.current = window.setTimeout(() => {
+    setCalling(true);
+    callTimer.current = window.setTimeout(() => {
       setOpen(false);
       onContact();
-      setTicket((n) => n + 1);
-      setTorn(false);
+      setCalling(false);
     }, 380);
   };
 
   return (
     <header className="hd" data-stuck={stuck || undefined} data-open={open || undefined} data-peek={peek || undefined}>
+      {/* One electronic shelf label: light plastic housing round a single e-paper screen. */}
       <div className="bar">
-        <div className="bar-row">
-          <Logo onClick={() => go("home")} refreshKey={page} />
+        <div
+          className="scr"
+          ref={screen}
+          onPointerEnter={(event) => {
+            rect.current = event.currentTarget.getBoundingClientRect();
+            place(event);
+          }}
+          onPointerMove={place}
+          onPointerDown={(event) => {
+            rect.current = event.currentTarget.getBoundingClientRect();
+            place(event);
+            event.currentTarget.dataset.press = "";
+          }}
+          onPointerUp={release}
+          onPointerLeave={release}
+          onPointerCancel={release}
+          onTransitionEnd={(event) => {
+            // The screen changes size as it folds and opens; measure again next time.
+            if (event.target === event.currentTarget) rect.current = null;
+          }}
+        >
+          <div className="bar-row">
+            <Logo onClick={() => go("home")} />
 
-          {/* Scrolled down, this folds away and the bar is just the logo and the name. */}
-          <div className="bar-more">
-            <div className="bar-more-in">
-              <nav className="nav" aria-label={s.mainNav}>
-                {LINKS.map(([id, tilt]) => (
+            {/* Scrolled down, this folds away and the label is just the initials. */}
+            <div className="bar-more">
+              <div className="bar-more-in">
+                <nav className="nav" aria-label={s.mainNav}>
+                  {LINKS.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-label={s.nav[id]}
+                      aria-current={page === id ? "page" : undefined}
+                      onClick={() => go(id)}
+                    >
+                      <Roll text={s.nav[id]} />
+                    </button>
+                  ))}
+                </nav>
+
+                {/* The red-ink promo box of the label: "now serving: you". */}
+                <button className="cta" type="button" data-calling={calling || undefined} onClick={call}>
+                  <span className="sr-only">{s.contact}</span>
+                  <span className="cta-in" aria-hidden="true">
+                    <small>
+                      {s.nowServing} · <b>{s.you}</b>
+                    </small>
+                    <span className="cta-word">{s.contact}</span>
+                  </span>
+                  <Arrow />
+                </button>
+              </div>
+            </div>
+            <LangSwitch variant="menu" />
+
+            <button
+              className="peek-btn"
+              type="button"
+              aria-label={peek ? s.hideNav : s.showNav}
+              aria-expanded={peek}
+              onClick={() => setPeek((value) => !value)}
+            >
+              <i />
+              <i />
+            </button>
+
+            <button
+              className="menu-btn"
+              type="button"
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              onClick={() => setOpen((value) => !value)}
+            >
+              <span className="menu-word">{open ? s.close : s.menu}</span>
+              <span className="burger" aria-hidden="true">
+                <i />
+                <i />
+              </span>
+            </button>
+          </div>
+
+          <div className="drawer" id="mobile-menu" aria-hidden={!open}>
+            <div className="drawer-in">
+              <nav aria-label={s.mobileNav}>
+                {LINKS.map((id, index) => (
                   <button
                     key={id}
                     type="button"
-                    aria-label={s.nav[id]}
+                    tabIndex={open ? 0 : -1}
                     aria-current={page === id ? "page" : undefined}
-                    style={{ "--tilt": `${tilt}deg` } as CSSProperties}
+                    style={{ "--i": index } as CSSProperties}
                     onClick={() => go(id)}
                   >
-                    <span className="gun" aria-hidden="true">
-                      <span className="gun-paper" />
-                    </span>
-                    <Roll text={s.nav[id]} />
+                    <small>0{index + 1}</small>
+                    <span className="drawer-link-word">{s.nav[id]}</span>
+                    {page === id && <em>{s.here}</em>}
                   </button>
                 ))}
               </nav>
-
-              {/* "Take a number": a deli-counter ticket dispenser whose display says it is
-                  your turn; the ticket sticking out of the slot is the way in. */}
-              <button className="cta" type="button" data-torn={torn || undefined} onClick={takeNumber}>
+              <button
+                className="cta drawer-cta"
+                type="button"
+                tabIndex={open ? 0 : -1}
+                data-calling={calling || undefined}
+                style={{ "--i": LINKS.length } as CSSProperties}
+                onClick={call}
+              >
                 <span className="sr-only">{s.contact}</span>
-                <span className="cta-box" aria-hidden="true">
-                  <small>{s.nowServing}</small>
-                  <span className="cta-led">
-                    <b>{s.you}</b>
-                  </span>
+                <span className="cta-in" aria-hidden="true">
+                  <small>
+                    {s.nowServing} · <b>{s.you}</b>
+                  </small>
+                  <span className="cta-word">{s.contact}</span>
                 </span>
-                {/* Stub and ticket are the same drawing cut along a ragged tear line at
-                    the slot: hover pulls more ticket out, click rips it off. */}
-                <span className="cta-ticket" key={ticket} aria-hidden="true">
-                  <span className="cta-stub">
-                    <span className="cta-slide">
-                      <TicketArt />
-                    </span>
-                  </span>
-                  <span className="cta-tear">
-                    <span className="cta-slide">
-                      <TicketArt />
-                      <span className="cta-copy">
-                        <span className="cta-word">{s.contact}</span>
-                      </span>
-                    </span>
-                  </span>
-                </span>
+                <Arrow />
               </button>
+              <LangSwitch variant="list" tabIndex={open ? 0 : -1} />
+              <p className="drawer-foot" style={{ "--i": LINKS.length + 1 } as CSSProperties}>
+                {s.foot}
+              </p>
             </div>
           </div>
-          <LangSwitch variant="menu" />
 
-          <button
-            className="peek-btn"
-            type="button"
-            aria-label={peek ? s.hideNav : s.showNav}
-            aria-expanded={peek}
-            onClick={() => setPeek((value) => !value)}
-          >
-            <i />
-            <i />
-          </button>
-
-          <button
-            className="menu-btn"
-            type="button"
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            onClick={() => setOpen((value) => !value)}
-          >
-            <span className="menu-word">{open ? s.close : s.menu}</span>
-            <span className="burger" aria-hidden="true">
-              <i />
-              <i />
-            </span>
-          </button>
+          {/* Effects over the print, clipped to the screen: paper tooth, the
+              pressure bloom, the glass glare and the refresh bands with hearts. */}
+          <span className="scr-fx" aria-hidden="true">
+            <i className="scr-press" ref={press} />
+            <i className="scr-glare" />
+            {Array.from({ length: BANDS }, (_, i) => (
+              <i key={i} className="scr-band" style={{ "--i": i, left: `${(i * 100) / BANDS}%` } as CSSProperties} />
+            ))}
+            <i className="scr-hearts">
+              <span className="scr-motto">more taste less waste</span>
+            </i>
+          </span>
         </div>
-
-        <div className="drawer" id="mobile-menu" aria-hidden={!open}>
-          <div className="drawer-in">
-            <nav aria-label={s.mobileNav}>
-              {LINKS.map(([id, tilt], index) => (
-                <button
-                  key={id}
-                  type="button"
-                  tabIndex={open ? 0 : -1}
-                  aria-current={page === id ? "page" : undefined}
-                  style={{ "--i": index, "--tilt": `${tilt}deg` } as CSSProperties}
-                  onClick={() => go(id)}
-                >
-                  <small>0{index + 1}</small>
-                  <span className="drawer-link-word">
-                    <span className="drawer-gun" aria-hidden="true">
-                      <span className="gun-paper" />
-                    </span>
-                    {s.nav[id]}
-                  </span>
-                  {page === id && <em>{s.here}</em>}
-                </button>
-              ))}
-            </nav>
-            <button
-              className="cta drawer-ticket"
-              type="button"
-              tabIndex={open ? 0 : -1}
-              data-torn={torn || undefined}
-              style={{ "--i": LINKS.length } as CSSProperties}
-              onClick={takeNumber}
-            >
-              <span className="sr-only">{s.contact}</span>
-              <span className="cta-box" aria-hidden="true">
-                <small>{s.nowServing}</small>
-                <span className="cta-led">
-                  <b>{s.you}</b>
-                </span>
-              </span>
-              <span className="cta-ticket" key={`m-${ticket}`} aria-hidden="true">
-                <span className="cta-stub">
-                  <span className="cta-slide">
-                    <TicketArt />
-                  </span>
-                </span>
-                <span className="cta-tear">
-                  <span className="cta-slide">
-                    <TicketArt />
-                    <span className="cta-copy">
-                      <span className="cta-word">{s.contact}</span>
-                    </span>
-                  </span>
-                </span>
-              </span>
-            </button>
-            <LangSwitch variant="list" tabIndex={open ? 0 : -1} />
-            <p className="drawer-foot" style={{ "--i": LINKS.length + 1 } as CSSProperties}>
-              {s.foot}
-            </p>
-          </div>
-        </div>
+        <i className="esl-led" aria-hidden="true" />
       </div>
 
       {!noticeDismissed && (

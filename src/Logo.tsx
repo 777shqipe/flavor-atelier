@@ -35,40 +35,24 @@ const WORDS: Array<[string, ReactNode]> = [
 ];
 
 /**
- * The wordmark printed on an electronic shelf label: light plastic housing, an
- * e-paper screen, a barcode and a status LED. The name
- * folds to its initials (CBM) once the header is stuck, and the panel does an
- * e-paper refresh on every page change and then every 5–10s on its own.
+ * The wordmark, printed on the header's e-paper screen with a barcode under it.
+ * The name folds to its initials (CBM) once the header is stuck. The screen
+ * itself (housing, refresh flicker) belongs to the header.
  */
-export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey?: unknown }) {
+export function Logo({ onClick }: { onClick?: () => void }) {
   const s = useT(logoStrings);
-  const label = useRef<HTMLSpanElement>(null);
+  const word = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    const el = label.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let timer = 0;
-    const flash = () => {
-      delete el.dataset.flash;
-      void el.offsetWidth;
-      el.dataset.flash = "";
-      timer = window.setTimeout(flash, 5000 + Math.random() * 5000);
-    };
-    timer = window.setTimeout(flash, 450);
-    return () => {
-      window.clearTimeout(timer);
-      delete el.dataset.flash;
-    };
-  }, [refreshKey]);
-
-  useEffect(() => {
-    const el = label.current;
+    const el = word.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let timer = 0;
     let off = 0;
     const love = () => {
-      el.dataset.love = "";
-      off = window.setTimeout(() => delete el.dataset.love, 1300);
+      if (!document.hidden) {
+        el.dataset.love = "";
+        off = window.setTimeout(() => delete el.dataset.love, 1300);
+      }
       timer = window.setTimeout(love, 8000 + Math.random() * 12000);
     };
     timer = window.setTimeout(love, 3000 + Math.random() * 7000);
@@ -81,24 +65,15 @@ export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey
 
   return (
     <button className="logo" type="button" onClick={onClick} aria-label={s.home}>
-      <span className="esl" ref={label} aria-hidden="true">
-        <span className="esl-screen">
-          <span className="logo-word">
-            {WORDS.map(([first, rest]) => (
-              <span key={first}>
-                {first}
-                <span className="logo-rest">{rest}</span>
-              </span>
-            ))}
+      <span className="logo-word" ref={word} aria-hidden="true">
+        {WORDS.map(([first, rest]) => (
+          <span key={first}>
+            {first}
+            <span className="logo-rest">{rest}</span>
           </span>
-          <i className="esl-code" />
-          {/* Easter egg: while the panel sits black mid-refresh, it fills with flickering hearts. The middle row is the motto. */}
-          <i className="esl-hearts" aria-hidden="true">
-            <span className="esl-motto">more taste less waste</span>
-          </i>
-        </span>
-        <i className="esl-led" />
+        ))}
       </span>
+      <i className="logo-code" aria-hidden="true" />
     </button>
   );
 }

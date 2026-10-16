@@ -1,6 +1,8 @@
-/* Header: one dark capsule. Logo, nav with an e-paper shelf-label marker, CTA.
-   On phones the capsule itself opens into the menu. Solid at the top of the
-   page; once scrolled it frosts slightly so it reads the same over every section. */
+/* Header: one big electronic shelf label. A light plastic housing round a
+   single e-paper screen; the wordmark, nav, language and CTA are all printed on
+   it in black and red ink. Hovering inverts a key, the pointer leaves the dark
+   pressure bloom of a pressed LCD, and the panel refreshes in bands now and
+   then. On phones the screen itself opens into the menu. */
 
 .hd {
   position: fixed;
@@ -16,144 +18,220 @@
 }
 /* While the film fills the screen the header steps out of the way. */
 :root[data-immersive] .hd:not([data-open]) { translate: 0 calc(-100% - 28px); }
+
+/* ---------- housing ------------------------------------------------------ */
 .bar {
   /* Breathing room between logo, links and CTA; grows with the viewport. */
-  --hd-gap: clamp(16px, 4.4vw, 80px);
+  --hd-gap: clamp(14px, 3.4vw, 60px);
   --r: 18px;
+  --ink: #17140c;
+  --paper: #efeee7;
+  --red-ink: #d42a20;
   position: relative;
   z-index: 2;
+  padding: 5px 5px 7px;
   border-radius: var(--r);
-  background: linear-gradient(180deg, #183129, #0c1b15);
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.07),
-    inset 0 1px 0 rgb(255 255 255 / 0.13),
-    0 22px 44px -22px rgb(0 0 0 / 0.65),
-    0 3px 8px rgb(0 0 0 / 0.16);
-  color: var(--cream);
-  pointer-events: auto;
-  animation: bar-in 0.9s var(--spring) 0.05s both;
-  transition: box-shadow 0.5s var(--ease-out);
-}
-@keyframes bar-in { from { translate: 0 -140%; scale: 0.9; } }
-/* Scrolled: the capsule goes a touch translucent and frosts what passes under it,
-   with a deeper, longer shadow so it visibly floats above the page. */
-.hd[data-stuck] .bar {
-  background: linear-gradient(180deg, rgb(24 49 41 / 0.9), rgb(12 27 21 / 0.94));
-  -webkit-backdrop-filter: blur(14px) saturate(1.15);
-  backdrop-filter: blur(14px) saturate(1.15);
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.1),
-    inset 0 1px 0 rgb(255 255 255 / 0.16),
-    0 30px 54px -24px rgb(0 0 0 / 0.78),
-    0 2px 6px rgb(0 0 0 / 0.22);
-}
-.hd[data-open] .bar { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09), inset 0 1px 0 rgb(255 255 255 / 0.14), 0 40px 70px -24px rgb(0 0 0 / 0.85), 0 4px 10px rgb(0 0 0 / 0.25); }
-.bar-row { display: flex; align-items: center; height: 68px; padding: 0 6px 0 0; transition: height 0.55s var(--ease-out), padding 0.55s var(--ease-out); }
-
-/* Nav + CTA fold into the logo once the page scrolls. */
-.bar-more { display: grid; grid-template-columns: 1fr; transition: grid-template-columns 0.6s var(--ease-out); }
-.bar-more-in { display: flex; align-items: center; min-width: 0; overflow: hidden; transition: opacity 0.35s 0.1s; }
-.hd[data-stuck]:not([data-peek]) .bar-more { grid-template-columns: 0fr; }
-.hd[data-stuck]:not([data-peek]) .bar-more-in { opacity: 0; transition-delay: 0s; }
-@media (hover: hover) {
-  .hd[data-stuck] .bar:hover .bar-more,
-  .hd[data-stuck] .bar:focus-within .bar-more { grid-template-columns: 1fr; }
-  .hd[data-stuck] .bar:hover .bar-more-in,
-  .hd[data-stuck] .bar:focus-within .bar-more-in { opacity: 1; transition-delay: 0.1s; }
-}
-@media (hover: none) {
-  .hd[data-stuck] .bar:focus-within .bar-more { grid-template-columns: 1fr; }
-  .hd[data-stuck] .bar:focus-within .bar-more-in { opacity: 1; }
-}
-
-.peek-btn { display: none; }
-@media (hover: none) and (min-width: 921px) {
-  .hd[data-stuck] .peek-btn {
-    position: relative;
-    display: block;
-    width: 38px;
-    height: 38px;
-    margin-left: 4px;
-    border: 0;
-    border-radius: 10px;
-    background: var(--cream);
-    cursor: pointer;
-  }
-  .peek-btn i { position: absolute; left: 11px; right: 11px; height: 2px; border-radius: 2px; background: var(--green-900); transition: translate 0.4s var(--spring), rotate 0.4s var(--spring); }
-  .peek-btn i:first-child { top: 15px; }
-  .peek-btn i:last-child { top: 21px; }
-  .hd[data-peek] .peek-btn i:first-child { translate: 0 3px; rotate: 45deg; }
-  .hd[data-peek] .peek-btn i:last-child { translate: 0 -3px; rotate: -45deg; }
-}
-
-/* ---------- logo: an electronic shelf label ------------------------- */
-/* The label is the left end of the capsule: full height, flush to the edge.
-   Compact, it is the whole capsule. */
-.logo {
-  display: flex;
-  align-self: stretch;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-.esl {
-  position: relative;
-  display: block;
-  height: 100%;
-  padding: 5px 6px 7px 5px;
-  border-radius: var(--r) 0 0 var(--r);
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0) 30%),
     linear-gradient(180deg, #f1f3f3, #dadedf 62%, #c8cdce);
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 0.55),
     inset 0 -2px 0 rgb(80 90 92 / 0.22),
-    8px 0 14px -8px rgb(0 0 0 / 0.55);
-  transition: border-radius 0.5s var(--ease-out), padding 0.5s var(--ease-out);
+    0 22px 44px -22px rgb(0 0 0 / 0.6),
+    0 3px 8px rgb(0 0 0 / 0.16);
+  color: var(--ink);
+  pointer-events: auto;
+  animation: bar-in 0.9s var(--spring) 0.05s both;
+  transition: box-shadow 0.5s var(--ease-out);
 }
-.logo:hover .esl-screen::after { background-position: 0 0; }
+@keyframes bar-in { from { translate: 0 -140%; scale: 0.9; } }
+.hd[data-stuck] .bar { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.55), inset 0 -2px 0 rgb(80 90 92 / 0.22), 0 30px 54px -24px rgb(0 0 0 / 0.72), 0 2px 6px rgb(0 0 0 / 0.2); }
+.hd[data-open] .bar { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.55), inset 0 -2px 0 rgb(80 90 92 / 0.22), 0 40px 70px -24px rgb(0 0 0 / 0.8), 0 4px 10px rgb(0 0 0 / 0.25); }
 /* Moulded lip under the screen, where the rail clip grips. */
-.esl::after { content: ""; position: absolute; right: 30%; bottom: 1.5px; left: 30%; height: 1px; border-radius: 1px; background: rgb(70 80 82 / 0.22); box-shadow: 0 1px 0 rgb(255 255 255 / 0.7); }
-.esl-screen {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 100%;
-  overflow: hidden;
-  /* Inner corners follow the housing's curve, less the bezel. */
-  border-radius: calc(var(--r) - 5px) 7px 7px calc(var(--r) - 5px);
-  background:
-    radial-gradient(120% 140% at 30% 20%, rgb(255 255 255 / 0.35), transparent 60%),
-    linear-gradient(176deg, #eeede6, #dddcd3);
-  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.32), inset 0 0 0 0.5px rgb(0 0 0 / 0.3), 0 1px 0 rgb(255 255 255 / 0.8);
-  transition: border-radius 0.5s var(--ease-out);
-}
-/* E-paper tooth and a faint glass glare. */
-.esl-screen::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--grain) 0 0 / 90px 90px; opacity: 0.09; mix-blend-mode: multiply; pointer-events: none; }
-.esl-screen::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(104deg, transparent 38%, rgb(255 255 255 / 0.32) 46%, transparent 54%) 100% 0 / 260% 100% no-repeat; pointer-events: none; transition: background-position 0.9s var(--ease-out); }
-.esl-code {
-  position: absolute;
-  right: 9px;
-  bottom: 3px;
-  left: 14px;
-  height: 3.5px;
-  background: repeating-linear-gradient(90deg, #1b1b1b 0 1px, transparent 1px 2px, #1b1b1b 2px 2.6px, transparent 2.6px 3.6px, #1b1b1b 3.6px 5.4px, transparent 5.4px 6.4px, #1b1b1b 6.4px 7px, transparent 7px 9px);
-  opacity: 0.45;
-}
-.esl-led { position: absolute; top: 1.6px; right: 12px; width: 3px; height: 1.6px; border-radius: 1px; background: #2fbf6d; box-shadow: 0 0 3px #3ddc84, 0 0 0 0.4px rgb(0 60 30 / 0.5); animation: esl-led 3.2s steps(1) infinite; }
+.bar::after { content: ""; position: absolute; right: 38%; bottom: 2px; left: 38%; height: 1px; border-radius: 1px; background: rgb(70 80 82 / 0.22); box-shadow: 0 1px 0 rgb(255 255 255 / 0.7); }
+.esl-led { position: absolute; top: 1.6px; right: 16px; width: 3px; height: 1.6px; border-radius: 1px; background: #2fbf6d; box-shadow: 0 0 3px #3ddc84, 0 0 0 0.4px rgb(0 60 30 / 0.5); animation: esl-led 3.2s steps(1) infinite; }
 @keyframes esl-led { 0% { opacity: 1; } 8% { opacity: 0.15; } }
 
-/* Wordmark: "CHEAPER BUY MILES" in a bold Didone, printed in e-paper black; the
-   letters after each initial fold away on scroll so it reads CBM in the same face. */
+/* ---------- screen -------------------------------------------------------- */
+.scr {
+  position: relative;
+  border-radius: calc(var(--r) - 5px);
+  background:
+    radial-gradient(120% 140% at 22% 10%, rgb(255 255 255 / 0.35), transparent 60%),
+    linear-gradient(176deg, #eeede6, #dddcd3);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.32), inset 0 0 0 0.5px rgb(0 0 0 / 0.3), 0 1px 0 rgb(255 255 255 / 0.8);
+}
+.bar-row { display: flex; align-items: center; height: 58px; padding: 0 6px 0 0; transition: height 0.55s var(--ease-out), padding 0.55s var(--ease-out); }
+
+/* Everything printed sits under this layer; it never takes the pointer. */
+.scr-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+/* E-paper tooth. Plain alpha, no blend mode, so the GPU only composites it. */
+.scr-fx::before { content: ""; position: absolute; inset: 0; background: var(--grain) 0 0 / 90px 90px; opacity: 0.07; }
+
+/* Pressure bloom: the dark, faintly rainbow-rimmed smudge a pressed LCD shows
+   under a fingertip. Light while hovering, deeper while the button is down;
+   the liquid flows back slowly on release. */
+.scr-press {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 170px;
+  height: 170px;
+  margin: -85px 0 0 -85px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side,
+    rgb(14 16 12 / 0.46),
+    rgb(14 16 12 / 0.28) 28%,
+    rgb(14 16 12 / 0.1) 46%,
+    rgb(120 80 200 / 0.18) 57%,
+    rgb(30 170 150 / 0.15) 67%,
+    rgb(235 170 40 / 0.1) 77%,
+    transparent);
+  opacity: 0;
+  scale: 0.4;
+  transition: opacity 0.7s var(--ease-out), scale 0.9s var(--ease-out);
+}
+@media (hover: hover) {
+  .scr:hover .scr-press { opacity: 0.75; scale: 0.7; transition: opacity 0.35s var(--ease-out), scale 0.5s var(--spring); }
+}
+.scr[data-press] .scr-press { opacity: 1; scale: 1.08; transition: opacity 0.1s, scale 0.28s var(--ease-out); }
+
+/* Glass glare, swept once when the pointer arrives. */
+.scr-glare {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(104deg, transparent 22%, rgb(255 255 255 / 0.4) 50%, transparent 78%);
+  translate: -110% 0;
+}
+@media (hover: hover) {
+  .bar:hover .scr-glare { translate: 400% 0; transition: translate 1.2s var(--ease-out); }
+}
+
+/* ---------- refresh ------------------------------------------------------- */
+/* The panel redraws in vertical bands, each a few frames behind the last:
+   black, blank, black, then the print comes back through a fading ghost.
+   Only opacity changes, and every frame is a hard cut like a real panel. */
+.scr-band { position: absolute; top: 0; bottom: 0; width: calc(100% / 12 + 1px); }
+.scr-band::before,
+.scr-band::after { content: ""; position: absolute; inset: 0; opacity: 0; }
+.scr-band::before { background: #f3f2ec; }
+.scr-band::after { background: #141414; }
+.scr[data-flash="soft"] .scr-band::before { animation: band-paper-soft 0.8s steps(1) calc(var(--i) * 26ms); }
+.scr[data-flash="soft"] .scr-band::after { animation: band-ink-soft 0.8s steps(1) calc(var(--i) * 26ms); }
+.scr[data-flash="full"] .scr-band::before { animation: band-paper-full 1.5s steps(1) calc(var(--i) * 26ms); }
+.scr[data-flash="full"] .scr-band::after { animation: band-ink-full 1.5s steps(1) calc(var(--i) * 26ms); }
+@keyframes band-ink-soft { 0% { opacity: 1; } 18% { opacity: 0; } 30% { opacity: 1; } 45% { opacity: 0; } }
+@keyframes band-paper-soft { 0% { opacity: 0; } 18% { opacity: 1; } 30% { opacity: 0; } 45% { opacity: 0.7; } 62% { opacity: 0.35; } 78% { opacity: 0; } }
+@keyframes band-ink-full { 0% { opacity: 1; } 8% { opacity: 0; } 15% { opacity: 1; } 64% { opacity: 0; } }
+@keyframes band-paper-full { 0% { opacity: 0; } 8% { opacity: 1; } 15% { opacity: 0; } 64% { opacity: 1; } 72% { opacity: 0.55; } 82% { opacity: 0.25; } 92% { opacity: 0; } }
+
+/* Easter egg: while every band sits black in a full refresh, the panel fills
+   with flickering pixel hearts on a fixed 18 x 16px grid, the motto in the
+   second row. Two checkerboard layers blink in turn, never fully off. */
+.scr-hearts {
+  position: absolute;
+  inset: 0;
+  width: calc(100% - 10px);
+  height: calc(100% - 6px);
+  width: round(down, 100% - 10px, 18px);
+  height: round(down, 100% - 6px, 16px);
+  margin: auto;
+  opacity: 0;
+}
+.scr-hearts::before,
+.scr-hearts::after { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' shape-rendering='crispEdges' fill='%23fff'%3E%3Cpath transform='translate(0 0)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3Cpath transform='translate(18 16)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3C/svg%3E") 0 0 / 36px 32px; image-rendering: pixelated; mask-image: linear-gradient(#000 0 16px, transparent 16px 32px, #000 32px); }
+.scr-hearts::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' shape-rendering='crispEdges' fill='%23fff'%3E%3Cpath transform='translate(18 0)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3Cpath transform='translate(0 16)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3C/svg%3E"); }
+.scr-motto {
+  position: absolute;
+  z-index: 1;
+  top: 16px;
+  right: 0;
+  left: 0;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font: 700 8px / 1 var(--font-mono);
+  letter-spacing: 0.22em;
+  text-transform: lowercase;
+}
+.scr[data-flash="full"] .scr-hearts { animation: scr-hearts 1.5s steps(1); }
+.scr[data-flash="full"] .scr-hearts::before { animation: heart-blink 0.18s steps(1) 0.5s 3; }
+.scr[data-flash="full"] .scr-hearts::after { animation: heart-blink 0.18s steps(1) 0.5s 3 reverse; }
+@keyframes scr-hearts { 0% { opacity: 0; } 36% { opacity: 1; } 63% { opacity: 0; } }
+@keyframes heart-blink { 0% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ---------- keys: hover inverts, as a pressed e-paper button would ------- */
+/* A black plate behind the key snaps on in a few hard frames and the print
+   flips to paper; the key sinks a pixel into the screen. */
+.logo,
+.nav button,
+.cta,
+.lang .lang-btn { position: relative; isolation: isolate; }
+.logo::before,
+.nav button::before,
+.lang .lang-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 8px;
+  background: var(--ink);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.6), inset 0 -1px 0 rgb(255 255 255 / 0.08);
+  opacity: 0;
+  scale: 0.92;
+  transition: opacity 0.18s steps(3, jump-none), scale 0.3s var(--spring);
+}
+@media (hover: hover) {
+  .logo:hover,
+  .nav button:hover,
+  .lang .lang-btn:hover { color: var(--paper); translate: 0 1px; }
+  .logo:hover::before,
+  .nav button:hover::before,
+  .lang .lang-btn:hover::before { opacity: 1; scale: 1; }
+}
+.logo:active,
+.nav button:active,
+.lang .lang-btn:active { scale: 0.95; transition-duration: 0.1s; }
+.logo:focus-visible,
+.nav button:focus-visible,
+.cta:focus-visible,
+.menu-btn:focus-visible,
+.peek-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 8px; }
+
+/* ---------- logo ---------------------------------------------------------- */
+.logo {
+  flex: none;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  margin: 4px 0 4px 4px;
+  padding: 0 14px 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: translate 0.25s var(--spring), scale 0.25s var(--spring), padding 0.5s var(--ease-out);
+}
+.logo::before { border-radius: 9px; }
+/* Wordmark: "CHEAPER BUY MILES" in a bold Didone; the letters after each
+   initial fold away on scroll so it reads CBM in the same face. */
 .logo-word {
-  padding: 0 17px 4px;
-  color: #17140c;
   font: 700 27px / 1 var(--font-mark);
   letter-spacing: -0.005em;
   white-space: nowrap;
-  transition: font-size 0.5s var(--ease-out), letter-spacing 0.5s var(--ease-out), padding 0.5s var(--ease-out);
+  transition: font-size 0.5s var(--ease-out), letter-spacing 0.5s var(--ease-out);
 }
 .logo-rest {
   display: inline-block;
@@ -163,7 +241,16 @@
   transition: max-width 0.55s var(--ease-out), opacity 0.35s, padding 0.55s var(--ease-out);
 }
 .logo-word > span:not(:last-child) .logo-rest { padding-right: 0.26em; }
-/* The A in CHEAPER, swapped now and then for a blinking pixel heart in the label's red ink. */
+.logo-code {
+  position: absolute;
+  right: 14px;
+  bottom: 3px;
+  left: 14px;
+  height: 3.5px;
+  background: repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 2px, currentColor 2px 2.6px, transparent 2.6px 3.6px, currentColor 3.6px 5.4px, transparent 5.4px 6.4px, currentColor 6.4px 7px, transparent 7px 9px);
+  opacity: 0.45;
+}
+/* The A in CHEAPER, swapped now and then for a blinking pixel heart in red ink. */
 .logo-a { position: relative; display: inline-block; }
 .logo-a-heart {
   position: absolute;
@@ -176,307 +263,161 @@
   image-rendering: pixelated;
   opacity: 0;
 }
-.esl[data-love] .logo-a { color: transparent; }
-.esl[data-love] .logo-a-heart { animation: heart-blink 0.18s steps(1) 7; opacity: 1; }
+.logo-word[data-love] .logo-a { color: transparent; }
+.logo-word[data-love] .logo-a-heart { animation: heart-blink 0.18s steps(1) 7; opacity: 1; }
 
-/* E-paper refresh: black, white, then a longer black frame full of flickering
-   white hearts (the easter egg), blank, and the label redraws with a brief
-   ghost. Stepped so every frame is a hard cut, like the real panels. */
-.esl[data-flash] .esl-screen { animation: esl-screen 1.1s steps(1); }
-.esl[data-flash] .esl-code { animation: esl-code 1.1s steps(1); }
-.esl[data-flash] .logo-word { animation: esl-text 1.1s steps(1); }
-@keyframes esl-screen {
-  0% { background: #141414; }
-  9% { background: #f3f2ec; }
-  16% { background: #141414; }
-  71% { background: #f6f5f0; }
+/* ---------- fold on scroll ------------------------------------------------ */
+/* Nav + CTA fold into the label once the page scrolls; hover opens them again. */
+.bar-more { display: grid; grid-template-columns: 1fr; transition: grid-template-columns 0.6s var(--ease-out); }
+.bar-more-in { display: flex; align-items: center; min-width: 0; overflow: hidden; transition: opacity 0.35s 0.1s; }
+/* Printed dotted rule between the wordmark and the keys. */
+.bar-more-in::before { content: ""; flex: none; height: 30px; margin: 0 calc(var(--hd-gap) * 0.55) 0 calc(var(--hd-gap) * 0.45); border-left: 2px dotted rgb(23 20 12 / 0.28); }
+.hd[data-stuck]:not([data-peek]) .bar-more { grid-template-columns: 0fr; }
+.hd[data-stuck]:not([data-peek]) .bar-more-in { opacity: 0; transition-delay: 0s; }
+@media (hover: hover) {
+  .hd[data-stuck] .bar:hover .bar-more,
+  .hd[data-stuck] .bar:focus-within .bar-more { grid-template-columns: 1fr; }
+  .hd[data-stuck] .bar:hover .bar-more-in,
+  .hd[data-stuck] .bar:focus-within .bar-more-in { opacity: 1; transition-delay: 0.1s; }
 }
-@keyframes esl-code {
-  0% { opacity: 0; }
-  82% { opacity: 0.2; }
-  91% { opacity: 0.5; }
+@media (hover: none) {
+  .hd[data-stuck] .bar:focus-within .bar-more { grid-template-columns: 1fr; }
+  .hd[data-stuck] .bar:focus-within .bar-more-in { opacity: 1; }
 }
-@keyframes esl-text {
-  0% { color: #efeee8; translate: 1px 0; }
-  9% { color: rgb(20 20 20 / 0.5); translate: -1px 0; }
-  16% { color: transparent; translate: 0 0; }
-  82% { color: rgb(20 20 20 / 0.45); translate: -0.5px 0; }
-  91% { color: #17140c; translate: 0 0; }
-}
-
-/* Pixel-art hearts on a fixed 18 x 16px grid, sized to whole cells and centred
-   so every heart sits complete inside the screen. Two checkerboard layers
-   blink in turn, never fully off. */
-.esl-hearts {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  width: calc(100% - 10px);
-  height: calc(100% - 6px);
-  width: round(down, 100% - 10px, 18px);
-  height: round(down, 100% - 6px, 16px);
-  margin: auto;
-  opacity: 0;
-  pointer-events: none;
-}
-.esl-hearts::before,
-.esl-hearts::after { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' shape-rendering='crispEdges' fill='%23fff'%3E%3Cpath transform='translate(0 0)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3Cpath transform='translate(18 16)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3C/svg%3E") 0 0 / 36px 32px; image-rendering: pixelated; mask-image: linear-gradient(#000 0 16px, transparent 16px 32px, #000 32px); }
-.esl-hearts::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' shape-rendering='crispEdges' fill='%23fff'%3E%3Cpath transform='translate(18 0)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3Cpath transform='translate(0 16)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3C/svg%3E"); }
-.esl-motto {
-  position: absolute;
-  z-index: 1;
-  top: 16px;
-  right: 0;
-  left: 0;
-  height: 16px;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font: 700 7.5px / 1 var(--font-mono);
-  letter-spacing: 0.16em;
-  text-transform: lowercase;
-}
-.esl[data-flash] .esl-hearts { animation: esl-hearts 1.1s steps(1); }
-.esl[data-flash] .esl-hearts::before { animation: heart-blink 0.18s steps(1) 6; }
-.esl[data-flash] .esl-hearts::after { animation: heart-blink 0.18s steps(1) 6 reverse; }
-@keyframes esl-hearts {
-  0% { opacity: 0; }
-  16% { opacity: 1; }
-  71% { opacity: 0; }
-}
-@keyframes heart-blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-/* Compact: a smaller label with only the initials. */
-.hd[data-stuck] .bar-row { height: 60px; }
+.hd[data-stuck] .bar-row { height: 50px; }
 @media (min-width: 921px) {
-  .hd[data-stuck] .bar-row { padding-right: 0; }
-  .hd[data-stuck] .esl { border-radius: var(--r); }
-  .hd[data-stuck] .esl-screen { border-radius: calc(var(--r) - 5px); }
+  .hd[data-stuck] .bar-row { padding-right: 4px; }
 }
-.hd[data-stuck] .logo-word { padding: 0 15px 4px; font-size: 28px; letter-spacing: 0.04em; }
+.hd[data-stuck] .logo-word { font-size: 26px; letter-spacing: 0.04em; }
 .hd[data-stuck] .logo-rest { max-width: 0; padding-right: 0 !important; opacity: 0; }
 @media (hover: hover) {
   .hd[data-stuck] .bar:hover .bar-row { padding-right: 6px; }
-  .hd[data-stuck] .bar:hover .esl { border-radius: var(--r) 0 0 var(--r); }
-  .hd[data-stuck] .bar:hover .esl-screen { border-radius: calc(var(--r) - 5px) 7px 7px calc(var(--r) - 5px); }
 }
 .hd[data-stuck] .bar:focus-within .bar-row,
 .hd[data-stuck][data-peek] .bar-row { padding-right: 6px; }
-.hd[data-stuck] .bar:focus-within .esl,
-.hd[data-stuck][data-peek] .esl { border-radius: var(--r) 0 0 var(--r); }
-.hd[data-stuck] .bar:focus-within .esl-screen,
-.hd[data-stuck][data-peek] .esl-screen { border-radius: calc(var(--r) - 5px) 7px 7px calc(var(--r) - 5px); }
 
-/* ---------- nav: price-gun labels --------------------------------------- */
-/* Hovering a link runs a checkout scanner's red laser across it. The current
-   page wears a yellow price-gun label; clicking another link fires a new label
-   onto it while the old one peels off and flies away. */
-.nav { display: flex; align-items: center; gap: clamp(4px, 1vw, 16px); height: 48px; margin-left: var(--hd-gap); }
+.peek-btn { display: none; }
+@media (hover: none) and (min-width: 921px) {
+  .hd[data-stuck] .peek-btn {
+    position: relative;
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin-left: 4px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--ink);
+    cursor: pointer;
+  }
+  .peek-btn i { position: absolute; left: 11px; right: 11px; height: 2px; border-radius: 2px; background: var(--paper); transition: translate 0.4s var(--spring), rotate 0.4s var(--spring); }
+  .peek-btn i:first-child { top: 14px; }
+  .peek-btn i:last-child { top: 20px; }
+  .hd[data-peek] .peek-btn i:first-child { translate: 0 3px; rotate: 45deg; }
+  .hd[data-peek] .peek-btn i:last-child { translate: 0 -3px; rotate: -45deg; }
+}
+
+/* ---------- nav ----------------------------------------------------------- */
+/* Black ink keys; the current page is printed in the label's red ink with a
+   red rule that prints in chunks. */
+.nav { display: flex; align-items: center; gap: clamp(2px, 0.5vw, 8px); }
 .nav button {
-  position: relative;
-  isolation: isolate;
   display: grid;
   place-items: center;
-  height: 48px;
-  padding: 0 clamp(16px, 1.9vw, 28px);
-  overflow: visible;
+  height: 40px;
+  padding: 0 clamp(14px, 1.5vw, 22px);
   border: 0;
+  border-radius: 8px;
   background: transparent;
-  color: rgb(246 240 219 / 0.74);
-  font: 600 14.5px / 1 var(--font-sans);
+  color: var(--ink);
+  font: 600 15px / 1 var(--font-sans);
   letter-spacing: -0.005em;
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.2s, scale 0.3s var(--spring);
+  transition: translate 0.25s var(--spring), scale 0.3s var(--spring);
 }
-.nav button > * { grid-area: 1 / 1; }
-.nav button:hover { color: var(--cream); }
-.nav button:active { scale: 0.94; transition-duration: 0.1s; }
-.nav button:focus-visible { outline: 2px solid var(--sun); outline-offset: -4px; border-radius: 10px; }
-.nav button[aria-current="page"] { color: #17140c; transition: color 0.15s 0.12s, scale 0.3s var(--spring); }
-
-/* Scanner laser: a red line with a soft fan of light, swept once per hover. */
-.nav button::after {
+.nav button[aria-current="page"] { color: var(--red-ink); }
+.nav button[aria-current="page"]::after {
   content: "";
   position: absolute;
-  top: 9px;
-  bottom: 9px;
-  left: 12px;
-  z-index: 2;
-  width: 2px;
+  right: clamp(14px, 1.5vw, 22px);
+  bottom: 5px;
+  left: clamp(14px, 1.5vw, 22px);
+  height: 3px;
   border-radius: 1px;
-  background: #ff3b2a;
-  box-shadow: 0 0 6px 1px rgb(255 50 30 / 0.85), 0 0 18px 4px rgb(255 50 30 / 0.35);
-  opacity: 0;
-  pointer-events: none;
+  background: currentColor;
+  transform-origin: 0 50%;
+  animation: print-in 0.45s steps(5) 0.15s backwards;
 }
-.nav button:hover::after { animation: laser 0.6s var(--ease-soft); }
-@keyframes laser {
-  0% { left: 12px; opacity: 0; }
-  12% { opacity: 1; }
-  88% { opacity: 1; }
-  100% { left: calc(100% - 14px); opacity: 0; }
-}
-
-/* The label: flat yellow stock with die-cut scalloped ends. */
-.gun {
-  z-index: -1;
-  align-self: center;
-  justify-self: stretch;
-  height: 28px;
-  margin: 0 -12px;
-  opacity: 0;
-  translate: 6px -16px;
-  rotate: calc(var(--tilt) + 18deg);
-  scale: 1.08;
-  transform-origin: 85% 15%;
-  pointer-events: none;
-  transition: opacity 0.3s 0.08s, translate 0.4s var(--ease-soft), rotate 0.4s var(--ease-soft), scale 0.4s var(--ease-soft);
-}
-.gun-paper {
-  display: block;
-  height: 100%;
-  border-radius: 2px;
-  background: var(--sun);
-  -webkit-mask:
-    radial-gradient(circle at 0 50%, #0000 1.6px, #000 2px) left / 51% 4.67px repeat-y,
-    radial-gradient(circle at 100% 50%, #0000 1.6px, #000 2px) right / 51% 4.67px repeat-y;
-  mask:
-    radial-gradient(circle at 0 50%, #0000 1.6px, #000 2px) left / 51% 4.67px repeat-y,
-    radial-gradient(circle at 100% 50%, #0000 1.6px, #000 2px) right / 51% 4.67px repeat-y;
-}
-.nav button[aria-current="page"] .gun {
-  opacity: 1;
-  translate: 0 0;
-  rotate: var(--tilt);
-  scale: 1;
-  animation: gun-slap 0.5s var(--ease-out);
-}
-.nav button[aria-current="page"]:hover .gun { rotate: calc(var(--tilt) * 0.4); scale: 1.04; transition: rotate 0.4s var(--spring), scale 0.4s var(--spring); }
-/* Fired from the gun: big and loose, smacked flat, a small rebound. */
-@keyframes gun-slap {
-  0% { opacity: 0; scale: 1.4; rotate: calc(var(--tilt) - 10deg); translate: 0 -6px; }
-  45% { opacity: 1; scale: 0.95; rotate: calc(var(--tilt) + 1deg); translate: 0 0; }
-  70% { scale: 1.03; }
-  100% { scale: 1; rotate: var(--tilt); }
+@keyframes print-in { from { scale: 0 1; } }
+.nav button[aria-current="page"]::before { background: var(--red-ink); }
+@media (hover: hover) {
+  .nav button[aria-current="page"]:hover::after { opacity: 0; }
 }
 
 /* Rolling letters: each glyph has a twin underneath that slides up on hover. */
 .roll { display: inline-flex; height: 1.2em; overflow: hidden; line-height: 1.2; vertical-align: middle; }
 .roll-ch { position: relative; display: inline-block; transition: translate 0.5s var(--spring) calc(var(--i) * 18ms); }
 .roll-ch::after { content: attr(data-c); position: absolute; top: 100%; left: 0; }
-.nav button:hover .roll-ch { translate: 0 -100%; }
+@media (hover: hover) {
+  .nav button:hover .roll-ch { translate: 0 -100%; }
+}
 
-/* ---------- CTA: take a number ---------------------------------------- */
-/* The right end of the capsule, framed by a thin green border: a flat red
-   deli-counter dispenser whose display says it's your turn, and the paper
-   ticket in its slot. Hover pulls more ticket out (the capsule grows with it);
-   click rips it off, and a fresh one feeds out of the slot. */
+/* ---------- CTA: the red promo box ---------------------------------------- */
+/* "Now serving: you", printed in paper on a red-ink block. Hover flips it to
+   black; a click blinks the call twice before the contact sheet opens. */
 .cta {
-  position: relative;
-  isolation: isolate;
+  flex: none;
   display: inline-flex;
   align-items: center;
-  height: 56px;
-  margin-left: var(--hd-gap);
-  padding: 0;
-  border: 0;
-  border-radius: calc(var(--r) - 6px);
-  background: transparent;
-  cursor: pointer;
-}
-.cta-box {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 5px;
-  width: 64px;
-  height: 100%;
-  border-radius: calc(var(--r) - 6px) 4px 4px calc(var(--r) - 6px);
-  background: #d8372a;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 -2px 0 rgb(0 0 0 / 0.16);
-  transition: translate 0.35s var(--spring);
-}
-.cta-box small { padding-right: 5px; color: #ffe9e2; font: 700 8.5px / 1 var(--font-cond); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
-/* The ticket slot down the right edge. */
-.cta-box::after { content: ""; position: absolute; top: 9px; right: 3px; bottom: 9px; width: 3px; border-radius: 2px; background: #4a0c07; }
-.cta-led { display: grid; place-items: center; width: 44px; height: 22px; margin-right: 5px; overflow: hidden; border-radius: 4px; background: #1a0806; box-shadow: inset 0 1px 2px #000; }
-.cta-led b { color: #ff5a3a; font: 700 14px / 1 var(--font-mono); letter-spacing: 0.06em; text-indent: 0.06em; text-transform: uppercase; text-shadow: 0 0 5px rgb(255 70 40 / 0.7); }
-
-/* The ticket: drawn twice and cut along a ragged tear line just outside the
-   slot, so the stub stays put while the ticket rips away. Its left part sits
-   under the dispenser; widening the ticket reveals more of it. */
-.cta-ticket {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 188px;
+  gap: 14px;
   height: 44px;
-  margin-left: -34px;
-  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.28));
-  transition: width 0.55s var(--spring);
+  margin-left: var(--hd-gap);
+  padding: 0 14px 0 16px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--red-ink);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.18);
+  color: var(--paper);
+  text-align: left;
+  cursor: pointer;
+  transition: translate 0.25s var(--spring), scale 0.25s var(--spring);
 }
-.cta-stub,
-.cta-tear { position: absolute; inset: 0; }
-.cta-slide { position: absolute; top: 0; right: 0; width: 240px; height: 100%; animation: ticket-feed 0.7s var(--spring) 0.2s backwards; }
-.cta-slide svg { display: block; width: 100%; height: 100%; }
-.cta-stub {
-  clip-path: polygon(0 -2px, 36.8px -2px, 34.6px 4px, 37.2px 9px, 35px 14px, 37.6px 19px, 34.8px 24px, 36.9px 29px, 34.5px 34px, 37.1px 39px, 35.2px 44px, 36.6px 46px, 0 46px);
-  transform-origin: 0 50%;
-}
-.cta-tear {
-  clip-path: polygon(36.8px -2px, 100% -2px, 100% 46px, 36.6px 46px, 35.2px 44px, 37.1px 39px, 34.5px 34px, 36.9px 29px, 34.8px 24px, 37.6px 19px, 35px 14px, 37.2px 9px, 34.6px 4px);
-  transform-origin: 36px 100%;
-}
-.cta-copy {
+.cta::before {
+  content: "";
   position: absolute;
-  top: 0;
-  right: 46px;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--ink);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.6);
+  opacity: 0;
+  transition: opacity 0.18s steps(3, jump-none);
 }
-.cta-word { color: var(--green-900); font: 700 16px / 1 var(--font-sans); letter-spacing: -0.015em; white-space: nowrap; }
-.cta:hover .cta-ticket { width: 216px; }
-.cta:hover .cta-led b { animation: led-call 0.9s steps(1) 0.15s 2; }
-.cta:active .cta-box { translate: -2px 0; transition-duration: 0.1s; }
-.cta[data-torn] .cta-tear { animation: ticket-rip 0.46s var(--ease-out) forwards; }
-.cta[data-torn] .cta-stub { animation: stub-snap 0.35s var(--spring); }
-.cta:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
-
-/* A fresh ticket slides out of the slot tip first. */
-@keyframes ticket-feed { from { translate: -150px 0; } }
-/* The rip runs down from the top edge, then the ticket comes free and drops away. */
-@keyframes ticket-rip {
-  0% { rotate: 0deg; translate: 0 0; }
-  22% { rotate: 7deg; translate: 1px 0; opacity: 1; }
-  40% { rotate: 12deg; translate: 6px 1px; opacity: 1; }
-  100% { rotate: 30deg; translate: 50px 36px; opacity: 0; }
+.cta-in { display: grid; gap: 4px; }
+.cta small { font: 700 8.5px / 1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; opacity: 0.82; }
+.cta small b { font-weight: 700; }
+.cta-word { font: 700 15.5px / 1 var(--font-sans); letter-spacing: -0.01em; white-space: nowrap; }
+.cta-arrow { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: translate 0.3s var(--spring); }
+@media (hover: hover) {
+  .cta:hover { translate: 0 1px; }
+  .cta:hover::before { opacity: 1; }
+  .cta:hover small b { animation: led-call 0.9s steps(1) 0.15s 2; }
+  .cta:hover .cta-arrow { translate: 3px 0; }
 }
-@keyframes stub-snap {
-  35% { rotate: -3deg; translate: -1px 0; }
-  70% { rotate: 1deg; }
-}
+.cta:active { scale: 0.96; transition-duration: 0.1s; }
+.cta[data-calling]::before { animation: cta-call 0.38s steps(1); }
+@keyframes cta-call { 0% { opacity: 1; } 25% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0; } }
 @keyframes led-call { 0% { opacity: 1; } 50% { opacity: 0.2; } }
-
-.logo:focus-visible,
-.menu-btn:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
 
 /* Just above the phone layout the full bar is a tight fit, so the gaps give a little. */
 @media (min-width: 921px) and (max-width: 1080px) {
-  .bar { --hd-gap: 22px; }
-  .nav button { padding: 0 14px; }
-  .logo-word { font-size: 25px; }
+  .bar { --hd-gap: 14px; }
+  .nav button { padding: 0 12px; }
+  .logo-word { font-size: 24px; }
+  .cta { gap: 10px; padding: 0 10px 0 12px; }
 }
 
-/* ---------- phone: the capsule opens into the menu ---------------------- */
+/* ---------- phone: the screen opens into the menu -------------------------- */
 .menu-btn,
 .drawer { display: none; }
 .scrim {
@@ -495,192 +436,150 @@
 @media (max-width: 920px) {
   .hd { inset: 10px 0 auto; padding: 0 10px; }
   .bar { --r: 16px; width: 100%; max-width: 100%; transition: box-shadow 0.5s var(--ease-out), max-width 0.55s var(--spring); }
-  .bar-row { justify-content: space-between; height: 64px; padding: 0 7px 0 0; }
+  .bar-row { justify-content: space-between; height: 56px; padding: 0 5px 0 0; }
   .bar-more { display: none; }
-  .esl-code { left: 12px; right: 12px; }
-  .logo-word { padding: 0 14px 4px; font-size: 22px; }
-  /* Scrolled & closed: contract into a tight floating capsule around CBM + Menu, just like desktop's pill. */
+  .logo { padding: 0 12px 4px; }
+  .logo-word { font-size: 22px; }
+  /* Scrolled & closed: just CBM and Menu. */
   .hd[data-stuck]:not([data-open]) .bar { max-width: 236px; }
-  .hd[data-stuck] .bar-row { height: 58px; padding-right: 6px; }
-  .hd[data-stuck] .menu-btn { height: 44px; }
-  .hd[data-stuck] .burger { width: 32px; height: 32px; }
-  .hd[data-stuck] .burger i { left: 10px; right: 10px; }
-  .hd[data-stuck] .burger i:first-child { top: 12px; }
-  .hd[data-stuck] .burger i:last-child { top: 18px; }
+  .hd[data-stuck] .bar-row { height: 50px; padding-right: 5px; }
+  .hd[data-stuck] .logo-word { font-size: 22px; }
+  .hd[data-stuck] .menu-btn { height: 40px; }
 
   .menu-btn {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    height: 48px;
-    padding: 0 6px 0 16px;
+    gap: 8px;
+    height: 44px;
+    padding: 0 4px 0 14px;
     border: 0;
-    border-radius: 12px;
-    background: var(--cream);
-    color: var(--green-900);
+    border-radius: 9px;
+    background: var(--ink);
+    color: var(--paper);
     font: 700 14px / 1 var(--font-sans);
-    box-shadow: inset 0 1px 0 #fff, 0 6px 14px -6px rgb(0 0 0 / 0.5);
+    box-shadow: inset 0 -2px 0 rgb(255 255 255 / 0.08);
     cursor: pointer;
     transition: height 0.45s var(--ease-out), scale 0.25s var(--spring);
   }
   .menu-btn:active { scale: 0.95; }
   .menu-word { min-width: 2.7em; text-align: left; }
-  .burger { position: relative; width: 36px; height: 36px; border-radius: 8px; background: var(--green-900); }
-  .burger i { position: absolute; left: 11px; right: 11px; height: 2px; border-radius: 2px; background: var(--cream); transition: translate 0.5s var(--spring), rotate 0.5s var(--spring); }
-  .burger i:first-child { top: 14px; }
-  .burger i:last-child { top: 20px; }
+  .burger { position: relative; width: 32px; height: 32px; }
+  .burger i { position: absolute; left: 9px; right: 9px; height: 2px; border-radius: 2px; background: var(--paper); transition: translate 0.5s var(--spring), rotate 0.5s var(--spring); }
+  .burger i:first-child { top: 12px; }
+  .burger i:last-child { top: 18px; }
   .hd[data-open] .burger i:first-child { translate: 0 3px; rotate: 45deg; }
   .hd[data-open] .burger i:last-child { translate: 0 -3px; rotate: -45deg; }
 
   .drawer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.6s var(--spring); }
   .hd[data-open] .drawer { grid-template-rows: 1fr; }
-  .drawer-in { min-height: 0; overflow: hidden; padding: 0 12px; }
-  .drawer nav { display: grid; border-top: 1px solid rgb(246 240 219 / 0.1); }
+  .drawer-in { min-height: 0; overflow: hidden; padding: 0 10px; }
+  .drawer nav { display: grid; border-top: 2px dotted rgb(23 20 12 / 0.25); }
   .drawer nav button {
     position: relative;
     display: flex;
     align-items: baseline;
     gap: 14px;
-    padding: 15px 6px 14px;
+    padding: 14px 6px 13px;
     border: 0;
-    border-bottom: 1px solid rgb(246 240 219 / 0.08);
+    border-bottom: 1px solid rgb(23 20 12 / 0.12);
     background: transparent;
-    color: var(--cream);
+    color: var(--ink);
     font: 400 clamp(28px, 7.8vw, 38px) / 1 var(--font-serif);
     letter-spacing: -0.02em;
     text-align: left;
     cursor: pointer;
   }
-  /* Checkout scanner red laser sweep on tap/hover inside the mobile drawer */
-  .drawer nav button::after {
-    content: "";
-    position: absolute;
-    top: 10px;
-    bottom: 10px;
-    left: 28px;
-    z-index: 3;
-    width: 2px;
-    border-radius: 1px;
-    background: #ff3b2a;
-    box-shadow: 0 0 6px 1px rgb(255 50 30 / 0.85), 0 0 18px 4px rgb(255 50 30 / 0.35);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .drawer nav button:active::after,
-  .drawer nav button:hover::after { animation: laser 0.55s var(--ease-soft); }
   .drawer-link-word {
     position: relative;
     isolation: isolate;
     display: inline-block;
     padding: 2px 10px 4px;
-    transition: translate 0.45s var(--spring), color 0.2s;
+    transition: translate 0.45s var(--spring);
   }
-  .drawer nav button:hover .drawer-link-word,
-  .drawer nav button:active .drawer-link-word { translate: 6px 0; }
-  .drawer nav button[aria-current="page"] .drawer-link-word { color: #17140c; }
-  .drawer-gun {
+  .drawer-link-word::before {
+    content: "";
     position: absolute;
-    inset: 2px -8px 0;
+    inset: 0;
     z-index: -1;
+    border-radius: 6px;
+    background: var(--ink);
     opacity: 0;
-    rotate: var(--tilt, -1.5deg);
-    pointer-events: none;
+    transition: opacity 0.18s steps(3, jump-none);
   }
-  .drawer nav button[aria-current="page"] .drawer-gun {
-    opacity: 1;
-    filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.35));
+  .drawer nav button:active .drawer-link-word { translate: 6px 0; color: var(--paper); }
+  .drawer nav button:active .drawer-link-word::before { opacity: 1; }
+  @media (hover: hover) {
+    .drawer nav button:hover .drawer-link-word { translate: 6px 0; color: var(--paper); }
+    .drawer nav button:hover .drawer-link-word::before { opacity: 1; }
   }
-  .hd[data-open] .drawer nav button[aria-current="page"] .drawer-gun {
-    animation: gun-slap 0.55s var(--ease-out) 0.18s both;
+  .drawer nav button[aria-current="page"] .drawer-link-word { color: var(--red-ink); }
+  .drawer nav button[aria-current="page"] .drawer-link-word::before { background: var(--red-ink); }
+  .drawer nav button[aria-current="page"]:active .drawer-link-word { color: var(--paper); }
+  @media (hover: hover) {
+    .drawer nav button[aria-current="page"]:hover .drawer-link-word { color: var(--paper); }
   }
-  .drawer nav small { color: var(--sun); font: 700 11px / 1 var(--font-mono); letter-spacing: 0.06em; }
+  .drawer nav small { color: var(--red-ink); font: 700 11px / 1 var(--font-mono); letter-spacing: 0.06em; }
   .drawer nav em {
     align-self: center;
     margin-left: auto;
-    padding: 7px 11px 6px 16px;
-    border-radius: 0 7px 7px 0;
-    background: rgb(246 240 219 / 0.12);
-    box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.22);
-    color: var(--sun);
+    padding: 6px 10px 5px;
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1.5px var(--red-ink);
+    color: var(--red-ink);
     font: 700 10px / 1 var(--font-mono);
     font-style: normal;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    clip-path: polygon(9px 0, 100% 0, 100% 100%, 9px 100%, 0 50%);
   }
 
-  /* Deli "Take a number" ticket dispenser inside the mobile drawer */
-  .drawer-ticket {
+  .drawer-cta {
     display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     width: 100%;
-    height: 62px;
+    height: 58px;
     margin: 16px 0 0;
-    padding: 4px 10px 4px 4px;
-    border-radius: 14px;
-    background:
-      radial-gradient(80% 120% at 15% 50%, rgb(216 55 42 / 0.18), transparent 70%),
-      rgb(6 15 11 / 0.55);
-    box-shadow:
-      inset 0 0 0 1px rgb(246 240 219 / 0.1),
-      inset 0 1px 0 rgb(255 255 255 / 0.08),
-      0 14px 26px -14px rgb(0 0 0 / 0.75);
+    padding: 0 16px 0 18px;
+    border-radius: 11px;
   }
-  .drawer-ticket .cta-box {
-    flex: none;
-    width: 72px;
-    height: 54px;
-    border-radius: 10px 4px 4px 10px;
-  }
-  .drawer-ticket .cta-ticket {
-    flex: 1;
-    max-width: 236px;
-    width: auto;
-    height: 44px;
-  }
-  .drawer-ticket .cta-slide {
-    width: min(240px, calc(100% + 34px));
-  }
-  .drawer-ticket:active .cta-ticket { scale: 0.98; }
+  .drawer-cta .cta-word { font-size: 18px; }
 
-  .drawer-foot { margin: 14px 0 18px; color: rgb(246 240 219 / 0.6); font-size: 12px; letter-spacing: 0.04em; text-align: center; }
+  .drawer-foot { margin: 14px 0 16px; color: rgb(23 20 12 / 0.55); font-size: 12px; letter-spacing: 0.04em; text-align: center; }
   .drawer nav button,
-  .drawer-ticket,
+  .drawer-cta,
   .drawer-foot { opacity: 0; translate: -14px 18px; transition: opacity 0.25s, translate 0.55s var(--spring), scale 0.2s; }
   .hd[data-open] .drawer nav button,
-  .hd[data-open] .drawer-ticket,
+  .hd[data-open] .drawer-cta,
   .hd[data-open] .drawer-foot { opacity: 1; translate: 0 0; transition-delay: calc(var(--i) * 55ms + 120ms); }
   .hd[data-open] .scrim { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 }
 @media (max-width: 440px) {
-  .logo-word { padding: 0 12px 3px; font-size: 18.5px; }
+  .logo { padding: 0 10px 3px; }
+  .logo-word { font-size: 18.5px; }
 }
 @media (max-width: 380px) {
-  .logo-word { padding: 0 10px 3px; font-size: 16px; }
-  .menu-btn { padding-left: 12px; }
+  .logo-word { font-size: 16px; }
+  .menu-btn { padding-left: 10px; }
 }
 @media (max-width: 340px) {
   .menu-word { display: none; }
-  .menu-btn { padding-left: 6px; }
+  .menu-btn { padding-left: 4px; }
   .hd[data-stuck]:not([data-open]) .bar { max-width: 184px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .bar { animation: none; }
-  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .esl, .logo-word, .logo-rest, .roll-ch, .nav button, .gun, .drawer-gun, .cta-box, .cta-ticket, .cta-slide, .cta-tear, .cta-stub, .burger i, .drawer, .drawer nav button, .drawer-link-word, .drawer-ticket, .drawer-foot, .scrim {
+  .bar, .bar-row, .bar-more, .bar-more-in, .logo, .logo::before, .logo-word, .logo-rest, .roll-ch, .nav button, .nav button::before, .cta, .cta::before, .cta-arrow, .burger i, .drawer, .drawer nav button, .drawer-link-word, .drawer-cta, .drawer-foot, .scrim {
     transition-duration: 0.01ms;
     transition-delay: 0s;
   }
+  .scr-press,
+  .scr-glare,
+  .scr-band,
+  .scr-hearts { display: none; }
   .esl-led,
-  .gun,
-  .drawer-gun,
   .nav button::after,
-  .drawer nav button::after,
-  .cta-slide,
-  .cta-tear,
-  .cta-stub,
-  .cta-led b { animation: none !important; }
+  .cta small b,
+  .cta::before { animation: none !important; }
 }
 
 /* ---------- store notice pill under the main capsule -------------------- */
