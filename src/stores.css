@@ -128,15 +128,22 @@
 .sh-notice-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   padding: 4px 10px;
   border-radius: 99px;
-  background: #e3261b;
+  background: var(--tomato);
   color: #fff;
   font: 700 11px / 1 var(--font-mono);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   box-shadow: 0 2px 6px rgb(227 38 27 / 0.3);
+}
+.sh-notice-badge i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sun);
+  animation: led-call 1.8s ease-in-out infinite;
 }
 .sh-notice-dates {
   font: 700 12.5px / 1 var(--font-mono);
@@ -175,12 +182,15 @@
   color: #9c150d;
 }
 
-.pick-notice-chip {
+.pick-notice-dot {
   display: inline-block;
+  width: 7px;
+  height: 7px;
   margin-left: 6px;
-  font-style: normal;
-  font-size: 14px;
-  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--tomato);
+  vertical-align: 2px;
+  animation: led-call 1.8s ease-in-out infinite;
 }
 
 /* ---------- map + photo ----------------------------------------------- */

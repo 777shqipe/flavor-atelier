@@ -96,10 +96,10 @@
   top: calc(var(--pw) * -0.22);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: 5px;
+  padding: 3px 8px 3px 6px;
   border-radius: 99px;
-  background: #e3261b;
+  background: var(--tomato);
   color: #fff;
   box-shadow: 0 0 0 1px rgb(0 56 42 / 0.3), 0 4px 10px -2px rgb(0 0 0 / 0.35);
   font: 700 10.5px / 1 var(--font-mono);
@@ -108,6 +108,13 @@
   white-space: nowrap;
   pointer-events: none;
   animation: pulse-notice 2s infinite ease-in-out;
+}
+.pin-notice-pill i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sun);
+  animation: led-call 1.8s ease-in-out infinite;
 }
 .pin-notice-pill.left { left: auto; right: calc(var(--pw) * 0.56); }
 @keyframes pulse-notice {

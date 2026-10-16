@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { headerStrings } from "./i18n/strings/Header";
+import { topNoticeStrings } from "./i18n/strings/TopNotice";
 import { useT } from "./i18n";
 import { LangSwitch } from "./LangSwitch";
 import { Logo } from "./Logo";
@@ -54,8 +55,10 @@ export function Header({
   onContact: () => void;
 }) {
   const s = useT(headerStrings);
+  const ns = useT(topNoticeStrings);
   const [stuck, setStuck] = useState(false);
   const [open, setOpen] = useState(false);
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
   // Touch screens wide enough for the full nav cannot hover the compact bar open, so they tap to peek.
   const [peek, setPeek] = useState(false);
   // Each ticket taken feeds a fresh one out of the slot.
@@ -261,6 +264,47 @@ export function Header({
           </div>
         </div>
       </div>
+
+      {!noticeDismissed && (
+        <div className="hd-notice" role="region" aria-label={ns.badge}>
+          <span className="hn-pill">
+            <i aria-hidden="true" />
+            {ns.storeDates}
+          </span>
+          <span className="hn-text">{ns.message}</span>
+          <button
+            type="button"
+            className="hn-cta"
+            onClick={() => {
+              if (page === "stores") {
+                document.querySelector(".finder-map")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              } else {
+                go("stores");
+              }
+            }}
+          >
+            <svg className="hn-pin" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" />
+              <circle cx="12" cy="9.5" r="2.5" />
+            </svg>
+            <span>{ns.findStores}</span>
+            <svg className="hn-arrow" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="hn-close"
+            aria-label={ns.dismiss}
+            onClick={() => setNoticeDismissed(true)}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="scrim" aria-hidden="true" onClick={() => setOpen(false)} />
     </header>
   );

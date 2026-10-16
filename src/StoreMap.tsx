@@ -22,7 +22,7 @@ const pinHtml = (store: Store, lang: Lang = "en") => `
     <span class="pin-shadow"></span>
     <span class="pin-art">${shopPinSvg(store)}</span>
     <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><i></i>${store.name}</span>
-    ${store.notice ? `<span class="pin-notice-pill${TAG_LEFT.has(store.id) ? " left" : ""}">⚠️ ${store.notice.badge[lang]}</span>` : ""}
+    ${store.notice ? `<span class="pin-notice-pill${TAG_LEFT.has(store.id) ? " left" : ""}"><i></i>${store.notice.badge[lang]}</span>` : ""}
   </div>`;
 
 /**

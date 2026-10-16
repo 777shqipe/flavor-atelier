@@ -310,6 +310,21 @@ const FALLBACK_FEED: InstagramFeedData = {
   ],
 };
 
+const FX: Record<string, "snap" | "till"> = {
+  lasagne: "snap",
+  icecream: "till",
+  tempeh: "till",
+  mikeike: "snap",
+  water: "snap",
+  almond: "till",
+  nuttelex: "snap",
+  bleach: "till",
+};
+
+function Fx({ id }: { id: string }) {
+  return <span className="ig-fx" data-fx={FX[id] ?? "snap"} aria-hidden="true" />;
+}
+
 function StoryLink() {
   return (
     <a className="ig-story" href={PROFILE} target="_blank" rel="noopener noreferrer">
@@ -388,10 +403,10 @@ export function InstaShelf() {
 
       {/* TWO-WING SPLIT LAYOUT: Food bargains on the left, People & Employee video reels on the right */}
       <div className="ig-wings-layout">
-        {/* LEFT WING: Food Bargains & Grocery Drops ("i cibi come ora") */}
+        {/* LEFT WING: Food Bargains & Grocery Drops */}
         <section className="ig-wing ig-food-wing" aria-label={s.foodWingTitle}>
           <div className="ig-wing-head rv">
-            <span className="ig-wing-icon" aria-hidden="true">🛒</span>
+            <span className="ig-wing-num" aria-hidden="true">01</span>
             <div className="ig-wing-titles">
               <h3 className="ig-wing-title">{s.foodWingTitle}</h3>
               <p className="ig-wing-sub">{s.foodWingSub}</p>
@@ -409,6 +424,7 @@ export function InstaShelf() {
                       <img src={post.img} alt={post.name[lang]} width={1080} height={1440} loading="lazy" decoding="async" />
                       <span className="ig-sticker" aria-hidden="true">{post.size}</span>
                       <p className="ig-quip">{post.quip[lang]}</p>
+                      <Fx id={post.id} />
                     </figure>
                     <div className="ig-body">
                       <p className="ig-kicker">
@@ -453,6 +469,7 @@ export function InstaShelf() {
                       <img src={post.img} alt={post.name[lang]} width={1080} height={1440} loading="lazy" decoding="async" />
                       {post.tag && <span className="ig-sticker" aria-hidden="true">{post.tag[lang]}</span>}
                       <p className="ig-quip">{post.quip[lang]}</p>
+                      <Fx id={post.id} />
                     </figure>
                     <div className="ig-label">
                       <Price value={post.price} />
@@ -471,10 +488,10 @@ export function InstaShelf() {
           </ul>
         </section>
 
-        {/* RIGHT WING: People & Employee Videos ("le persone con i video dei dipendenti") */}
+        {/* RIGHT WING: People & Employee Videos */}
         <section className="ig-wing ig-people-wing" aria-label={s.peopleWingTitle}>
           <div className="ig-wing-head rv">
-            <span className="ig-wing-icon" aria-hidden="true">👥</span>
+            <span className="ig-wing-num" aria-hidden="true">02</span>
             <div className="ig-wing-titles">
               <h3 className="ig-wing-title">{s.peopleWingTitle}</h3>
               <p className="ig-wing-sub">{s.peopleWingSub}</p>
@@ -483,61 +500,71 @@ export function InstaShelf() {
 
           <div className="ig-reels-grid">
             {feed.peoplePosts.map((post, i) => (
-              <article key={post.id} className="ig-card ig-reel-card rv" style={slotStyle(i + 1, 0.4)}>
-                <div className="ig-reel-top">
-                  <StoryLink />
-                  <span className="ig-reel-author">{post.author}</span>
-                </div>
-                <a className="ig-post ig-reel-post" href={post.href} target="_blank" rel="noopener noreferrer">
-                  <figure className="ig-reel-media">
-                    <img src={post.img} alt={post.title[lang]} width={1080} height={1920} loading="lazy" decoding="async" />
-                    {/* Play button overlay & soundwave badge */}
-                    <div className="ig-reel-play-overlay" aria-hidden="true">
-                      <span className="ig-play-disc">▶</span>
-                      <div className="ig-soundwave">
-                        <span /><span /><span /><span />
+              <div key={post.id} className="ig-slot rv" style={slotStyle(i + 1, 0.5)}>
+                <article className="ig-card ig-reel-card">
+                  <div className="ig-reel-top">
+                    <StoryLink />
+                    <span className="ig-reel-author">{post.author}</span>
+                  </div>
+                  <a className="ig-post ig-reel-post" href={post.href} target="_blank" rel="noopener noreferrer">
+                    <figure className="ig-reel-media">
+                      <img src={post.img} alt={post.title[lang]} width={1080} height={1920} loading="lazy" decoding="async" />
+                      <div className="ig-reel-play-overlay" aria-hidden="true">
+                        <span className="ig-play-disc">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M8 5.5v13l11-6.5z" />
+                          </svg>
+                        </span>
+                        <div className="ig-soundwave">
+                          <span /><span /><span /><span />
+                        </div>
+                      </div>
+                      <div className="ig-reel-badges" aria-hidden="true">
+                        <span className="ig-reel-format-badge">
+                          <i />
+                          {s.videoReel}
+                        </span>
+                        <span className="ig-reel-duration-badge">{post.duration}</span>
+                      </div>
+                      <p className="ig-quip">{post.quip[lang]}</p>
+                    </figure>
+                    <div className="ig-reel-body">
+                      <div className="ig-reel-meta-line">
+                        <span className="ig-reel-tag">{post.tag}</span>
+                        <span className="ig-reel-date">{postDay(post.date)}</span>
+                      </div>
+                      <h4 className="ig-reel-title">{post.title[lang]}</h4>
+                      <p className="ig-reel-highlight">{post.highlight[lang]}</p>
+                      <div className="ig-reel-bar">
+                        <span className="ig-reel-watch">{s.watchReel}</span>
+                        <span className="ig-reel-arrow" aria-hidden="true">↗</span>
                       </div>
                     </div>
-                    <div className="ig-reel-badges">
-                      <span className="ig-reel-format-badge">🎬 {s.videoReel}</span>
-                      <span className="ig-reel-duration-badge">{post.duration}</span>
-                    </div>
-                    <p className="ig-quip ig-reel-quip">{post.quip[lang]}</p>
-                  </figure>
-                  <div className="ig-reel-body">
-                    <div className="ig-reel-meta-line">
-                      <span className="ig-reel-tag">{post.tag}</span>
-                      <span className="ig-reel-date">{postDay(post.date)}</span>
-                    </div>
-                    <h4 className="ig-reel-title">{post.title[lang]}</h4>
-                    <p className="ig-reel-highlight">{post.highlight[lang]}</p>
-                    <div className="ig-bar ig-reel-bar">
-                      <span className="ig-reel-watch">{s.watchReel}</span>
-                      <span className="ig-reel-arrow" aria-hidden="true">↗</span>
-                    </div>
-                  </div>
-                </a>
-                <CommentLink href={post.href} />
-              </article>
+                  </a>
+                  <CommentLink href={post.href} />
+                </article>
+              </div>
             ))}
           </div>
         </section>
       </div>
 
-      {/* COMMUNITY Q&A SECTION (Styled as an Instagram Story Q&A Sticker) */}
+      {/* COMMUNITY Q&A SECTION (Styled as an Instagram Story Q&A Sticker on tactile paper) */}
       <section className="ig-qa-shelf rv" aria-labelledby="ig-qa-title">
         <div className="ig-qa-card">
           <div className="ig-qa-header">
             <div className="ig-qa-brand">
-              <span className="ig-qa-story-ring" aria-hidden="true">
-                <LogoMark />
+              <span className="ig-story-ring ig-qa-ring" aria-hidden="true">
+                <span className="ig-story-face">
+                  <LogoMark />
+                </span>
               </span>
               <div>
                 <span className="ig-qa-handle">@{HANDLE}</span>
-                <span className="ig-qa-tagline">Instagram Story Q&A Box</span>
+                <span className="ig-qa-tagline">Instagram Story Q&amp;A</span>
               </div>
             </div>
-            <span className="ig-qa-chip">💬 FAQ & Questions</span>
+            <span className="ig-qa-chip">Q&amp;A · FAQ</span>
           </div>
 
           <div className="ig-qa-titles">
@@ -577,7 +604,7 @@ export function InstaShelf() {
               {/* Team Answer bubble */}
               <div className="ig-qa-answer-bubble">
                 <div className="ig-qa-avatar" aria-hidden="true">
-                  <span>🛒</span>
+                  <LogoMark />
                 </div>
                 <div className="ig-qa-answer-text-wrap">
                   <span className="ig-qa-answer-author">{s.qaTeamAnswer}</span>
@@ -593,7 +620,7 @@ export function InstaShelf() {
                 href={PROFILE}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="button outline small ig-qa-cta"
+                className="button outline ig-qa-cta"
               >
                 {s.qaAskButton}
               </a>

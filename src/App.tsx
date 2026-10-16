@@ -15,7 +15,6 @@ import { Peel } from "./Peel";
 import { revealIn } from "./reveal";
 import { Showcase } from "./Showcase";
 import { StoresPage } from "./StoresPage";
-import { TopNoticeBanner } from "./TopNoticeBanner";
 import { WhyFilm } from "./WhyFilm";
 
 /** Fades elements marked `.rv` in as they scroll into view. */
@@ -310,7 +309,6 @@ export default function App() {
   return (
     <>
       <div className="app-shell" inert={contact.open}>
-        <TopNoticeBanner onNavigate={navigate} />
         <Header page={page} onNavigate={navigate} onContact={() => openContact()} />
         <div key={page} className="page-in">
           {page === "home" && <Home onNavigate={navigate} onContact={openContact} />}

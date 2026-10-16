@@ -98,13 +98,16 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
             {store.notice && (
               <div className="sh-notice" role="alert" key={`notice-${store.id}`}>
                 <div className="sh-notice-head">
-                  <span className="sh-notice-badge">⚠️ {store.notice.badge[lang]}</span>
-                  <span className="sh-notice-dates">📅 {store.notice.dates[lang]}</span>
+                  <span className="sh-notice-badge">
+                    <i aria-hidden="true" />
+                    {store.notice.badge[lang]}
+                  </span>
+                  <span className="sh-notice-dates">{store.notice.dates[lang]}</span>
                 </div>
                 <strong className="sh-notice-title">{store.notice.title[lang]}</strong>
                 <p className="sh-notice-body">{store.notice.desc[lang]}</p>
                 <div className="sh-notice-foot">
-                  <span className="sh-notice-reopen">✨ {store.notice.reopen[lang]}</span>
+                  <span className="sh-notice-reopen">{store.notice.reopen[lang]}</span>
                   {store.notice.postUrl && (
                     <a href={store.notice.postUrl} target="_blank" rel="noopener noreferrer" className="sh-notice-link">
                       {lang === "it" ? "Post Instagram ↗" : "Instagram post ↗"}
@@ -214,7 +217,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                 <span className="pick-text">
                   <small>0{index + 1}</small>
                   <b>{item.name}</b>
-                  {item.notice && <em className="pick-notice-chip" title={item.notice.badge[lang]}>⚠️</em>}
+                  {item.notice && <span className="pick-notice-dot" title={item.notice.badge[lang]} aria-hidden="true" />}
                 </span>
               </button>
             ))}
