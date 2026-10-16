@@ -32,6 +32,7 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
   const keepClipId = `ac-keep-${uid}`;
   const pieceClipId = `ac-piece-${uid}`;
   const bodyClipId = `ac-body-${uid}`;
+  const pinkGradId = `ac-pink-${uid}`;
 
   return (
     <button
@@ -68,6 +69,14 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
           <clipPath id={bodyClipId}>
             <path d={APPLE_BODY} />
           </clipPath>
+
+          {/* Vibrant sparkling pink gradient for the toy knife handle */}
+          <linearGradient id={pinkGradId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#ff7ad0" />
+            <stop offset="30%" stopColor="#ff1493" />
+            <stop offset="70%" stopColor="#d6006e" />
+            <stop offset="100%" stopColor="#940047" />
+          </linearGradient>
         </defs>
 
         <g filter={`url(#${filterId})`} stroke={INK} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round">
@@ -273,18 +282,56 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
                 fill="#ffd15c"
                 stroke="none"
               />
-              {/* Golden collar ring */}
-              <rect x="-24.5" y="-7" width="3.5" height="14" rx="1.5" fill="#f6b531" />
-              {/* Chubby, rounded honey-wood handle */}
+              {/* Shiny golden collar ring */}
+              <rect x="-24.5" y="-7" width="3.5" height="14" rx="1.5" fill="#ffd768" />
+              {/* Chubby, rounded vibrant pink handle ("rosa sgargiante") */}
               <path
                 d="M -56 -8.5 H -25 Q -21 -8.5 -21 -4.5 V 4.5 Q -21 8.5 -25 8.5 H -56 Q -63 8.5 -63 0 Q -63 -8.5 -56 -8.5 Z"
-                fill="#f5a623"
+                fill={`url(#${pinkGradId})`}
               />
-              {/* Handle warm wood grain line */}
-              <path d="M -54 -4.5 H -28" stroke="#ffe28a" strokeWidth="1.6" strokeLinecap="round" />
-              {/* Cute friendly rounded rivets */}
-              <circle cx="-48" cy="0" r="1.8" fill="#ffe28a" strokeWidth="1.2" />
-              <circle cx="-34" cy="0" r="1.8" fill="#ffe28a" strokeWidth="1.2" />
+              {/* Glossy top gleam highlight on handle */}
+              <path
+                d="M -54 -5.5 Q -39 -7.2 -26 -5.5"
+                fill="none"
+                stroke="rgb(255 255 255 / 0.85)"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+              {/* Sparkling stars & glitter dust on the pink handle ("scintilloso") */}
+              <g stroke="none" className="ac-knife-sparkles">
+                {/* Big white sparkle star */}
+                <path
+                  className="ac-sparkle-star ac-sp-1"
+                  d="M -50 -6 Q -50 -3 -53.2 -3 Q -50 -3 -50 0 Q -50 -3 -46.8 -3 Q -50 -3 -50 -6 Z"
+                  fill="#ffffff"
+                />
+                {/* Medium white sparkle star */}
+                <path
+                  className="ac-sparkle-star ac-sp-2"
+                  d="M -37 0.5 Q -37 3 -39.5 3 Q -37 3 -37 5.5 Q -37 3 -34.5 3 Q -37 3 -37 0.5 Z"
+                  fill="#ffffff"
+                />
+                {/* Golden mini sparkle star */}
+                <path
+                  className="ac-sparkle-star ac-sp-3"
+                  d="M -28 -4 Q -28 -2 -30 -2 Q -28 -2 -28 0 Q -28 -2 -26 -2 Q -28 -2 -28 -4 Z"
+                  fill="#ffd768"
+                />
+                {/* Glitter flecks */}
+                <circle cx="-56" cy="2.2" r="0.9" fill="#ffffff" opacity="0.95" />
+                <circle cx="-43" cy="-4" r="0.8" fill="#ffe4f2" opacity="0.9" />
+                <circle cx="-32" cy="4" r="0.8" fill="#ffffff" opacity="0.95" />
+                <circle cx="-58" cy="-2.5" r="0.75" fill="#ffd768" opacity="0.9" />
+                <circle cx="-44" cy="4.2" r="0.7" fill="#ffffff" opacity="0.9" />
+                <circle cx="-33" cy="-2.5" r="0.8" fill="#ffe4f2" opacity="0.9" />
+              </g>
+              {/* Cute crystal gem rivets */}
+              <g stroke="none">
+                <circle cx="-48" cy="0" r="2.4" fill="#ffd768" />
+                <circle cx="-48" cy="0" r="1.5" fill="#ffffff" />
+                <circle cx="-34" cy="0" r="2.4" fill="#ffd768" />
+                <circle cx="-34" cy="0" r="1.5" fill="#ffffff" />
+              </g>
             </g>
           </g>
         </g>
@@ -300,9 +347,11 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
       {/* Hint pill before click / Revealed message pill underneath after click */}
       <span className="ac-under" aria-hidden="true">
         <span className="ac-hint">
-          {/* Cute mini rounded butter knife icon instead of scary emoji */}
+          {/* Cute mini rounded butter knife icon with pink handle */}
           <svg className="ac-mini-knife" viewBox="0 0 16 10" width="15" height="10" aria-hidden="true">
-            <path d="M1 3h6q1.5 0 1.5 2t-1.5 2H1q-1.5 0-1.5-2T1 3z" fill="#f5a623" stroke="#1c1a17" strokeWidth="1" />
+            <path d="M1 3h6q1.5 0 1.5 2t-1.5 2H1q-1.5 0-1.5-2T1 3z" fill="#ff1493" stroke="#1c1a17" strokeWidth="1" />
+            <circle cx="2.5" cy="4.2" r="0.75" fill="#ffffff" stroke="none" />
+            <circle cx="5.2" cy="5.8" r="0.6" fill="#ffd768" stroke="none" />
             <path d="M8.5 3.5h4q2.5 0 2.5 1.5t-2.5 1.5h-4z" fill="#eaf1f7" stroke="#1c1a17" strokeWidth="1" />
           </svg>
           {copy.hint}

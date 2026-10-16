@@ -226,6 +226,23 @@
   transform: translate(6px, 8px) rotate(4deg);
 }
 
+/* Twinkling sparkles on the vibrant pink knife handle */
+.apple-cut .ac-sparkle-star {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ac-handle-twinkle 1.8s ease-in-out infinite alternate;
+}
+.apple-cut .ac-sp-2 {
+  animation-delay: 0.6s;
+}
+.apple-cut .ac-sp-3 {
+  animation-delay: 1.2s;
+}
+@keyframes ac-handle-twinkle {
+  0% { transform: scale(0.75) rotate(-10deg); opacity: 0.65; }
+  100% { transform: scale(1.25) rotate(12deg); opacity: 1; }
+}
+
 /* Sliced state: the knife cuts down along the seam, the dark spot pops off,
    and both the flesh stamp and the under-apple ribbon appear. */
 .apple-cut[data-sliced] .ac-knife {
