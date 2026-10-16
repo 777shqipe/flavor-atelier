@@ -122,8 +122,6 @@
 /* The shop as a photo print laid on the bottom corner of the map, hanging just
    past its faded edge: its awning across the top, a caption underneath. */
 .sh-window {
-  --px: 0;
-  --py: 0;
   /* odd, so the awning and the blind start and end on the shop's colour */
   --stripes: 13;
   position: absolute;
@@ -154,8 +152,7 @@
   object-fit: cover;
   clip-path: inset(0 0 0 100%);
   scale: 1.14;
-  translate: calc(var(--px) * -12px) calc(var(--py) * -9px);
-  transition: clip-path 0.95s var(--ease-out), scale 1.9s var(--ease-out), translate 0.5s ease-out;
+  transition: clip-path 0.95s var(--ease-out), scale 1.9s var(--ease-out);
 }
 .sh-photo img.active { z-index: 2; clip-path: inset(0); scale: 1.03; }
 .sh-photo img.before { z-index: 1; clip-path: inset(0); }

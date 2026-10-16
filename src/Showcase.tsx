@@ -538,47 +538,7 @@ function useStack(root: RefObject<HTMLDivElement | null>) {
       window.removeEventListener("resize", request);
     });
 
-    // Pointer parallax, smoothed in a rAF loop that only runs while it has work to do.
-    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (fine && !reduced) {
-      items.forEach((item) => {
-        const poster = item.querySelector<HTMLElement>(".poster");
-        if (!poster) return;
-        let tx = 0;
-        let ty = 0;
-        let cx = 0;
-        let cy = 0;
-        let raf = 0;
-        const tick = () => {
-          cx += (tx - cx) * 0.08;
-          cy += (ty - cy) * 0.08;
-          poster.style.setProperty("--mx", cx.toFixed(4));
-          poster.style.setProperty("--my", cy.toFixed(4));
-          raf = Math.abs(tx - cx) + Math.abs(ty - cy) > 0.002 ? requestAnimationFrame(tick) : 0;
-        };
-        const kick = () => {
-          if (!raf) raf = requestAnimationFrame(tick);
-        };
-        const move = (event: PointerEvent) => {
-          const r = poster.getBoundingClientRect();
-          tx = ((event.clientX - r.left) / r.width - 0.5) * 2;
-          ty = ((event.clientY - r.top) / r.height - 0.5) * 2;
-          kick();
-        };
-        const leave = () => {
-          tx = 0;
-          ty = 0;
-          kick();
-        };
-        poster.addEventListener("pointermove", move);
-        poster.addEventListener("pointerleave", leave);
-        cleanups.push(() => {
-          cancelAnimationFrame(raf);
-          poster.removeEventListener("pointermove", move);
-          poster.removeEventListener("pointerleave", leave);
-        });
-      });
-    }
+
 
     return () => cleanups.forEach((fn) => fn());
   }, [root]);

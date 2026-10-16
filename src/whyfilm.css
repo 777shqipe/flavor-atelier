@@ -9,7 +9,6 @@
 .film {
   --p: 0;
   --halo: 0;
-  --tilt: 1;
   position: relative;
   z-index: 4;
   height: max(840px, 152svh);
@@ -42,9 +41,7 @@
   overflow: hidden;
   isolation: isolate;
   border-radius: calc((1 - var(--p)) * clamp(32px, 4.2vw, 56px));
-  translate: 0 calc(var(--tilt) * 26px);
   scale: calc(0.72 + 0.28 * var(--p));
-  transform: perspective(1500px) rotateX(calc(var(--tilt) * 6.5deg));
   background:
     radial-gradient(980px 600px at 66% 52%, rgb(0 112 82 / calc(0.26 + 0.34 * var(--p))), transparent 68%),
     radial-gradient(640px 480px at 24% 48%, rgb(0 72 54 / calc(0.14 + 0.2 * var(--p))), transparent 72%),
@@ -55,7 +52,7 @@
     0 80px 160px -20px #000,
     0 0 160px 36px rgb(0 0 0 / calc(0.55 + 0.42 * var(--halo))),
     0 0 120px -10px rgb(0 118 86 / calc((1 - var(--p)) * var(--halo) * 0.45));
-  will-change: scale, transform, translate;
+  will-change: scale;
 }
 /* Deep cinema lens vignette, recessed black perimeter, and a little grain */
 .film-screen::before {
@@ -127,7 +124,7 @@
   min-width: 0;
   padding: 56px 0 0 clamp(28px, 4.4vw, 72px);
   transform-origin: 0 50%;
-  translate: calc((1 - var(--p)) * -18px) calc(var(--tilt) * 18px);
+  translate: calc((1 - var(--p)) * -18px) 0;
   scale: calc(0.94 + 0.06 * var(--p));
 }
 .fc-head {
@@ -191,7 +188,7 @@ a.fc-fine:focus-visible { opacity: 0.9; }
   top: 50%;
   width: 760px;
   height: 520px;
-  translate: -50% calc(-50% + var(--tilt) * 24px);
+  translate: -50% -50%;
   scale: calc(var(--k, 1) * (0.86 + 0.14 * var(--p)));
 }
 
@@ -462,8 +459,6 @@ a.fc-fine:focus-visible { opacity: 0.9; }
   }
   .film-copy {
     padding: 52px 22px 0;
-    transform-origin: 50% 50%;
-    translate: 0 calc(var(--tilt) * 12px);
   }
   .film-ctrl { padding: 4px 22px 18px; }
   .fc-head { margin-top: 8px; font-size: clamp(24px, 6.2vw, 38px); }

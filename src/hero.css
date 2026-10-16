@@ -93,7 +93,6 @@
     0 0 0 1.8cqw rgb(246 181 49 / 0.12),
     0 0 14cqw 2cqw rgb(246 181 49 / 0.22),
     0 5cqw 9cqw -3cqw rgb(0 30 22 / 0.55);
-  translate: calc(var(--mx, 0) * -6px) calc(var(--my, 0) * -6px);
   scale: 1;
   transition: scale 1.1s var(--bounce) 0.1s, opacity 0.6s;
 }
@@ -107,7 +106,7 @@
 .ring-art svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .ring-art .orbit-dot { fill: var(--cream); stroke: none; }
 
-.stk { position: absolute; z-index: 3; padding: 0; border: 0; background: none; cursor: pointer; translate: calc(var(--mx, 0) * var(--d) * 1px) calc(var(--my, 0) * var(--d) * 1px); }
+.stk { position: absolute; z-index: 3; padding: 0; border: 0; background: none; cursor: pointer; }
 .stk-in {
   display: block;
   rotate: var(--r);
@@ -143,7 +142,6 @@
   color: #fff;
   text-align: center;
   rotate: var(--r);
-  translate: calc(var(--mx, 0) * 34px) calc(var(--my, 0) * 34px);
   scale: 1;
   transition: scale 0.9s var(--bounce) var(--e);
 }
@@ -177,7 +175,7 @@
 .hb.b1 { --s: 17cqw; --r: -10deg; --e: 1000ms; left: 0; top: 6cqw; }
 .hb.b2 { --s: 16cqw; --r: 9deg; --e: 1140ms; left: 84cqw; top: 56cqw; }
 .hb.b2 .hb-fill { background: #7a4ce0; }
-.hero-stage .hero-ring { top: -3cqw; right: -3cqw; z-index: 8; width: 21cqw; height: 21cqw; translate: calc(var(--mx, 0) * 10px) calc(var(--my, 0) * 10px); }
+.hero-stage .hero-ring { top: -3cqw; right: -3cqw; z-index: 8; width: 21cqw; height: 21cqw; }
 .hero-stage .hero-ring strong { font-size: 3.4cqw; }
 
 /* ---------- stats ----------------------------------------------------- */

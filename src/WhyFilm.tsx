@@ -341,10 +341,8 @@ export function WhyFilm() {
       const haloEnter = smooth((vh * 0.96 - top) / (vh * 0.56));
       const haloLeave = smooth((bottom - vh * 0.08) / (vh * 0.56));
       const halo = Math.min(haloEnter, haloLeave);
-      const tilt = 1 - enter - (1 - leave);
       el.style.setProperty("--p", p.toFixed(4));
       el.style.setProperty("--halo", halo.toFixed(4));
-      el.style.setProperty("--tilt", tilt.toFixed(4));
       doc.toggleAttribute("data-immersive", p > 0.88);
     };
     const onScroll = () => {

@@ -422,8 +422,7 @@
   filter: blur(4px);
   transition: scale 0.5s var(--spring), opacity 0.5s;
 }
-.ig-slot:hover::before,
-.ig-slot:has(.ig-card[data-active])::before { scale: 0.92 1.5; opacity: 0.6; }
+.ig-slot:hover::before { scale: 0.92 1.5; opacity: 0.6; }
 
 .ig-card {
   rotate: var(--tilt, 0deg);
@@ -436,20 +435,18 @@
     inset 0 1px 0 #fff,
     0 1px 2px rgb(70 45 10 / 0.1),
     0 14px 22px -18px rgb(70 45 10 / 0.5);
-  transition: translate 0.55s var(--spring), rotate 0.55s var(--spring), scale 0.55s var(--spring), transform 0.55s var(--spring), box-shadow 0.45s;
+  transition: translate 0.45s var(--spring), rotate 0.45s var(--spring), scale 0.45s var(--spring), box-shadow 0.35s;
 }
 .ig-card:hover,
-.ig-card[data-active],
 .ig-card:has(.ig-post:focus-visible) {
-  translate: 0 -10px;
+  translate: 0 -8px;
   rotate: calc(var(--tilt, 0deg) * -0.5);
   scale: 1.015;
-  transform: perspective(1100px) rotateX(3deg);
   box-shadow:
     inset 0 0 0 1px rgb(0 56 42 / 0.2),
     inset 0 1px 0 #fff,
     0 2px 3px rgb(70 45 10 / 0.12),
-    0 34px 46px -26px rgb(70 45 10 / 0.55);
+    0 26px 36px -22px rgb(70 45 10 / 0.5);
 }
 /* the photograph is mounted on the card with a paper mat, like a print in a sleeve */
 .ig-ticket figure { margin: 0 10px 10px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08); }
@@ -488,8 +485,7 @@
 .ig-slot:nth-child(3n + 2) .ig-sticker { background: var(--mint); }
 .ig-slot:nth-child(3n) .ig-sticker { background: var(--lilac); }
 .ig-hero .ig-sticker { background: var(--tomato); color: var(--cream); outline-color: rgb(246 240 219 / 0.5); font-size: clamp(14px, 1.3vw, 18px); }
-.ig-card:hover .ig-sticker,
-.ig-card[data-active] .ig-sticker { scale: 1.12; rotate: calc(var(--tilt, 0deg) * -5 - 4deg); }
+.ig-card:hover .ig-sticker { scale: 1.12; rotate: calc(var(--tilt, 0deg) * -5 - 4deg); }
 
 /* the quip is a taped note, not a caption bar */
 .ig-quip {
@@ -510,8 +506,7 @@
   background: rgb(255 236 170 / 0.6);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
 }
-.ig-card:hover .ig-quip,
-.ig-card[data-active] .ig-quip { translate: 0 -3px; rotate: 0.5deg; }
+.ig-card:hover .ig-quip { translate: 0 -3px; rotate: 0.5deg; }
 
 /* story ring spins a full turn when the card is picked up, the way a fresh story would */
 .ig-story-ring { position: relative; isolation: isolate; overflow: hidden; background: none; }
@@ -522,8 +517,7 @@
   z-index: -1;
   background: conic-gradient(from 210deg, #f9ce34, #ee2a7b 38%, #6228d7 72%, #f9ce34);
 }
-.ig-card:hover .ig-story-ring::before,
-.ig-card[data-active] .ig-story-ring::before { animation: ig-spin 1.1s var(--ease-out); }
+.ig-card:hover .ig-story-ring::before { animation: ig-spin 1.1s var(--ease-out); }
 @keyframes ig-spin { to { rotate: 1turn; } }
 
 /* shelf-edge ticket reads as a plastic sleeve: a glossy rail and a lit face */
@@ -532,8 +526,7 @@
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 0 rgb(0 0 0 / 0.12);
 }
 .ig-ticket .ig-label .ig-price { transition: scale 0.45s var(--bounce); transform-origin: 0 100%; }
-.ig-ticket:hover .ig-label .ig-price,
-.ig-ticket[data-active] .ig-label .ig-price { scale: 1.06; }
+.ig-ticket:hover .ig-label .ig-price { scale: 1.06; }
 
 /* masthead: the headline's serif word lands crooked with a sun stroke under it; a live dot by the handle */
 .ig-title em { position: relative; z-index: 0; display: inline-block; isolation: isolate; rotate: -2.5deg; transform-origin: 0 100%; }

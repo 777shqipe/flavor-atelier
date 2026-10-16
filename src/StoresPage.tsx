@@ -26,7 +26,6 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
   const { locale } = useLang();
   const shared = useT(storeStrings);
   const status = useOpenStatus();
-  const frame = useRef<HTMLDivElement>(null);
   // Remember the previous photo so the new one can wipe in over it.
   const [pair, setPair] = useState({ cur: active, before: -1 });
   const [peek, setPeek] = useState(false);
@@ -48,18 +47,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
     return () => window.removeEventListener("keydown", onKey);
   }, [active, onSelect]);
 
-  // The photo drifts slightly against the pointer, like looking through a window.
-  const look = (event: PointerEvent<HTMLDivElement>) => {
-    const el = frame.current;
-    if (!el) return;
-    const box = el.getBoundingClientRect();
-    el.style.setProperty("--px", Math.max(-1, Math.min(1, ((event.clientX - box.left) / box.width - 0.5) * 2)).toFixed(3));
-    el.style.setProperty("--py", Math.max(-1, Math.min(1, ((event.clientY - box.top) / box.height - 0.5) * 2)).toFixed(3));
-  };
-  const rest = () => {
-    frame.current?.style.setProperty("--px", "0");
-    frame.current?.style.setProperty("--py", "0");
-  };
+
   const onPhotoDown = (event: PointerEvent<HTMLDivElement>) => {
     swipeStart.current = { x: event.clientX, y: event.clientY };
   };
@@ -142,12 +130,9 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
             <StoreMap active={active} onSelect={onSelect}>
               <div
                 className="sh-window"
-                ref={frame}
                 data-closed={!status.open || undefined}
                 data-peek={peek || undefined}
                 style={{ "--c": store.color } as CSSProperties}
-                onPointerMove={look}
-                onPointerLeave={rest}
               >
                 <div className="sh-photo" onPointerDown={onPhotoDown} onPointerUp={onPhotoUp}>
                   {STORES.map((item, index) => (

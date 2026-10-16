@@ -84,7 +84,6 @@
   position: absolute;
   z-index: 5;
   pointer-events: none;
-  translate: calc(var(--mx, 0) * var(--depth, 0) * 1cqw) calc(var(--my, 0) * var(--depth, 0) * 1cqw);
 }
 .ly button,
 .ly a {
@@ -299,7 +298,6 @@
   margin: -1cqw 0 0 -1cqw;
   border-radius: 50%;
   background: #111;
-  translate: calc(var(--mx, 0) * 0.9cqw) calc(var(--my, 0) * 0.9cqw);
 }
 .eye i::after {
   content: "";
