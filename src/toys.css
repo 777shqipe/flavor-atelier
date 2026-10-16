@@ -1,0 +1,111 @@
+/* About hero: three bits of food to play with (FoodToys.tsx). Each card is a button; the
+   pillar's words sit hidden behind a hint until you peel, bite or open the food. */
+
+.toys {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 640px;
+  margin: 30px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toy;
+  animation: fade-up 0.8s 0.4s var(--ease-out) both;
+}
+.toy { position: relative; counter-increment: toy; --accent: var(--sun); }
+.toy[data-kind="cookie"] { --accent: #ff8f7d; }
+.toy[data-kind="pod"] { --accent: var(--mint); }
+.toy::before { content: "0" counter(toy); position: absolute; top: 12px; left: 14px; z-index: 1; color: var(--sage-200); font: 700 10px / 1 var(--font-mono); letter-spacing: 0.14em; opacity: 0.8; pointer-events: none; }
+
+.toy-btn {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 26px 12px 16px;
+  border: 0;
+  border-radius: 22px;
+  background: rgb(246 240 219 / 0.07);
+  box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.16);
+  color: var(--cream);
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: translate 0.35s var(--spring), background-color 0.3s, box-shadow 0.3s;
+}
+.toy-btn:hover { translate: 0 -4px; background: rgb(246 240 219 / 0.11); box-shadow: inset 0 0 0 1px rgb(246 240 219 / 0.3), 0 18px 28px -20px rgb(0 18 12 / 0.7); }
+.toy-btn:active { translate: 0 0; }
+.toy-btn:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+
+/* The sticker. The idle float is on a span, not the svg, so Chrome can run it on the GPU. */
+.toy-art { display: block; width: min(100%, 132px); height: 120px; transition: rotate 0.45s var(--spring), scale 0.45s var(--spring); }
+.toy-btn:hover .toy-art { rotate: -3deg; scale: 1.07; }
+.toy-btn:active .toy-art { scale: 0.95; }
+.toy-bob { position: relative; display: block; width: 100%; height: 100%; animation: toy-bob 3.6s ease-in-out infinite alternate; filter: drop-shadow(0 6px 5px rgb(0 30 22 / 0.3)) drop-shadow(0 16px 14px rgb(0 30 22 / 0.3)); }
+.toy:nth-child(2) .toy-bob { animation-delay: -1.2s; }
+.toy:nth-child(3) .toy-bob { animation-delay: -2.4s; }
+@keyframes toy-bob { from { translate: 0 -3px; rotate: -1.5deg; } to { translate: 0 3px; rotate: 1.5deg; } }
+.toy-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.toy-crumbs { position: absolute; inset: 0; pointer-events: none; }
+
+/* The copy: a hint pill until you play, then the pillar's words in its place. */
+.toy-copy { display: grid; place-items: center; width: 100%; min-height: 84px; }
+.toy-copy > * { grid-area: 1 / 1; }
+.toy-hint {
+  padding: 7px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  background: var(--cream);
+  box-shadow: 0 2px 0 var(--ink);
+  color: var(--ink);
+  font: 700 12px / 1.1 var(--font-cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  rotate: -3deg;
+  transition: opacity 0.25s ease, scale 0.35s var(--spring);
+}
+.toy-btn:hover .toy-hint { scale: 1.06; }
+.toy-say { display: grid; gap: 5px; opacity: 0; scale: 0.8; translate: 0 8px; transition: opacity 0.3s ease, scale 0.5s var(--bounce), translate 0.5s var(--bounce); }
+.toy-say b { display: block; color: var(--accent); font: 400 22px / 1.05 var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
+.toy-say span { display: block; color: var(--sage-200); font: 600 12px / 1.25 var(--font-sans); }
+.toy[data-on] .toy-hint { opacity: 0; scale: 0.6; pointer-events: none; }
+.toy[data-on] .toy-say { opacity: 1; scale: 1; translate: 0 0; transition-delay: 0.12s; }
+
+/* ---------- banana: both halves of the skin fall open ---------------------- */
+.bn-half { transition: transform 0.8s var(--bounce); }
+.bn-l { transform-origin: 54px 114px; }
+.bn-r { transform-origin: 66px 114px; }
+.toy[data-on] .bn-l { transform: rotate(-62deg) scaleY(0.84); }
+.toy[data-on] .bn-r { transform: rotate(62deg) scaleY(0.84); }
+.toy[data-on] .bn-r { transition-delay: 0.06s; }
+
+/* ---------- cookie: bites and crumbs ---------------------------------------- */
+.ck-bite circle { transform-box: fill-box; transform-origin: center; animation: ck-bite 0.3s var(--ease-out) both; }
+@keyframes ck-bite { from { scale: 0.2; } }
+.ck-crumb { transform-box: fill-box; transform-origin: center; animation: ck-crumb 0.9s ease-in both; animation-delay: calc(var(--j) * 70ms); }
+@keyframes ck-crumb { from { translate: 0 0; opacity: 1; scale: 1; } to { translate: var(--dx) var(--dy); opacity: 0; scale: 0.4; } }
+
+/* ---------- pea pod: the lid lifts, the peas hop ---------------------------- */
+.pd-lid { transform-origin: 8px 52px; transition: transform 0.75s var(--bounce); }
+.toy[data-on] .pd-lid { transform: rotate(-32deg); }
+.pd-in { opacity: 0; transition: opacity 0.2s ease; }
+.toy[data-on] .pd-in { opacity: 1; transition-delay: 0.12s; }
+.pd-pea { transform-box: fill-box; transform-origin: center bottom; }
+.toy[data-on] .pd-pea { animation: pd-hop 0.6s var(--ease-out) both; animation-delay: calc(0.22s + var(--i) * 80ms); }
+@keyframes pd-hop { 0% { translate: 0 6px; scale: 0.5; } 55% { translate: 0 -10px; scale: 1.1; } 100% { translate: 0 0; scale: 1; } }
+
+@media (max-width: 640px) {
+  .toys { grid-template-columns: 1fr; gap: 10px; }
+  .toy-btn { grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 12px; padding: 18px 16px 18px 12px; text-align: left; }
+  .toy-art { width: 112px; height: 100px; }
+  .toy-copy { min-height: 64px; justify-items: start; }
+  .toy-say { justify-items: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toys, .toy-bob, .ck-bite circle, .ck-crumb, .toy[data-on] .pd-pea { animation: none !important; }
+  .toy-btn, .toy-art, .toy-say, .bn-half, .pd-lid { transition: none; }
+}

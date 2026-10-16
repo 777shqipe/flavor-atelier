@@ -1,3 +1,4 @@
+import { FoodToys } from "./FoodToys";
 import { useT } from "./i18n";
 import { aboutPageStrings } from "./i18n/strings/AboutPage";
 import { Peel } from "./Peel";
@@ -22,14 +23,7 @@ export function AboutPage({ onContact }: { onContact: () => void }) {
               <p>{s.storyTwo}</p>
               <p className="ah-why">{s.why}</p>
             </div>
-            <ul className="story-pillars">
-              {s.pillars.map(([big, small]) => (
-                <li key={big}>
-                  <b>{big}</b>
-                  <span>{small}</span>
-                </li>
-              ))}
-            </ul>
+            <FoodToys pillars={s.pillars} hints={s.toyHints} />
           </header>
           <div className="ah-art">
             <span className="ah-glow" aria-hidden="true" />

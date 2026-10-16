@@ -46,6 +46,7 @@ export const aboutPageStrings = defineStrings({
       ["Zero landfill", "Good food gets eaten"],
       ["4 inner-Melb shops", "New stock daily"],
     ],
+    toyHints: ["Peel me", "Take a bite", "Open the pod"],
     sealUnder: (
       <>
         Still
@@ -88,6 +89,7 @@ export const aboutPageStrings = defineStrings({
       ["Không ra bãi rác", "Đồ ngon đều có người ăn"],
       ["4 cửa hàng nội thành", "Hàng mới mỗi ngày"],
     ],
+    toyHints: ["Bóc tôi đi", "Cắn một miếng", "Mở vỏ đậu"],
     sealUnder: (
       <>
         Vẫn
@@ -126,6 +128,7 @@ export const aboutPageStrings = defineStrings({
       ["零填埋", "好食物都有人吃"],
       ["墨尔本市区 4 家门店", "每天上新"],
     ],
+    toyHints: ["剥开我", "咬一口", "打开豆荚"],
     sealUnder: (
       <>
         一直
@@ -167,6 +170,7 @@ export const aboutPageStrings = defineStrings({
       ["Zero discarica", "Tutto finisce in tavola"],
       ["4 negozi in centro", "Novità ogni giorno"],
     ],
+    toyHints: ["Sbucciami", "Dai un morso", "Apri il baccello"],
     sealUnder: (
       <>
         Ancora
@@ -205,6 +209,7 @@ export const aboutPageStrings = defineStrings({
       ["埋め立てゼロ", "おいしいものは、ちゃんと食卓へ"],
       ["メルボルン市内に4店舗", "毎日、続々入荷"],
     ],
+    toyHints: ["むいてみて", "ひとくちどうぞ", "さやを開けて"],
     sealUnder: (
       <>
         今も
