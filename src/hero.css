@@ -16,7 +16,7 @@
 /* The grain is black, and over the hero's dark greens a plain alpha blend gives the same pixels as overlay (they only
    differ on channels above 50%). A blend mode would make Chrome redraw the whole hero on every frame of every loop in it. */
 .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--grain) 0 0 / 180px 180px; opacity: 0.11; pointer-events: none; }
-.hero-grid { display: grid; grid-template-columns: minmax(0, max-content) minmax(300px, 440px); align-items: center; justify-content: start; gap: clamp(24px, 3.5vw, 54px); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, max-content) minmax(300px, 470px); align-items: center; justify-content: center; gap: clamp(28px, 4vw, 72px); }
 .spark { position: absolute; z-index: -1; color: var(--sun); font-size: 22px; opacity: 0.8; animation: twinkle 3.4s ease-in-out infinite alternate; pointer-events: none; }
 .spark.s1 { left: 47%; top: 17%; }
 .spark.s2 { left: 5%; top: 62%; font-size: 15px; animation-delay: -1.2s; }
@@ -47,7 +47,7 @@
 @keyframes hero-ghost { from { opacity: 0; rotate: -1deg; translate: -40px 0; } }
 
 /* ---------- copy ------------------------------------------------------ */
-.hero-copy { padding-left: clamp(0px, 3.6vw, 64px); }
+.hero-copy { padding-left: 0; }
 .hero h1 { max-width: none; color: var(--cream); font-size: clamp(58px, 7.6vw, 126px); line-height: 0.9; letter-spacing: -0.045em; text-shadow: 0 2px 40px rgb(0 30 22 / 0.35); }
 .hero-line { display: block; overflow: hidden; padding-bottom: 0.2em; margin-bottom: -0.2em; }
 .hero-line > span { display: block; transform-origin: 0 100%; animation: hero-line 1.05s var(--ease-out) both; animation-delay: calc(var(--l) * 110ms + 150ms); }
@@ -70,11 +70,12 @@
 .button.ghost svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: translate 0.4s var(--spring); }
 .button.ghost:hover svg { translate: 0 3px; }
 .stk:focus-visible,
-.apple-cut:focus-visible { outline: 2px solid var(--cream); outline-offset: 4px; border-radius: 20px; }
+.apple-cut:focus-visible { outline: none; }
+.apple-cut:focus-visible .ac-hint { box-shadow: 0 0 0 3px var(--cream), 0 2px 0 3px var(--ink); }
 
 /* ---------- sticker stage (everything in cqw) ------------------------- */
 /* Pulled left so it sits right next to the headline. */
-.hero-stage { container: stage / inline-size; position: relative; width: 100%; max-width: 430px; justify-self: start; aspect-ratio: 1 / 1.02; }
+.hero-stage { container: stage / inline-size; position: relative; width: 100%; max-width: 470px; justify-self: center; aspect-ratio: 1 / 1.02; }
 
 /* The sun: warm glow, a slow ray wheel, a hairline inner ring and a dotted orbit. */
 .disc {
@@ -126,9 +127,9 @@
 @keyframes hero-float { from { translate: 0 -0.7cqw; rotate: -1deg; } to { translate: 0 0.7cqw; rotate: 1deg; } }
 /* back row: oil, ramen; middle: milk, soda, gelato; front: jam, choc */
 .stk.k-oil { --d: 10; --r: -7deg; --f: -1s; left: 23cqw; top: 5cqw; width: 14cqw; }
-.stk.k-ramen { --d: 14; --r: 7deg; --f: -2.4s; left: 44cqw; top: 8cqw; width: 29cqw; }
+.stk.k-ramen { --d: 14; --r: 7deg; --f: -2.4s; left: 36cqw; top: 8cqw; width: 27cqw; }
 .stk.k-milk { --d: 18; --r: -10deg; --f: -3.2s; left: 4cqw; top: 29cqw; width: 20cqw; }
-.stk.k-soda { --d: 20; --r: 11deg; --f: -0.6s; left: 73cqw; top: 41cqw; width: 15cqw; }
+.stk.k-soda { --d: 20; --r: 11deg; --f: -0.6s; left: 74cqw; top: 52cqw; width: 15cqw; }
 .stk.k-gelato { --d: 24; --r: 7deg; --f: -4s; left: 59cqw; top: 67cqw; width: 25cqw; }
 .stk.k-jam { --d: 26; --r: -3deg; --f: -1.8s; left: 32cqw; top: 36cqw; z-index: 4; width: 30cqw; }
 .stk.k-choc { --d: 30; --r: -9deg; --f: -5s; left: 11cqw; top: 72cqw; z-index: 5; width: 42cqw; }
@@ -174,16 +175,16 @@
 .hb-under s { margin-top: 0.3cqw; font: 400 4cqw / 1 var(--font-display); text-transform: uppercase; text-decoration: line-through 0.5cqw var(--tomato); }
 @keyframes hb-pulse { to { scale: 1.07; } }
 .hb.b1 { --s: 17cqw; --r: -10deg; --e: 1000ms; left: 0; top: 6cqw; }
-.hb.b2 { --s: 16cqw; --r: 9deg; --e: 1140ms; left: 84cqw; top: 56cqw; }
+.hb.b2 { --s: 16cqw; --r: 9deg; --e: 1140ms; left: 84cqw; top: 68cqw; }
 .hb.b2 .hb-fill { background: #7a4ce0; }
 
 /* Interactive apple + paring knife replacing the old spinning '95 badge. */
 .apple-cut {
   position: absolute;
-  top: -9cqw;
-  right: -14cqw;
+  top: -12cqw;
+  right: -9cqw;
   z-index: 8;
-  width: 35cqw;
+  width: 56cqw;
   padding: 0;
   border: 0;
   background: none;
@@ -256,7 +257,7 @@
   position: relative;
   display: grid;
   justify-items: center;
-  margin-top: -3.2cqw;
+  margin-top: -9cqw;
   pointer-events: none;
 }
 .apple-cut .ac-hint {
@@ -269,7 +270,7 @@
   color: var(--ink);
   border: 1.5px solid var(--ink);
   box-shadow: 0 2px 0 var(--ink);
-  font: 700 max(10px, 1.95cqw) / 1.1 var(--font-cond);
+  font: 700 max(11px, 2.5cqw) / 1.1 var(--font-cond);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -309,13 +310,13 @@
   translate: 0 0;
 }
 .apple-cut .ac-reveal strong {
-  font: 400 max(11px, 2.5cqw) / 1 var(--font-display);
+  font: 400 max(13px, 3.2cqw) / 1 var(--font-display);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink);
 }
 .apple-cut .ac-reveal small {
-  font: 700 max(9px, 1.75cqw) / 1.05 var(--font-cond);
+  font: 700 max(10px, 2.2cqw) / 1.05 var(--font-cond);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #5a3210;
@@ -351,7 +352,7 @@
   .hero-stage { width: 96%; max-width: 380px; margin: 2px auto 4px; }
   .hb.b1 { --s: 19.5cqw; left: -1cqw; top: 4cqw; }
   .hb.b2 { --s: 18.5cqw; left: 81cqw; top: 55cqw; }
-  .apple-cut { width: 34cqw; top: -6cqw; right: -5cqw; }
+  .apple-cut { width: 50cqw; top: -10cqw; right: -3cqw; }
   .spark.s1 { left: 84%; top: 12%; font-size: 18px; }
   .spark.s2 { left: 4%; top: 48%; }
   .spark.s3 { right: 5%; bottom: 18%; }

@@ -42,7 +42,7 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
       aria-label={copy.ariaLabel}
       onClick={() => setSliced((prev) => !prev)}
     >
-      <svg className="ac-svg" viewBox="0 0 184 176" overflow="visible" aria-hidden="true" focusable="false">
+      <svg className="ac-svg" viewBox="0 -34 160 184" overflow="visible" aria-hidden="true" focusable="false">
         <defs>
           <filter id={filterId} x="-28%" y="-28%" width="165%" height="165%">
             <feMorphology in="SourceAlpha" operator="dilate" radius="4.4" result="grown" />
