@@ -1,7 +1,7 @@
 /* Header: one big electronic shelf label. A light plastic housing round a
    single e-paper screen; the wordmark, nav, language and CTA are all printed on
    it in black and red ink. Hovering inverts a key, the pointer leaves the dark
-   pressure bloom of a pressed LCD, and the panel refreshes in bands now and
+   pressure bloom of a pressed LCD, and the whole panel flickers now and
    then. On phones the screen itself opens into the menu. */
 
 .hd {
@@ -134,68 +134,88 @@
 }
 
 /* ---------- refresh ------------------------------------------------------- */
-/* The panel redraws in vertical bands, each a few frames behind the last:
-   black, blank, black, then the print comes back through a fading ghost.
-   Only opacity changes, and every frame is a hard cut like a real panel. */
-.scr-band { position: absolute; top: 0; bottom: 0; width: calc(100% / 12 + 1px); }
-.scr-band::before,
-.scr-band::after { content: ""; position: absolute; inset: 0; opacity: 0; }
-/* Blank frames are speckled with particles still settling, black ones too. */
-.scr-band::before { background: radial-gradient(circle at 1px 1px, rgb(20 20 20 / 0.42) 0.6px, transparent 0.95px) 0 0 / 3px 3px, #f3f2ec; }
-.scr-band::after { background: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.13) 0.6px, transparent 0.95px) 1.5px 0 / 3px 3px, #141414; }
-.scr-band { --o: var(--i); --delay: calc(var(--o) * 26ms + var(--j, 0ms)); }
-.scr[data-dir="rtl"] .scr-band { --o: var(--r); }
-.scr[data-flash="soft"] .scr-band::before { animation: band-paper-soft 0.8s steps(1) var(--delay); }
-.scr[data-flash="soft"] .scr-band::after { animation: band-ink-soft 0.8s steps(1) var(--delay); }
-.scr[data-flash="full"] .scr-band::before { animation: band-paper-full 1.5s steps(1) var(--delay); }
-.scr[data-flash="full"] .scr-band::after { animation: band-ink-full 1.5s steps(1) var(--delay); }
+/* The whole panel flickers at once, like the real ones: black, white, a long
+   black frame full of blinking hearts and the motto, blank, then the print
+   comes back through a fading ghost. Stepped, so every frame is a hard cut;
+   only opacity changes, so it stays cheap at full width. */
+.scr-paper,
+.scr-ink { position: absolute; inset: 0; opacity: 0; }
+.scr-paper { background: radial-gradient(circle at 1px 1px, rgb(20 20 20 / 0.3) 0.6px, transparent 0.95px) 0 0 / 3px 3px, #f3f2ec; }
+.scr-ink { background: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.1) 0.6px, transparent 0.95px) 1.5px 0 / 3px 3px, #141414; }
+.scr[data-flash] .scr-paper { animation: scr-paper 1.6s steps(1); }
+.scr[data-flash] .scr-ink { animation: scr-ink 1.6s steps(1); }
+@keyframes scr-ink { 0% { opacity: 1; } 6% { opacity: 0; } 12% { opacity: 1; } 78% { opacity: 0; } }
+@keyframes scr-paper { 0% { opacity: 0; } 6% { opacity: 1; } 12% { opacity: 0; } 78% { opacity: 1; } 86% { opacity: 0.55; } 93% { opacity: 0; } }
 /* The print settles a pixel off and back, and the LED blinks red while the panel works. */
-.scr[data-flash="soft"] .bar-row { animation: print-jitter-soft 0.8s steps(1); }
-.scr[data-flash="full"] .bar-row { animation: print-jitter-full 1.5s steps(1); }
-@keyframes print-jitter-soft { 0% { translate: 1px 0; } 30% { translate: -1px 0; } 52% { translate: 0 0; } }
-@keyframes print-jitter-full { 0% { translate: 1px 0; } 15% { translate: -1px 0; } 64% { translate: 1px 0; } 76% { translate: 0 0; } }
+.scr[data-flash] .bar-row { animation: print-jitter 1.6s steps(1); }
+@keyframes print-jitter { 0% { translate: 1px 0; } 6% { translate: -1px 0; } 12% { translate: 0 0; } 86% { translate: -0.5px 0; } 93% { translate: 0 0; } }
 .esl-led::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #ff4a2a; box-shadow: 0 0 4px #ff4a2a; opacity: 0; }
-.scr[data-flash] + .esl-led::after { animation: led-busy 1s steps(1); }
+.scr[data-flash] + .esl-led::after { animation: led-busy 1.6s steps(1); }
 @keyframes led-busy { 0% { opacity: 1; } 20% { opacity: 0; } 40% { opacity: 1; } 60% { opacity: 0; } }
-@keyframes band-ink-soft { 0% { opacity: 1; } 18% { opacity: 0; } 30% { opacity: 1; } 45% { opacity: 0; } }
-@keyframes band-paper-soft { 0% { opacity: 0; } 18% { opacity: 1; } 30% { opacity: 0; } 45% { opacity: 0.7; } 62% { opacity: 0.35; } 78% { opacity: 0; } }
-@keyframes band-ink-full { 0% { opacity: 1; } 8% { opacity: 0; } 15% { opacity: 1; } 64% { opacity: 0; } }
-@keyframes band-paper-full { 0% { opacity: 0; } 8% { opacity: 1; } 15% { opacity: 0; } 64% { opacity: 1; } 72% { opacity: 0.55; } 82% { opacity: 0.25; } 92% { opacity: 0; } }
 
-/* Easter egg: while every band sits black in a full refresh, the panel fills
-   with flickering pixel hearts on a fixed 18 x 16px grid, the motto in the
-   second row. Two checkerboard layers blink in turn, never fully off. */
+/* Easter egg: during the long black frame the motto fills the middle of the
+   panel in big white type between two red beating hearts, and the sides fill
+   with pixel hearts on a fixed 18 x 16px grid, two checkerboard layers pulsing
+   in turn. Each side is a whole number of hearts wide, so none is cut. */
 .scr-hearts {
+  --side: round(down, 17%, 18px);
   position: absolute;
   inset: 0;
+  display: grid;
+  place-items: center;
   width: calc(100% - 10px);
   height: calc(100% - 6px);
   width: round(down, 100% - 10px, 18px);
   height: round(down, 100% - 6px, 16px);
   margin: auto;
   opacity: 0;
+  container-type: inline-size;
 }
 .scr-hearts::before,
-.scr-hearts::after { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' shape-rendering='crispEdges' fill='%23fff'%3E%3Cpath transform='translate(0 0)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3Cpath transform='translate(18 16)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3C/svg%3E") 0 0 / 36px 32px; image-rendering: pixelated; mask-image: linear-gradient(#000 0 16px, transparent 16px 32px, #000 32px); }
+.scr-hearts::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' shape-rendering='crispEdges' fill='%23fff'%3E%3Cpath transform='translate(0 0)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3Cpath transform='translate(18 16)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3C/svg%3E") 0 0 / 36px 32px;
+  image-rendering: pixelated;
+  mask-image: linear-gradient(90deg, #000 0 var(--side), transparent var(--side) calc(100% - var(--side)), #000 calc(100% - var(--side)));
+}
 .scr-hearts::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='32' shape-rendering='crispEdges' fill='%23fff'%3E%3Cpath transform='translate(18 0)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3Cpath transform='translate(0 16)' d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3C/svg%3E"); }
 .scr-motto {
-  position: absolute;
+  position: relative;
   z-index: 1;
-  top: 16px;
-  right: 0;
-  left: 0;
-  height: 16px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
   color: #fff;
-  font: 700 8px / 1 var(--font-mono);
-  letter-spacing: 0.22em;
-  text-transform: lowercase;
+  /* Sized to the gap between the side hearts: 20 ems of type and hearts. */
+  font: 400 min(40px, (100cqi - 2 * var(--side)) / 20) / 1 var(--font-display);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
-.scr[data-flash="full"] .scr-hearts { animation: scr-hearts 1.5s steps(1); }
-.scr[data-flash="full"] .scr-hearts::before { animation: heart-blink 0.18s steps(1) 0.5s 3; }
-.scr[data-flash="full"] .scr-hearts::after { animation: heart-blink 0.18s steps(1) 0.5s 3 reverse; }
-@keyframes scr-hearts { 0% { opacity: 0; } 36% { opacity: 1; } 63% { opacity: 0; } }
+.scr-beat {
+  flex: none;
+  width: 1.1em;
+  height: 0.94em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='2 2 14 12' shape-rendering='crispEdges' fill='%23ff3b2f'%3E%3Cpath d='M4 2h4v2H4zM10 2h4v2h-4zM2 4h14v4H2zM4 8h10v2H4zM6 10h6v2H6zM8 12h2v2H8z'/%3E%3C/svg%3E") center / contain no-repeat;
+  image-rendering: pixelated;
+}
+/* The letter spacing trails after the last letter; give it back on that side. */
+.scr-beat:last-child { margin-left: -0.3em; }
+/* Folded to the initials there is no room for the motto: hearts all over. */
+.hd[data-stuck]:not([data-open]):not([data-peek]) .bar:not(:hover, :focus-within) .scr-motto { display: none; }
+.hd[data-stuck]:not([data-open]):not([data-peek]) .bar:not(:hover, :focus-within) .scr-hearts { --side: 50%; }
+@media (max-width: 920px) {
+  .scr-hearts { --side: round(down, 9%, 18px); }
+}
+.scr[data-flash] .scr-hearts { animation: scr-hearts 1.6s steps(1); }
+.scr[data-flash] .scr-hearts::before { animation: heart-pulse 0.32s ease-in-out 6 alternate; }
+.scr[data-flash] .scr-hearts::after { animation: heart-pulse 0.32s ease-in-out 6 alternate-reverse; }
+.scr[data-flash] .scr-beat { animation: heart-beat 0.62s var(--ease-out) 0.2s 2; }
+@keyframes scr-hearts { 0% { opacity: 0; } 12% { opacity: 1; } 78% { opacity: 0; } }
+@keyframes heart-pulse { from { opacity: 1; } to { opacity: 0.2; } }
+@keyframes heart-beat { 0%, 100% { scale: 1; } 14% { scale: 1.32; } 28% { scale: 1; } 42% { scale: 1.18; } }
 @keyframes heart-blink { 0% { opacity: 1; } 50% { opacity: 0.3; } }
 
 /* ---------- keys: hover inverts, as a pressed e-paper button would ------- */
@@ -602,7 +622,8 @@
   }
   .scr-press,
   .scr-glare,
-  .scr-band,
+  .scr-paper,
+  .scr-ink,
   .scr-hearts { display: none; }
   .esl-led,
   .nav button::after,

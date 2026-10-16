@@ -10,10 +10,6 @@ export type Page = "home" | "stores" | "about";
 
 const LINKS: Page[] = ["home", "stores", "about"];
 
-/** The screen refreshes in vertical bands, left to right, like a big e-paper panel. */
-const BANDS = 12;
-/** A few ms of fixed jitter per band so the sweep reads as a panel, not a CSS loop. */
-const JITTER = [0, 14, 4, 19, 7, 0, 16, 9, 21, 3, 12, 6];
 
 /** Label whose letters roll up one after another on hover. */
 function Roll({ text }: { text: string }) {
@@ -88,27 +84,23 @@ export function Header({
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // E-paper refresh: a full one (with the hearts easter egg) on every page change,
-  // then a lighter band sweep every 7–13s, with the hearts again every third time.
+  // E-paper refresh: the whole panel flickers black and white, fills with
+  // blinking hearts and the motto, then redraws. Once on every page change,
+  // then every 5–10s on its own.
   useEffect(() => {
     const el = screen.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let count = 0;
-    const flash = (mode: "full" | "soft") => {
-      delete el.dataset.flash;
-      void el.offsetWidth;
-      // Soft sweeps run either way across the panel; the full one always starts at the logo.
-      el.dataset.dir = mode === "soft" && Math.random() < 0.5 ? "rtl" : "ltr";
-      el.dataset.flash = mode;
+    let timer = 0;
+    const flash = () => {
+      if (!document.hidden) {
+        delete el.dataset.flash;
+        void el.offsetWidth;
+        el.dataset.flash = "";
+      }
+      timer = window.setTimeout(flash, 5000 + Math.random() * 5000);
     };
-    const tick = () => {
-      if (!document.hidden) flash(++count % 3 === 0 ? "full" : "soft");
-      timer = window.setTimeout(tick, 7000 + Math.random() * 6000);
-    };
-    const first = window.setTimeout(() => flash("full"), 450);
-    let timer = window.setTimeout(tick, 7000 + Math.random() * 6000);
+    timer = window.setTimeout(flash, 450);
     return () => {
-      window.clearTimeout(first);
       window.clearTimeout(timer);
       delete el.dataset.flash;
     };
@@ -279,15 +271,18 @@ export function Header({
           </div>
 
           {/* Effects over the print, clipped to the screen: paper tooth, the
-              pressure bloom, the glass glare and the refresh bands with hearts. */}
+              pressure bloom, the glass glare and the refresh frames with hearts. */}
           <span className="scr-fx" aria-hidden="true">
             <i className="scr-press" ref={press} />
             <i className="scr-glare" />
-            {Array.from({ length: BANDS }, (_, i) => (
-              <i key={i} className="scr-band" style={{ "--i": i, "--r": BANDS - 1 - i, "--j": `${JITTER[i]}ms`, left: `${(i * 100) / BANDS}%` } as CSSProperties} />
-            ))}
+            <i className="scr-paper" />
+            <i className="scr-ink" />
             <i className="scr-hearts">
-              <span className="scr-motto">more taste less waste</span>
+              <span className="scr-motto">
+                <i className="scr-beat" />
+                more taste less waste
+                <i className="scr-beat" />
+              </span>
             </i>
           </span>
         </div>
