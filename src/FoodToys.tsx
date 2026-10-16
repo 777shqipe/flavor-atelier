@@ -15,7 +15,7 @@ function Sticker({ box, children }: { box: string; children: ReactNode }) {
   return (
     <svg className="toy-svg" viewBox={box} overflow="visible" aria-hidden="true" focusable="false">
       <defs>
-        <filter id={id} filterUnits="userSpaceOnUse" x="-70" y="-70" width="260" height="280">
+        <filter id={id} filterUnits="userSpaceOnUse" x="-90" y="-90" width="300" height="320">
           <feMorphology in="SourceAlpha" operator="dilate" radius="4.2" result="grown" />
           <feFlood floodColor="#fff" />
           <feComposite in2="grown" operator="in" result="border" />
