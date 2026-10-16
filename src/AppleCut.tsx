@@ -125,74 +125,76 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
                 stroke="none"
                 textAnchor="middle"
                 fontFamily="Anton, sans-serif"
-                fontSize="8.8"
-                letterSpacing="0.5"
-                fill="#1b6b3a"
+                fontSize="9.8"
+                letterSpacing="0.6"
+                fill="#004734"
               >
                 {copy.fleshTop}
               </text>
               <text
                 x="0"
-                y="6.8"
+                y="7.4"
                 stroke="none"
                 textAnchor="middle"
                 fontFamily="Anton, sans-serif"
-                fontSize="8.2"
-                letterSpacing="0.5"
-                fill={INK}
+                fontSize="9.2"
+                letterSpacing="0.6"
+                fill="#141414"
               >
                 {copy.fleshBottom}
               </text>
             </g>
 
-            {/* Writing ON the apple itself ("anche sulla mela ci sarà la scritta") */}
-            <g className="ac-stamp" transform="translate(55 88) rotate(-8)">
-              <ellipse cx="0" cy="0" rx="26" ry="20" fill={CREAM} stroke={INK} strokeWidth="2" />
+            {/* Writing ON the apple itself ("anche sulla mela ci sarà la scritta") - high contrast */}
+            <g className="ac-stamp" transform="translate(54 88) rotate(-8)">
+              {/* Crisp white badge oval with high-contrast double border */}
+              <ellipse cx="0" cy="0" rx="26" ry="20" fill="#ffffff" stroke={INK} strokeWidth="2.2" />
               <ellipse
                 cx="0"
                 cy="0"
                 rx="22.5"
                 ry="16.5"
                 fill="none"
-                stroke="#005842"
-                strokeWidth="1"
-                strokeDasharray="2.2 2.2"
+                stroke="#004734"
+                strokeWidth="1.4"
+                strokeDasharray="2.4 2"
               />
               <text
                 x="0"
-                y="-6.5"
+                y="-6.8"
                 stroke="none"
                 textAnchor="middle"
-                fontFamily="'Barlow Condensed', sans-serif"
-                fontWeight="700"
-                fontSize="6.8"
-                letterSpacing="1.1"
-                fill="#005842"
+                fontFamily="Anton, sans-serif"
+                fontSize="7.5"
+                letterSpacing="1.2"
+                fill="#004734"
               >
                 {copy.stampTop}
               </text>
               <text
                 x="0"
-                y="7.5"
+                y="7.6"
                 stroke="none"
                 textAnchor="middle"
                 fontFamily="Anton, sans-serif"
-                fontSize="16"
+                fontSize="17.5"
                 letterSpacing="0.4"
-                fill={INK}
+                fill="#141414"
               >
                 {copy.stampYear}
               </text>
+              {/* High-contrast solid pill for the subtitle */}
+              <rect x="-17" y="10.2" width="34" height="6.6" rx="3.3" fill="#004734" stroke="none" />
               <text
                 x="0"
-                y="14.2"
+                y="15.2"
                 stroke="none"
                 textAnchor="middle"
                 fontFamily="'Barlow Condensed', sans-serif"
-                fontWeight="700"
-                fontSize="5.4"
+                fontWeight="800"
+                fontSize="5.2"
                 letterSpacing="0.8"
-                fill="#c41d38"
+                fill="#ffffff"
               >
                 {copy.stampSub}
               </text>
@@ -243,49 +245,67 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
               x2="115"
               y2="96"
               stroke={CREAM}
-              strokeWidth="1.7"
+              strokeWidth="1.8"
               strokeDasharray="3.2 3.2"
             />
           </g>
 
-          {/* --- PARING KNIFE ("un coltellino") --- */}
+          {/* --- CUTE PLAYFUL TOY KNIFE ("il coltellino fallo più cute, giocoso non così che fa paura") --- */}
           <g className="ac-knife">
-            {/* Knife is drawn along its local X axis with blade tip at (0,0) pointing left-down */}
-            <g transform="translate(88 26) rotate(123)">
-              {/* Steel blade */}
+            {/* Poised playfully near the cut seam: rounded butter/spreader toy blade */}
+            <g transform="translate(86 28) rotate(123)">
+              {/* Rounded, friendly butter/pastry blade - NO sharp stabbing point! */}
               <path
-                d="M-34 -8L6 -2C8 4 -2 9 -16 9C-25 9 -32 3 -34 -8Z"
-                fill="#dfe5ec"
+                d="M -22 -6.5 L 2 -6.5 Q 11 -6.5 11 0 Q 11 6.5 2 6.5 L -22 6.5 Z"
+                fill="#eaf1f7"
               />
-              {/* Blade edge glint */}
+              {/* Cheerful white gleam highlight on blade */}
               <path
-                d="M-31 -5C-22 3 -8 5 4 1"
+                d="M -18 -3.5 L 0 -3.5 Q 7 -3.5 7 0"
                 fill="none"
-                stroke="#fff"
-                strokeWidth="1.6"
+                stroke="#ffffff"
+                strokeWidth="1.8"
+                strokeLinecap="round"
               />
-              {/* Wooden handle */}
-              <rect x="-64" y="-9.5" width="31" height="12" rx="5.5" fill="#7c4722" />
-              <path d="M-61 -5.5H-36" stroke="#a5683c" strokeWidth="1.8" strokeLinecap="round" />
-              {/* Brass rivets */}
-              <circle cx="-54" cy="-3.5" r="1.7" fill="#f6b531" strokeWidth="1.2" />
-              <circle cx="-42" cy="-3.5" r="1.7" fill="#f6b531" strokeWidth="1.2" />
+              {/* Cute little twinkle sparkle on the blade */}
+              <path
+                d="M -5 -0.5 Q -5 -3 -7 -3 Q -5 -3 -5 -5.5 Q -5 -3 -3 -3 Q -5 -3 -5 -0.5 Z"
+                fill="#ffd15c"
+                stroke="none"
+              />
+              {/* Golden collar ring */}
+              <rect x="-24.5" y="-7" width="3.5" height="14" rx="1.5" fill="#f6b531" />
+              {/* Chubby, rounded honey-wood handle */}
+              <path
+                d="M -56 -8.5 H -25 Q -21 -8.5 -21 -4.5 V 4.5 Q -21 8.5 -25 8.5 H -56 Q -63 8.5 -63 0 Q -63 -8.5 -56 -8.5 Z"
+                fill="#f5a623"
+              />
+              {/* Handle warm wood grain line */}
+              <path d="M -54 -4.5 H -28" stroke="#ffe28a" strokeWidth="1.6" strokeLinecap="round" />
+              {/* Cute friendly rounded rivets */}
+              <circle cx="-48" cy="0" r="1.8" fill="#ffe28a" strokeWidth="1.2" />
+              <circle cx="-34" cy="0" r="1.8" fill="#ffe28a" strokeWidth="1.2" />
             </g>
           </g>
         </g>
 
         {/* Slice sparkles when cut */}
         <g className="ac-sparks" stroke="none">
-          <circle className="sp-1" cx="118" cy="48" r="2.8" fill="#f6b531" />
-          <circle className="sp-2" cx="132" cy="64" r="2.2" fill="#fff8e7" />
-          <circle className="sp-3" cx="124" cy="104" r="2.4" fill="#f6b531" />
+          <circle className="sp-1" cx="118" cy="48" r="3.2" fill="#f6b531" />
+          <circle className="sp-2" cx="132" cy="64" r="2.4" fill="#fff8e7" />
+          <circle className="sp-3" cx="124" cy="104" r="2.8" fill="#f6b531" />
         </g>
       </svg>
 
       {/* Hint pill before click / Revealed message pill underneath after click */}
       <span className="ac-under" aria-hidden="true">
         <span className="ac-hint">
-          <i className="ac-scissors">🔪</i> {copy.hint}
+          {/* Cute mini rounded butter knife icon instead of scary emoji */}
+          <svg className="ac-mini-knife" viewBox="0 0 16 10" width="15" height="10" aria-hidden="true">
+            <path d="M1 3h6q1.5 0 1.5 2t-1.5 2H1q-1.5 0-1.5-2T1 3z" fill="#f5a623" stroke="#1c1a17" strokeWidth="1" />
+            <path d="M8.5 3.5h4q2.5 0 2.5 1.5t-2.5 1.5h-4z" fill="#eaf1f7" stroke="#1c1a17" strokeWidth="1" />
+          </svg>
+          {copy.hint}
         </span>
         <span className="ac-reveal">
           <strong>{copy.underTitle}</strong>

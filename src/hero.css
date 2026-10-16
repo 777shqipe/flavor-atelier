@@ -127,7 +127,7 @@
 @keyframes hero-float { from { translate: 0 -0.7cqw; rotate: -1deg; } to { translate: 0 0.7cqw; rotate: 1deg; } }
 /* back row: oil, ramen; middle: milk, soda, gelato; front: jam, choc */
 .stk.k-oil { --d: 10; --r: -7deg; --f: -1s; left: 23cqw; top: 5cqw; width: 14cqw; }
-.stk.k-ramen { --d: 14; --r: 7deg; --f: -2.4s; left: 36cqw; top: 8cqw; width: 27cqw; }
+.stk.k-ramen { --d: 14; --r: 7deg; --f: -2.4s; left: 30cqw; top: 8.5cqw; width: 26cqw; }
 .stk.k-milk { --d: 18; --r: -10deg; --f: -3.2s; left: 4cqw; top: 29cqw; width: 20cqw; }
 .stk.k-soda { --d: 20; --r: 11deg; --f: -0.6s; left: 74cqw; top: 52cqw; width: 15cqw; }
 .stk.k-gelato { --d: 24; --r: 7deg; --f: -4s; left: 59cqw; top: 67cqw; width: 25cqw; }
@@ -181,8 +181,8 @@
 /* Interactive apple + paring knife replacing the old spinning '95 badge. */
 .apple-cut {
   position: absolute;
-  top: -12cqw;
-  right: -9cqw;
+  top: -14cqw;
+  right: -15cqw;
   z-index: 8;
   width: 56cqw;
   padding: 0;
@@ -240,7 +240,7 @@
 .apple-cut[data-sliced] .ac-flesh-copy { opacity: 1; scale: 1; }
 .apple-cut[data-sliced] .ac-apple { transform: translate(-2px, 1px) rotate(-2deg); }
 
-/* Juice/slice sparks */
+/* Juice/slice sparkles */
 .apple-cut .ac-sparks circle {
   transform-box: fill-box;
   transform-origin: center;
@@ -263,12 +263,12 @@
 .apple-cut .ac-hint {
   display: inline-flex;
   align-items: center;
-  gap: 0.7cqw;
-  padding: 0.7cqw 2cqw;
+  gap: 0.8cqw;
+  padding: 0.7cqw 2.2cqw;
   border-radius: 99px;
   background: var(--cream);
   color: var(--ink);
-  border: 1.5px solid var(--ink);
+  border: 1.8px solid var(--ink);
   box-shadow: 0 2px 0 var(--ink);
   font: 700 max(11px, 2.5cqw) / 1.1 var(--font-cond);
   letter-spacing: 0.06em;
@@ -277,7 +277,7 @@
   rotate: -3deg;
   transition: opacity 0.25s ease, scale 0.35s var(--spring), translate 0.35s var(--spring);
 }
-.apple-cut .ac-scissors { font-style: normal; font-size: 1.05em; }
+.apple-cut .ac-mini-knife { display: inline-block; vertical-align: middle; margin-right: 0.2cqw; }
 .apple-cut[data-sliced] .ac-hint {
   opacity: 0;
   scale: 0.7;
@@ -352,7 +352,7 @@
   .hero-stage { width: 96%; max-width: 380px; margin: 2px auto 4px; }
   .hb.b1 { --s: 19.5cqw; left: -1cqw; top: 4cqw; }
   .hb.b2 { --s: 18.5cqw; left: 81cqw; top: 55cqw; }
-  .apple-cut { width: 50cqw; top: -10cqw; right: -3cqw; }
+  .apple-cut { width: 50cqw; top: -12cqw; right: -7cqw; }
   .spark.s1 { left: 84%; top: 12%; font-size: 18px; }
   .spark.s2 { left: 4%; top: 48%; }
   .spark.s3 { right: 5%; bottom: 18%; }
