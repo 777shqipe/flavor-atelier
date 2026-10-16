@@ -318,7 +318,8 @@ export function WhyFilm() {
     };
   }, [paint]);
 
-  // The card opens out to fill the screen as it scrolls in and folds back as it leaves;
+  // The card opens out from a deep inset frame to fill the screen as it scrolls in,
+  // dimming the room around it into theater black, holds while sticky, and folds back as it leaves;
   // while it fills the screen, the header steps aside.
   useEffect(() => {
     const el = root.current;
@@ -326,14 +327,25 @@ export function WhyFilm() {
     if (!el || !scr) return;
     const doc = document.documentElement;
     let raf = 0;
+    const smooth = (x: number) => {
+      const c = Math.max(0, Math.min(1, x));
+      return c * c * (3 - 2 * c);
+    };
     const update = () => {
       raf = 0;
       const { top, bottom } = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      const reach = vh * 0.7;
-      const p = Math.max(0, Math.min(1, 1 - top / reach, bottom / reach));
-      scr.style.setProperty("--p", p.toFixed(4));
-      doc.toggleAttribute("data-immersive", top < vh * 0.08 && bottom > vh * 0.6);
+      const enter = smooth((vh * 0.88 - top) / (vh * 0.84));
+      const leave = smooth((bottom - vh * 0.18) / (vh * 0.78));
+      const p = Math.min(enter, leave);
+      const haloEnter = smooth((vh * 0.96 - top) / (vh * 0.56));
+      const haloLeave = smooth((bottom - vh * 0.08) / (vh * 0.56));
+      const halo = Math.min(haloEnter, haloLeave);
+      const tilt = 1 - enter - (1 - leave);
+      el.style.setProperty("--p", p.toFixed(4));
+      el.style.setProperty("--halo", halo.toFixed(4));
+      el.style.setProperty("--tilt", tilt.toFixed(4));
+      doc.toggleAttribute("data-immersive", p > 0.88);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
