@@ -263,14 +263,22 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
           <g className="ac-knife">
             {/* Poised playfully near the cut seam: rounded butter/spreader toy blade */}
             <g transform="translate(86 28) rotate(123)">
-              {/* Rounded, friendly butter/pastry blade - NO sharp stabbing point! */}
+              {/* Blade with rounded bullet tip and ribbed/scalloped dentini on cutting edge */}
               <path
-                d="M -22 -6.5 L 2 -6.5 Q 11 -6.5 11 0 Q 11 6.5 2 6.5 L -22 6.5 Z"
+                d="M -22 -6.5 L 3 -6.5 Q 12 -6.5 12 0 Q 12 6.5 3 6.5 Q 1 11.4 -1 6.5 Q -3 11.4 -5 6.5 Q -7 11.4 -9 6.5 Q -11 11.4 -13 6.5 Q -15 11.4 -17 6.5 Q -19.5 11.4 -22 6.5 Z"
                 fill="#eaf1f7"
+              />
+              {/* Subtle ribbed groove lines extending up from between each dentino */}
+              <path
+                d="M -1 6.5 L -1 1.5 M -5 6.5 L -5 1.5 M -9 6.5 L -9 1.5 M -13 6.5 L -13 1.5 M -17 6.5 L -17 1.5"
+                fill="none"
+                stroke="#cbd5e1"
+                strokeWidth="1.2"
+                strokeLinecap="round"
               />
               {/* Cheerful white gleam highlight on blade */}
               <path
-                d="M -18 -3.5 L 0 -3.5 Q 7 -3.5 7 0"
+                d="M -18 -3.5 L 1 -3.5 Q 8 -3.5 8 0"
                 fill="none"
                 stroke="#ffffff"
                 strokeWidth="1.8"
@@ -352,7 +360,7 @@ export function AppleCut({ copy, className = "" }: { copy: AppleCutCopy; classNa
             <path d="M1 3h6q1.5 0 1.5 2t-1.5 2H1q-1.5 0-1.5-2T1 3z" fill="#ff1493" stroke="#1c1a17" strokeWidth="1" />
             <circle cx="2.5" cy="4.2" r="0.75" fill="#ffffff" stroke="none" />
             <circle cx="5.2" cy="5.8" r="0.6" fill="#ffd768" stroke="none" />
-            <path d="M8.5 3.5h4q2.5 0 2.5 1.5t-2.5 1.5h-4z" fill="#eaf1f7" stroke="#1c1a17" strokeWidth="1" />
+            <path d="M 8.5 3.5 H 12.5 Q 15 3.5 15 5 Q 15 6.5 12.5 6.5 Q 11.5 7.8 10.5 6.5 Q 9.5 7.8 8.5 6.5 Z" fill="#eaf1f7" stroke="#1c1a17" strokeWidth="1" />
           </svg>
           {copy.hint}
         </span>
