@@ -92,8 +92,10 @@ export function Logo({ onClick, refreshKey }: { onClick?: () => void; refreshKey
             ))}
           </span>
           <i className="esl-code" />
-          {/* Easter egg: while the panel sits black mid-refresh, it fills with flickering hearts. */}
-          <i className="esl-hearts" />
+          {/* Easter egg: while the panel sits black mid-refresh, it fills with flickering hearts. The middle row is the motto. */}
+          <i className="esl-hearts" aria-hidden="true">
+            <span className="esl-motto">more taste less waste</span>
+          </i>
         </span>
         <i className="esl-led" />
       </span>
