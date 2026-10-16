@@ -349,7 +349,7 @@ export function InstaShelf() {
   const shortDay = (date: Date) => date.toLocaleDateString(locale, { day: "numeric", month: "short" });
   const postDay = (iso: string) => shortDay(new Date(`${iso}T12:00`));
 
-  const { feed, isFetching, isLiveSync, lastSyncTime, refreshFeed } = useInstagramFeed(FALLBACK_FEED);
+  const { feed } = useInstagramFeed(FALLBACK_FEED);
   const [activeQaIndex, setActiveQaIndex] = useState(0);
 
   // Issue number is the week of the year, dated from this week's Monday. Same count the flyer uses.
@@ -380,60 +380,11 @@ export function InstaShelf() {
           <p className="ig-dek">
             {s.dek}
           </p>
-          <div className="ig-header-actions">
-            {/* Instagram Live Listener status pill */}
-            <div className="ig-listener-pill" title={`Last synced: ${lastSyncTime.toLocaleTimeString(locale)}`}>
-              <span className={`ig-listener-dot ${isLiveSync ? "active" : ""}`} />
-              <span className="ig-listener-label">{s.liveSync}</span>
-              <button
-                type="button"
-                className="ig-sync-btn"
-                onClick={refreshFeed}
-                disabled={isFetching}
-                aria-label={s.syncCheck}
-                title={s.syncCheck}
-              >
-                <span className={isFetching ? "ig-spin" : ""}>🔄</span>
-              </button>
-            </div>
-            <a className="button outline" href={PROFILE} target="_blank" rel="noopener noreferrer">
-              {s.follow}
-            </a>
-          </div>
+          <a className="button outline" href={PROFILE} target="_blank" rel="noopener noreferrer">
+            {s.follow}
+          </a>
         </div>
       </header>
-
-      {/* Official store notice banner (e.g. Fitzroy temporary closure) */}
-      {feed.storeNotice && (
-        <aside className="ig-notice-banner rv" role="alert">
-          <div className="ig-nb-left">
-            <span className="ig-nb-pill">📢 {s.noticeBannerTag}</span>
-            <span className="ig-nb-dates">📅 {feed.storeNotice.dates[lang]}</span>
-            <h3 className="ig-nb-title">{feed.storeNotice.title[lang]}</h3>
-            <p className="ig-nb-caption">{feed.storeNotice.caption[lang]}</p>
-            <span className="ig-nb-reopen">✨ {feed.storeNotice.reopen[lang]}</span>
-          </div>
-          <div className="ig-nb-right">
-            <a
-              href={feed.storeNotice.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ig-nb-post-link"
-              title={s.seePost}
-            >
-              <img
-                src={feed.storeNotice.img}
-                alt={feed.storeNotice.title[lang]}
-                className="ig-nb-thumb"
-                width={200}
-                height={200}
-                loading="lazy"
-              />
-              <span className="ig-nb-btn">{s.seePost} ↗</span>
-            </a>
-          </div>
-        </aside>
-      )}
 
       {/* TWO-WING SPLIT LAYOUT: Food bargains on the left, People & Employee video reels on the right */}
       <div className="ig-wings-layout">
