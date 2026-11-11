@@ -54,10 +54,10 @@ const poly = (pts: Pt[]) =>
 /**
  * @param w,h     element size (untransformed)
  * @param from    the corner that lifts first
- * @param p       0 = flat, 1 = the fold has reached the opposite corner
  * @param bleed   extra room around the box for shapes that overhang it
+ * The returned function accepts progress: 0 = flat, 1 = the fold reached the opposite corner.
  */
-export function peelFrame(w: number, h: number, from: Corner, p: number, bleed = 0): PeelFrame {
+export function createPeelGeometry(w: number, h: number, from: Corner, bleed = 0): (p: number) => PeelFrame {
   const c = corner(w, h, from);
   // Peel along a 45° diagonal whatever the aspect ratio: it reads as a real corner lift.
   const n: Pt = [(from[1] === "r" ? -1 : 1) * Math.SQRT1_2, (from[0] === "b" ? -1 : 1) * Math.SQRT1_2];
@@ -71,29 +71,36 @@ export function peelFrame(w: number, h: number, from: Corner, p: number, bleed =
   // Distance from the lifting corner to the opposite one along n, bleed included.
   const span = (w + h) * Math.SQRT1_2 + bleed * 2 * Math.SQRT2;
   const start = nc - bleed * Math.SQRT2;
-  const depth = Math.max(0, p) * span;
-  const k = start + depth;
-
-  const front = clip(box, n, k, true);
-  const flap = clip(box, n, k, false);
-
   // Reflection across n·x = k:  x' = x - 2n(n·x - k)
   const a = 1 - 2 * n[0] * n[0];
   const b = -2 * n[0] * n[1];
   const d = 1 - 2 * n[1] * n[1];
-  const mirror = `matrix(${a.toFixed(5)}, ${b.toFixed(5)}, ${b.toFixed(5)}, ${d.toFixed(5)}, ${(2 * k * n[0]).toFixed(2)}, ${(2 * k * n[1]).toFixed(2)})`;
+  const matrix = `matrix(${a.toFixed(5)}, ${b.toFixed(5)}, ${b.toFixed(5)}, ${d.toFixed(5)}, `;
 
   // Gradient across the back of the paper, running from the corner to the crease.
   // It is laid out on the bleed box, which is where the back of the sticker is drawn.
   const angle = (Math.atan2(n[0], -n[1]) * 180) / Math.PI;
   const rad = (angle * Math.PI) / 180;
-  const len = Math.abs((w + bleed * 2) * Math.sin(rad)) + Math.abs((h + bleed * 2) * Math.cos(rad));
+  const len = Math.abs((w + bleed * 2) * Math.sin(rad)) + Math.abs((h + bleed * 2) * Math.cos(rad)) || 1;
   const centre = n[0] * (w / 2) + n[1] * (h / 2);
   const at = (u: number) => ((u - centre + len / 2) / len) * 100;
-  const tCrease = at(k);
   const tCorner = at(start);
-  const mid = tCorner + (tCrease - tCorner) * 0.62;
-  const shade = `linear-gradient(${angle.toFixed(1)}deg, var(--peel-back-a) ${tCorner.toFixed(1)}%, var(--peel-back-b) ${mid.toFixed(1)}%, var(--peel-back-c) ${(tCrease - 0.5).toFixed(1)}%)`;
+  const gradient = `linear-gradient(${angle.toFixed(1)}deg, var(--peel-back-a) ${tCorner.toFixed(1)}%, var(--peel-back-b) `;
 
-  return { front: poly(front), flap: poly(flap), mirror, shade, depth };
+  // Sizes, corner normals and lighting stay fixed for a spring. Only its fold moves each frame.
+  return (p) => {
+    const depth = Math.max(0, p) * span;
+    const k = start + depth;
+    const front = clip(box, n, k, true);
+    const flap = clip(box, n, k, false);
+    const mirror = `${matrix}${(2 * k * n[0]).toFixed(2)}, ${(2 * k * n[1]).toFixed(2)})`;
+    const tCrease = at(k);
+    const mid = tCorner + (tCrease - tCorner) * 0.62;
+    const shade = `${gradient}${mid.toFixed(1)}%, var(--peel-back-c) ${(tCrease - 0.5).toFixed(1)}%)`;
+    return { front: poly(front), flap: poly(flap), mirror, shade, depth };
+  };
+}
+
+export function peelFrame(w: number, h: number, from: Corner, p: number, bleed = 0): PeelFrame {
+  return createPeelGeometry(w, h, from, bleed)(p);
 }

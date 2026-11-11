@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type CSSProperties, type ReactNode } from "react";
 
 /**
  * Fresh produce in the same sticker style as Pack.tsx: flat colour, a thin ink
@@ -8,11 +8,12 @@ import type { ReactNode } from "react";
 const INK = "#141414";
 
 function Sticker({ box, body, extra }: { box: string; body: ReactNode; extra?: ReactNode }) {
+  const shadeId = `pr-shade-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <svg viewBox={box} aria-hidden="true" focusable="false">
       <defs>
-        {/* Top light, lower shade. Every sticker defines it; the CSS fill picks the first one. */}
-        <linearGradient id="pr-shade" x1="0" y1="0" x2="0" y2="1">
+        {/* Each sticker owns its light map, even while another grocery is hidden at the till. */}
+        <linearGradient id={shadeId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff" stopOpacity="0.3" />
           <stop offset="0.4" stopColor="#fff" stopOpacity="0" />
           <stop offset="0.62" stopColor={INK} stopOpacity="0" />
@@ -26,7 +27,7 @@ function Sticker({ box, body, extra }: { box: string; body: ReactNode; extra?: R
         <g stroke={INK} strokeWidth="2.4">
           {body}
         </g>
-        <g className="pr-shade" stroke="none">
+        <g className="pr-shade" stroke="none" style={{ "--pr-shade": `url(#${shadeId})` } as CSSProperties}>
           {body}
         </g>
         {extra}

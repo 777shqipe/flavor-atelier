@@ -13,7 +13,7 @@
 /* ---------- the deal: how it works + why us, as one route ------------- */
 /* A truck drives a dotted route through four stops (4s, pausing at each);
    every stop lights up on arrival and shows the step and what the supplier gets. */
-.deal {
+.supplier-deal {
   --g: clamp(14px, 1.8vw, 26px);
   --pin: 54px;
   padding: var(--section-y) var(--pad);
@@ -21,7 +21,7 @@
     radial-gradient(rgb(0 88 66 / 0.07) 1.3px, transparent 1.6px) 0 0 / 22px 22px,
     var(--paper);
 }
-.deal .section-head h2 em { font-style: normal; text-decoration: underline 0.07em var(--sun); text-underline-offset: 0.12em; text-decoration-skip-ink: none; }
+.supplier-deal .section-head h2 em { font-style: normal; text-decoration: underline 0.07em var(--sun); text-underline-offset: 0.12em; text-decoration-skip-ink: none; }
 .route { position: relative; }
 .route.rv { opacity: 1; translate: none; }
 
@@ -172,8 +172,8 @@
 @keyframes sp-rule { to { scale: 1 1; } }
 .hero-actions .button { position: relative; overflow: hidden; }
 .hero-actions .button::after { content: ""; position: absolute; top: -40%; bottom: -40%; left: -30%; width: 34%; rotate: 18deg; background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.8), transparent); translate: -220% 0; pointer-events: none; }
-.hero-actions .button:hover::after { animation: shine 0.8s var(--ease-out); }
-@keyframes shine { to { translate: 520% 0; } }
+.hero-actions .button:hover::after { animation: sp-shine 0.8s var(--ease-out); }
+@keyframes sp-shine { to { translate: 520% 0; } }
 
 /* marquee: alternate italics, spinning stars, pause on hover */
 .marquee-track > div > span:nth-child(even) { color: var(--green-700); font-style: italic; }

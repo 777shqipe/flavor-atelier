@@ -60,6 +60,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setLang = useCallback((next: Lang) => {
+    if ((pathLang(window.location.pathname) ?? "en") === next) return;
     window.history.pushState(null, "", urlFor(next));
     setLangState(next);
   }, []);

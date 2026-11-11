@@ -1,6 +1,9 @@
 /* "Every receipt is a rescue": a till receipt that prints once it is in view. */
 
 .rcpt { position: relative; }
+.rcpt[data-print-paused] *,
+.rcpt[data-print-paused] *::before,
+.rcpt[data-print-paused] *::after { animation-play-state: paused !important; }
 .rcpt-pin {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
@@ -201,10 +204,10 @@
   text-shadow: 0 0 8px rgb(246 181 49 / 0.6);
   text-transform: uppercase;
 }
-.reg-lcd span { overflow: hidden; text-overflow: clip; white-space: nowrap; animation: lcd-in 0.35s steps(4) both; }
+.reg-lcd span { overflow: hidden; text-overflow: clip; white-space: nowrap; animation: reg-lcd-in 0.35s steps(4) both; }
 .reg-lcd span + span { opacity: 0.78; animation-delay: 0.12s; }
-@keyframes lcd-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
-.rcpt[data-phase="done"] .reg-lcd span + span { opacity: 1; animation: lcd-in 0.35s steps(4) 0.12s both, lcd-blink 0.5s steps(1) 0.5s 4; }
+@keyframes reg-lcd-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+.rcpt[data-phase="done"] .reg-lcd span + span { opacity: 1; animation: reg-lcd-in 0.35s steps(4) 0.12s both, lcd-blink 0.5s steps(1) 0.5s 4; }
 @keyframes lcd-blink { 50% { opacity: 0.15; } }
 
 .reg-pad { display: grid; grid-template-columns: repeat(3, 13px); gap: 5px; }

@@ -3,6 +3,7 @@ import { AppleCut } from "./AppleCut";
 import type { Page } from "./Header";
 import { ChocBar, GoodsDefs, Gelato, Jam, OatMilk, OliveOil, Ramen, Soda } from "./HeroGoods";
 import { Peel } from "./Peel";
+import { pauseWhenOffscreen } from "./offscreen";
 import { useT } from "./i18n";
 import { heroStrings } from "./i18n/strings/Hero";
 import "./hero.css";
@@ -30,8 +31,14 @@ export function Hero({ onNavigate }: { onNavigate: (page: Page) => void }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => requestAnimationFrame(() => setReady(true)));
-    return () => cancelAnimationFrame(frame);
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setReady(true));
+    });
+    const stopLoops = root.current ? pauseWhenOffscreen(root.current) : undefined;
+    return () => {
+      cancelAnimationFrame(frame);
+      stopLoops?.();
+    };
   }, []);
 
   const toFinds = () => document.getElementById("finds")?.scrollIntoView({ behavior: "smooth" });

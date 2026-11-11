@@ -55,7 +55,7 @@ function Deal({ onContact }: { onContact: () => void }) {
   }, []);
 
   return (
-    <section className="deal" id="supply" data-surface="paper" aria-labelledby="deal-title">
+    <section className="supplier-deal" id="supply" data-surface="paper" aria-labelledby="deal-title">
       <header className="section-head split rv">
         <div>
           <p className="eyebrow">{s.dealEyebrow}</p>
@@ -112,9 +112,15 @@ function Deal({ onContact }: { onContact: () => void }) {
 /** The supplier half of About: the pitch, what we buy, then the deal route. */
 export function Suppliers({ onContact }: { onContact: () => void }) {
   const s = useT(suppliersStrings);
+  const hero = useRef<HTMLElement>(null);
+  const marquee = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const cleanups = [hero.current, marquee.current].flatMap((el) => (el ? [pauseWhenOffscreen(el)] : []));
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, []);
   return (
     <>
-      <section className="page-hero sp-hero" id="suppliers" data-surface="green" aria-labelledby="suppliers-title">
+      <section className="page-hero sp-hero" ref={hero} id="suppliers" data-surface="green" aria-labelledby="suppliers-title">
         <div className="aurora" aria-hidden="true" />
         <div className="page-hero-inner">
           <header className="page-head">
@@ -141,7 +147,7 @@ export function Suppliers({ onContact }: { onContact: () => void }) {
         </div>
       </section>
 
-      <div className="marquee" data-surface="cream" aria-label={s.buysLabel}>
+      <div className="marquee" ref={marquee} data-surface="cream" aria-label={s.buysLabel}>
         <div className="marquee-track" aria-hidden="true">
           {[0, 1].map((copy) => (
             <div key={copy}>

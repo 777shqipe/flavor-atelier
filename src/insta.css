@@ -127,6 +127,9 @@
   0% { translate: -46% 0; }
   100% { translate: 46% 0; }
 }
+.ig-head[data-off] .ig-foil-face,
+.ig-head[data-off] .ig-foil-face::after,
+.ig-head[data-off] .ig-mast span:last-child::before { animation-play-state: paused; }
 .ig-dek-row {
   display: flex;
   flex-wrap: wrap;
@@ -177,7 +180,7 @@
 .ig-mast .cut-label { display: none; }
 .ig-mast .scissors {
   width: 40px;
-  translate: -100% -78%;
+  translate: calc(var(--cut, 0) * 100cqw - 100%) -78%;
   filter: drop-shadow(0 1px 1px rgb(0 30 22 / 0.2));
 }
 .ig-mast .blade.up { rotate: calc(var(--snip, 0) * -22deg); }

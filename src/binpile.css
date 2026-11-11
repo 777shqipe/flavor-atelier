@@ -48,7 +48,7 @@
 .pi[data-in] > .pi-art { transform-origin: 50% 85%; animation: pi-in 0.35s var(--bounce) backwards; }
 @keyframes pi-in { from { opacity: 0; scale: 0.4; } }
 /* Produce shading: a soft top light and lower shade laid over the flat sticker colours. */
-.pr-shade path { fill: url(#pr-shade); }
+.pr-shade path { fill: var(--pr-shade); }
 /* Until someone touches the pile, the groceries rock gently in place. */
 .pile:not([data-touched]) .pi[data-in] > .pi-art {
   animation:
@@ -159,7 +159,7 @@
 }
 .till-laser { animation: till-sweep 1.6s ease-in-out infinite alternate; }
 /* These two SVG loops run on the main thread, so they wait while the pile is well off screen (BinPile.tsx sets data-off). */
-.pile[data-off] :is(.till-laser, .bin-blink) { animation-play-state: paused; }
+.pile[data-off] :is(.till-laser, .bin-blink, .pi-art) { animation-play-state: paused; }
 @keyframes till-sweep {
   from { translate: 0 -11px; }
   to { translate: 0 11px; }

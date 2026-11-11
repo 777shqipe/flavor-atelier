@@ -1,4 +1,5 @@
-import { useId, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { pauseWhenOffscreen } from "./offscreen";
 import "./toys.css";
 
 /**
@@ -248,12 +249,17 @@ function Toy({
 }
 
 export function FoodToys({ pillars, hints }: { pillars: readonly (readonly string[])[]; hints: readonly string[] }) {
+  const ref = useRef<HTMLUListElement>(null);
   const [peeled, setPeeled] = useState(false);
   const [bites, setBites] = useState(0);
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (ref.current) return pauseWhenOffscreen(ref.current);
+  }, []);
+
   return (
-    <ul className="toys">
+    <ul className="toys" ref={ref}>
       <Toy kind="banana" hint={hints[0]} big={pillars[0][0]} small={pillars[0][1]} on={peeled} onToggle={() => setPeeled((v) => !v)}>
         <Banana />
       </Toy>

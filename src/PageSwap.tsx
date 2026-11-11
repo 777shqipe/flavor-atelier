@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { Page } from "./Header";
 import { useT } from "./i18n";
 import { pageSwapStrings } from "./i18n/strings/PageSwap";
-import { peelFrame } from "./peelGeometry";
+import { createPeelGeometry } from "./peelGeometry";
 import "./pageswap.css";
 
 /**
@@ -11,21 +11,22 @@ import "./pageswap.css";
  * and reveals the new one.
  */
 
-export type Swap = { to: Page; anchor?: string; n: number };
+export type Swap = { to: Page; anchor?: string; n: number; history?: boolean };
 
 const SLAP_MS = 400;
 const PEEL_MS = 860;
+const COVER_TIMEOUT_MS = 15_000;
 
-export function PageSwap({ swap, onCover, onDone }: { swap: Swap | null; onCover: (swap: Swap) => void; onDone: () => void }) {
+export function PageSwap({ swap, onCover, onDone, onCancel }: { swap: Swap | null; onCover: (swap: Swap) => void | Promise<void>; onDone: () => void; onCancel: () => void }) {
   const s = useT(pageSwapStrings);
   const root = useRef<HTMLDivElement>(null);
   const face = useRef<HTMLDivElement>(null);
   const flap = useRef<HTMLDivElement>(null);
   const back = useRef<HTMLElement>(null);
-  const callbacks = useRef({ onCover, onDone });
+  const callbacks = useRef({ onCover, onDone, onCancel });
 
   useEffect(() => {
-    callbacks.current = { onCover, onDone };
+    callbacks.current = { onCover, onDone, onCancel };
   });
 
   useEffect(() => {
@@ -36,42 +37,77 @@ export function PageSwap({ swap, onCover, onDone }: { swap: Swap | null; onCover
     const bk = back.current;
     if (!el || !fr || !fl || !bk) return;
     let raf = 0;
+    let active = true;
+    let finished = false;
+    let peelScheduled = false;
+    let peelFailsafe = 0;
+    let covering: Promise<void> | undefined;
+    const cover = () => covering ??= Promise.resolve().then(() => active ? callbacks.current.onCover(swap) : undefined);
+    const finish = () => {
+      if (!active || finished) return;
+      finished = true;
+      cancelAnimationFrame(raf);
+      callbacks.current.onDone();
+    };
 
     const peel = () => {
+      if (!active || finished) return;
       const w = el.offsetWidth;
       const h = el.offsetHeight;
+      const geometry = createPeelGeometry(w, h, "br");
       const t0 = performance.now();
       el.dataset.peeling = "";
+      // Count the watchdog from the actual reveal, rather than from the network request.
+      peelFailsafe = window.setTimeout(finish, PEEL_MS + 1500);
       const tick = (now: number) => {
+        if (!active || finished) return;
         const t = Math.min(1, (now - t0) / PEEL_MS);
         const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        const f = peelFrame(w, h, "br", 0.03 + eased);
+        const f = geometry(0.03 + eased);
         fr.style.clipPath = f.front;
         fl.style.visibility = "visible";
         fl.style.clipPath = f.flap;
         fl.style.transform = f.mirror;
         bk.style.backgroundImage = f.shade;
         if (t < 1) raf = requestAnimationFrame(tick);
-        else callbacks.current.onDone();
+        else finish();
       };
       raf = requestAnimationFrame(tick);
     };
 
-    const timer = window.setTimeout(() => {
-      callbacks.current.onCover(swap);
-      // Give the new page two frames to lay out before revealing it.
+    const schedulePeel = () => {
+      if (!active || finished || peelScheduled) return;
+      peelScheduled = true;
+      // Give lazy content two frames to lay out before revealing it.
       raf = requestAnimationFrame(() => {
         raf = requestAnimationFrame(peel);
       });
-    }, SLAP_MS);
+    };
+    const timer = window.setTimeout(() => { void cover().then(schedulePeel, finish); }, SLAP_MS);
 
-    // Frames do not run in a background tab; never leave the sticker stuck on screen.
-    const failsafe = window.setTimeout(() => callbacks.current.onDone(), SLAP_MS + PEEL_MS + 1500);
+    // A stalled frame must not discard a navigation whose destination is still loading.
+    const settle = () => { void cover().then(finish, finish); };
+    const failsafe = window.setTimeout(() => {
+      if (document.hidden) settle();
+      else void cover().then(schedulePeel, finish);
+    }, SLAP_MS + PEEL_MS + 1500);
+    const onVisibility = () => { if (document.hidden) settle(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    const coverTimeout = window.setTimeout(() => {
+      if (!active || finished || peelScheduled) return;
+      finished = true;
+      cancelAnimationFrame(raf);
+      callbacks.current.onCancel();
+    }, COVER_TIMEOUT_MS);
 
     return () => {
+      active = false;
       window.clearTimeout(timer);
       window.clearTimeout(failsafe);
+      window.clearTimeout(peelFailsafe);
+      window.clearTimeout(coverTimeout);
       cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [swap]);
 

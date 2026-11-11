@@ -4,6 +4,8 @@ import { topNoticeStrings } from "./i18n/strings/TopNotice";
 import { useT } from "./i18n";
 import { LangSwitch } from "./LangSwitch";
 import { Logo } from "./Logo";
+import { pauseWhenOffscreen } from "./offscreen";
+import { STORES, currentStoreNotice } from "./stores";
 import "./header.css";
 
 export type Page = "home" | "stores" | "about";
@@ -39,14 +41,16 @@ export function Header({
   page,
   onNavigate,
   onContact,
+  onPrepareContact,
 }: {
   page: Page;
   onNavigate: (page: Page) => void;
   onContact: () => void;
+  onPrepareContact: () => void;
 }) {
   const s = useT(headerStrings);
   const ns = useT(topNoticeStrings);
-  const [stuck, setStuck] = useState(false);
+  const [stuck, setStuck] = useState(() => window.scrollY > 80);
   const [open, setOpen] = useState(false);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
   // Touch screens wide enough for the full nav cannot hover the compact bar open, so they tap to peek.
@@ -54,8 +58,12 @@ export function Header({
   // The CTA blinks its call before the contact sheet opens.
   const [calling, setCalling] = useState(false);
   const callTimer = useRef(0);
+  const root = useRef<HTMLElement>(null);
+  const menu = useRef<HTMLButtonElement>(null);
   const screen = useRef<HTMLDivElement>(null);
   const press = useRef<HTMLElement>(null);
+
+  useEffect(() => root.current ? pauseWhenOffscreen(root.current, "0px") : undefined, []);
 
   useEffect(() => {
     let frame = 0;
@@ -68,6 +76,7 @@ export function Header({
     const request = () => {
       if (!frame) frame = requestAnimationFrame(sample);
     };
+    sample();
     window.addEventListener("scroll", request, { passive: true });
     return () => {
       cancelAnimationFrame(frame);
@@ -78,10 +87,19 @@ export function Header({
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        menu.current?.focus({ preventScroll: true });
+      }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const media = window.matchMedia("(max-width: 920px)");
+    const resized = () => { if (!media.matches) setOpen(false); };
+    media.addEventListener("change", resized);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      media.removeEventListener("change", resized);
+    };
   }, [open]);
 
   // E-paper refresh: the whole panel flickers black and white, fills with
@@ -92,16 +110,19 @@ export function Header({
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let timer = 0;
     const flash = () => {
-      if (!document.hidden) {
-        delete el.dataset.flash;
-        void el.offsetWidth;
+      if (!document.hidden && !root.current?.hasAttribute("data-off")) {
         el.dataset.flash = "";
       }
       timer = window.setTimeout(flash, 5000 + Math.random() * 5000);
     };
+    const done = (event: AnimationEvent) => {
+      if (event.animationName === "scr-paper") delete el.dataset.flash;
+    };
+    el.addEventListener("animationend", done);
     timer = window.setTimeout(flash, 450);
     return () => {
       window.clearTimeout(timer);
+      el.removeEventListener("animationend", done);
       delete el.dataset.flash;
     };
   }, [page]);
@@ -126,7 +147,14 @@ export function Header({
   const release = (event: ReactPointerEvent<HTMLDivElement>) => {
     delete event.currentTarget.dataset.press;
   };
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+  useEffect(() => {
+    const observer = new ResizeObserver(() => { rect.current = null; });
+    if (screen.current) observer.observe(screen.current);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame.current);
+    };
+  }, []);
 
   const go = (next: Page) => {
     setOpen(false);
@@ -135,6 +163,7 @@ export function Header({
   };
   const call = () => {
     if (calling) return;
+    onPrepareContact();
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setOpen(false);
       onContact();
@@ -149,7 +178,7 @@ export function Header({
   };
 
   return (
-    <header className="hd" data-stuck={stuck || undefined} data-open={open || undefined} data-peek={peek || undefined}>
+    <header ref={root} className="hd" data-stuck={stuck || undefined} data-open={open || undefined} data-peek={peek || undefined}>
       {/* One electronic shelf label: light plastic housing round a single e-paper screen. */}
       <div className="bar">
         <div
@@ -194,7 +223,7 @@ export function Header({
                 </nav>
 
                 {/* The red-ink promo box of the label. */}
-                <button className="cta" type="button" data-calling={calling || undefined} onClick={call}>
+                <button className="cta" type="button" data-calling={calling || undefined} onClick={call} onPointerEnter={onPrepareContact} onFocus={onPrepareContact}>
                   <span className="sr-only">{s.contact}</span>
                   <span className="cta-word" aria-hidden="true">
                     {s.contact}
@@ -217,6 +246,7 @@ export function Header({
             </button>
 
             <button
+              ref={menu}
               className="menu-btn"
               type="button"
               aria-expanded={open}
@@ -231,7 +261,7 @@ export function Header({
             </button>
           </div>
 
-          <div className="drawer" id="mobile-menu" aria-hidden={!open}>
+          <div className="drawer" id="mobile-menu" aria-hidden={!open} inert={!open}>
             <div className="drawer-in">
               <nav aria-label={s.mobileNav}>
                 {LINKS.map((id, index) => (
@@ -256,6 +286,8 @@ export function Header({
                 data-calling={calling || undefined}
                 style={{ "--i": LINKS.length } as CSSProperties}
                 onClick={call}
+                onPointerEnter={onPrepareContact}
+                onFocus={onPrepareContact}
               >
                 <span className="sr-only">{s.contact}</span>
                 <span className="cta-word" aria-hidden="true">
@@ -289,7 +321,7 @@ export function Header({
         <i className="esl-led" aria-hidden="true" />
       </div>
 
-      {!noticeDismissed && (
+      {!noticeDismissed && STORES.some((store) => currentStoreNotice(store)) && (
         <div className="hd-notice" role="region" aria-label={ns.badge}>
           <span className="hn-pill">
             <i aria-hidden="true" />

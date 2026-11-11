@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { useT } from "./i18n";
 import { truckSceneStrings } from "./i18n/strings/TruckScene";
+import { pauseWhenOffscreen } from "./offscreen";
 import "./truckscene.css";
 
 /*
@@ -418,12 +419,7 @@ export function TruckScene() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) delete el.dataset.paused;
-      else el.dataset.paused = "";
-    });
-    io.observe(el);
-    return () => io.disconnect();
+    return pauseWhenOffscreen(el, "0px");
   }, []);
 
   return (

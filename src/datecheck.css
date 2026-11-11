@@ -88,6 +88,7 @@
 
 /* The calendar dial. */
 .dc-dial {
+  position: relative;
   max-width: 1120px;
   margin: clamp(16px, 2.4vw, 32px) auto 0;
   padding: 22px clamp(18px, 2.4vw, 30px) 16px;
@@ -153,7 +154,7 @@
 .dc-pack { transition: filter 0.6s, rotate 0.6s var(--spring), translate 0.6s var(--spring); }
 .dc-card[data-gone] .dc-pack { translate: 0 6px; }
 .dc-price > span { font: 700 11px / 1 var(--font-mono); letter-spacing: 0.14em; }
-.dc-dial { position: relative; overflow: hidden; background: radial-gradient(900px 300px at 100% 120%, rgb(246 181 49 / 0.2), transparent 60%), var(--green); box-shadow: inset 0 1px 0 rgb(246 240 219 / 0.2), 0 30px 50px -34px rgb(0 20 14 / 0.6); }
+.dc-dial { overflow: hidden; background: radial-gradient(900px 300px at 100% 120%, rgb(246 181 49 / 0.2), transparent 60%), var(--green); box-shadow: inset 0 1px 0 rgb(246 240 219 / 0.2), 0 30px 50px -34px rgb(0 20 14 / 0.6); }
 .dc-dial label > span { font: 700 11px / 1 var(--font-mono); letter-spacing: 0.16em; }
 .dc-dial strong .odo { font-family: var(--font-cond); font-weight: 700; }
 .dc-dial strong .odo-col { width: 0.5em; }

@@ -4,9 +4,11 @@ import { gap, useLang, useT } from "./i18n";
 import { flyerStrings } from "./i18n/strings/Flyer";
 import { productStrings } from "./i18n/strings/Products";
 import { Deal } from "./FlyerDeal";
+import { CutLine } from "./CutLine";
 import { pickLook } from "./flyerLooks";
 import { RingBadge } from "./RingBadge";
 import { CATEGORIES, ITEMS, type CatId, type Item } from "./products";
+import { pauseWhenOffscreen } from "./offscreen";
 import "./flyer.css";
 
 type Sort = "featured" | "price" | "saving";
@@ -55,66 +57,6 @@ function CatIcon({ id }: { id: CatFilter }) {
   );
 }
 
-/**
- * Coupon edge along the top of the flyer: a pair of scissors cuts along the
- * dotted line as the section scrolls up into view.
- */
-export function CutLine({ className }: { className?: string }) {
-  const s = useT(flyerStrings);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.style.setProperty("--cut", "1");
-      return;
-    }
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const top = el.getBoundingClientRect().top;
-      const p = Math.min(1, Math.max(0, (window.innerHeight - top) / (window.innerHeight * 0.7)));
-      el.style.setProperty("--cut", p.toFixed(4));
-      // Blades open and close as they travel.
-      el.style.setProperty("--snip", Math.abs(Math.sin(p * 46)).toFixed(3));
-    };
-    const request = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", request);
-      window.removeEventListener("resize", request);
-    };
-  }, []);
-
-  return (
-    <div className={className ? `cut ${className}` : "cut"} ref={ref} aria-hidden="true">
-      <span className="cut-slit" />
-      <span className="cut-label">{s.cut}</span>
-      <svg className="scissors" viewBox="0 0 66 40">
-        <g className="blade up">
-          <path d="M28 15.5Q48 15 64 19.4L28 21.5Z" fill="#e4e8eb" stroke="#0f2a22" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M15 13L30 20" stroke="#0f2a22" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="10" cy="10" r="7" fill="none" stroke="#0f2a22" strokeWidth="7.4" />
-          <circle cx="10" cy="10" r="7" fill="none" stroke="#e3261b" strokeWidth="4.4" />
-        </g>
-        <g className="blade down">
-          <path d="M28 18.5L64 20.6Q48 25 28 24.5Z" fill="#c4cace" stroke="#0f2a22" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M15 27L30 20" stroke="#0f2a22" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="10" cy="30" r="7" fill="none" stroke="#0f2a22" strokeWidth="7.4" />
-          <circle cx="10" cy="30" r="7" fill="none" stroke="#e3261b" strokeWidth="4.4" />
-        </g>
-        <circle cx="30" cy="20" r="2.4" fill="#0f2a22" />
-      </svg>
-    </div>
-  );
-}
-
 export function Flyer() {
   const s = useT(flyerStrings);
   const p = useT(productStrings);
@@ -123,6 +65,10 @@ export function Flyer() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("featured");
   const [special, setSpecial] = useState(false);
+  const root = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (root.current) return pauseWhenOffscreen(root.current);
+  }, []);
 
   // Masthead: issue number is the week of the year, dated from this week's Monday.
   const [monday] = useState(() => {
@@ -167,7 +113,7 @@ export function Flyer() {
     });
 
   return (
-    <section className="flyer" id="flyer" data-surface="cream" aria-labelledby="flyer-title">
+    <section className="flyer" ref={root} id="flyer" data-surface="cream" aria-labelledby="flyer-title">
       <CutLine />
       <header className="flyer-head rv">
         <p className="flyer-mast" aria-hidden="true">

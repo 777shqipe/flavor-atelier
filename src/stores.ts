@@ -6,6 +6,8 @@ export type Glyph = "bridge" | "horseshoe" | "cup" | "tram";
 
 export type StoreNotice = {
   type: "temporary_closure";
+  /** The notice stops appearing when the published reopening date begins, in Melbourne time. */
+  expiresAt: string;
   badge: Record<Lang, string>;
   title: Record<Lang, string>;
   dates: Record<Lang, string>;
@@ -78,6 +80,7 @@ export const STORES: Store[] = [
     line: "Johnston St. Grab a coffee, then a bargain.",
     notice: {
       type: "temporary_closure",
+      expiresAt: "2026-10-22T00:00:00+11:00",
       badge: {
         en: "Closed Tue 20 & Wed 21 Oct",
         it: "Chiuso 20–21 Ottobre",
@@ -132,6 +135,11 @@ export const STORES: Store[] = [
   },
 ];
 
+/** Scheduled notices must not keep announcing a closure after their stated reopening. */
+export function currentStoreNotice(store: Store, now = new Date()): StoreNotice | undefined {
+  return store.notice && now.getTime() < Date.parse(store.notice.expiresAt) ? store.notice : undefined;
+}
+
 export const mapsLink = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${address}, Melbourne`)}`;
 
@@ -144,7 +152,7 @@ export function distanceKm(aLat: number, aLon: number, bLat: number, bLon: numbe
   const dLat = (bLat - aLat) * rad;
   const dLon = (bLon - aLon) * rad;
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * rad) * Math.cos(bLat * rad) * Math.sin(dLon / 2) ** 2;
-  return 12742 * Math.asin(Math.sqrt(h));
+  return 12742 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, h))));
 }
 
 export const formatKm = (km: number, locale = "en-AU") => {

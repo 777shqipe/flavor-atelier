@@ -2,17 +2,6 @@
    Every poster is laid out on a fixed-ratio stage measured in cqw, so the
    whole composition scales as a single piece of artwork. */
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 .stack {
   --poster-ratio: 1.739;
 }

@@ -347,7 +347,7 @@ html.ct-lock { overflow: hidden; }
   border-radius: 2px;
 }
 .ct-steps ol::before { right: 12.5%; background: repeating-linear-gradient(90deg, rgb(0 56 42 / 0.22) 0 6px, transparent 6px 11px); }
-.ct-steps ol::after { width: calc(75% * var(--p, 0)); background: var(--green); transition: width 0.6s var(--spring); }
+.ct-steps ol::after { width: 75%; background: var(--green); scale: var(--p, 0) 1; transform-origin: 0 50%; transition: scale 0.6s var(--spring); }
 .ct-steps li { position: relative; z-index: 1; display: grid; justify-items: center; }
 .ct-steps li:nth-child(1) { --tilt: -8deg; }
 .ct-steps li:nth-child(2) { --tilt: 6deg; }

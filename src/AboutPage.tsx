@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { FoodToys } from "./FoodToys";
+import { pauseWhenOffscreen } from "./offscreen";
 import { useT } from "./i18n";
 import { aboutPageStrings } from "./i18n/strings/AboutPage";
 import { Peel } from "./Peel";
@@ -9,9 +11,13 @@ import "./about.css";
 /** Our story up top, the time-machine history, then the supplier side of the business. */
 export function AboutPage({ onContact }: { onContact: () => void }) {
   const s = useT(aboutPageStrings);
+  const hero = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (hero.current) return pauseWhenOffscreen(hero.current);
+  }, []);
   return (
     <main>
-      <section className="page-hero about-hero" data-surface="green" aria-labelledby="about-title">
+      <section className="page-hero about-hero" ref={hero} data-surface="green" aria-labelledby="about-title">
         <div className="aurora" aria-hidden="true" />
         <div className="page-hero-inner">
           <header className="page-head">

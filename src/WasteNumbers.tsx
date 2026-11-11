@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { wasteNumbersStrings } from "./i18n/strings/WasteNumbers";
 import { useT } from "./i18n";
 import { Odometer } from "./Odometer";
+import { pauseWhenOffscreen } from "./offscreen";
 
 /**
  * Why it matters, in four numbers. Eureka Tower fills with binned food as you
@@ -63,13 +64,18 @@ function Tower() {
       return;
     }
     let frame = 0;
+    let previous = "";
     const update = () => {
       frame = 0;
       const box = el.getBoundingClientRect();
       // Empty when its top enters the bottom of the screen, full by the time it reaches the upper third.
       const p = (window.innerHeight * 0.92 - box.top) / (window.innerHeight * 0.62);
       const fill = Math.min(1, Math.max(0, p));
-      el.style.setProperty("--fill", fill.toFixed(3));
+      const value = fill.toFixed(3);
+      if (value !== previous) {
+        previous = value;
+        el.style.setProperty("--fill", value);
+      }
       el.toggleAttribute("data-full", fill >= 0.995);
     };
     const request = () => {
@@ -156,6 +162,10 @@ function Bags({ go }: { go: boolean }) {
 export function WasteNumbers() {
   const s = useT(wasteNumbersStrings);
   const [grid, seen] = useSeen<HTMLDivElement>();
+  useEffect(() => {
+    const el = grid.current?.closest<HTMLElement>(".waste");
+    if (el) return pauseWhenOffscreen(el);
+  }, [grid]);
   // Before the card is seen, each figure shows zeros of the same width, then the digits roll up.
   const figure = (value: string) => (seen ? value : value.replace(/\d/g, "0"));
 
@@ -209,7 +219,7 @@ export function WasteNumbers() {
           </p>
           <p className="wn-text">{s.edible.text}</p>
           <div className="wn-meter" aria-hidden="true">
-            <i style={{ width: seen ? "70%" : "0%" }} />
+            <i style={{ scale: seen ? "1 1" : "0 1" }} />
           </div>
           <Cite source={SOURCES.edible} />
         </article>

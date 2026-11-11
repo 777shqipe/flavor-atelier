@@ -5,6 +5,7 @@ import { LogoMark } from "./Logo";
 import { Odometer } from "./Odometer";
 import { ITEMS } from "./products";
 import { Stamp } from "./Stamp";
+import { pauseWhenOffscreen } from "./offscreen";
 import "./receipt.css";
 
 /**
@@ -68,7 +69,11 @@ export function Receipt() {
     let count = -1;
     let state = "";
     let clock = 0;
-    let started = 0;
+    let elapsed = 0;
+    let previous = 0;
+    let progress = reduce ? 1 : 0;
+    let visible = false;
+    let lastFed = -1;
 
     const measure = () => {
       height = pp.offsetHeight;
@@ -79,10 +84,13 @@ export function Receipt() {
       const t = clamp(progress / 0.8);
       // Feed in small steps, like a thermal printer's stepper motor.
       const fed = Math.round((t * height) / 6) * 6;
-      pp.style.translate = `0 ${Math.max(0, height - fed)}px`;
-      // The roll in the window turns as paper leaves it, and gets a little thinner.
-      spool.style.setProperty("--turn", `${(fed * 1.4).toFixed(0)}deg`);
-      spool.style.setProperty("--left", (1 - t * 0.22).toFixed(3));
+      if (fed !== lastFed) {
+        lastFed = fed;
+        pp.style.translate = `0 ${Math.max(0, height - fed)}px`;
+        // The roll in the window turns as paper leaves it, and gets a little thinner.
+        spool.style.setProperty("--turn", `${(fed * 1.4).toFixed(0)}deg`);
+        spool.style.setProperty("--left", (1 - t * 0.22).toFixed(3));
+      }
       let n = 0;
       for (const end of rowEnds) if (end <= fed) n += 1;
       if (n !== count) {
@@ -101,32 +109,50 @@ export function Receipt() {
     };
 
     const run = (now: number) => {
-      if (!started) started = now;
-      const p = clamp((now - started) / 5200);
-      show(p);
-      clock = p < 1 ? requestAnimationFrame(run) : 0;
+      if (previous) elapsed += Math.min(64, now - previous);
+      previous = now;
+      progress = clamp(elapsed / 5200);
+      show(progress);
+      clock = progress < 1 ? requestAnimationFrame(run) : 0;
+    };
+    const resume = () => {
+      const active = visible && !document.hidden;
+      el.toggleAttribute("data-print-paused", !active);
+      if (!active) {
+        cancelAnimationFrame(clock);
+        clock = 0;
+        previous = 0;
+      } else if (!reduce && progress < 1 && !clock) {
+        clock = requestAnimationFrame(run);
+      }
     };
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || reduce || started || clock) return;
-        clock = requestAnimationFrame(run);
+        visible = entry.isIntersecting;
+        resume();
       },
       { threshold: 0.35 },
     );
 
     measure();
-    show(reduce ? 1 : 0);
+    show(progress);
     io.observe(el);
+    const stopLoops = pauseWhenOffscreen(el);
+    document.addEventListener("visibilitychange", resume);
     // Re-measure on resize; the clock repaints on its own while it runs.
     const ro = new ResizeObserver(() => {
       measure();
-      if (!clock) show(reduce || started ? 1 : 0);
+      lastFed = -1;
+      show(progress);
     });
     ro.observe(el);
     return () => {
       cancelAnimationFrame(clock);
       io.disconnect();
       ro.disconnect();
+      stopLoops();
+      document.removeEventListener("visibilitychange", resume);
+      el.removeAttribute("data-print-paused");
     };
   }, []);
 

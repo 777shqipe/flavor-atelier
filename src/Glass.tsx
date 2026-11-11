@@ -28,24 +28,34 @@ export function Glass({
   const ref = useRef<HTMLDivElement>(null);
   const id = `glass-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [maps, setMaps] = useState<GlassMaps | null>(null);
+  const measured = useRef<{ w: number; h: number; radius: number; bezel: number } | null>(null);
 
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let frame = 0;
     const update = () => {
+      frame = 0;
       const w = el.offsetWidth;
       const h = el.offsetHeight;
       if (!w || !h) return;
-      setMaps((prev) => {
-        if (prev && Math.abs(prev.w - w) < 2 && Math.abs(prev.h - h) < 2) return prev;
-        const r = radius ?? h / 2;
-        return buildGlassMaps(w, h, r, bezel ?? Math.min(24, Math.min(w, h) * 0.42));
-      });
+      const r = radius ?? h / 2;
+      const b = bezel ?? Math.min(24, Math.min(w, h) * 0.42);
+      const prev = measured.current;
+      if (prev && Math.abs(prev.w - w) < 2 && Math.abs(prev.h - h) < 2 && prev.radius === r && prev.bezel === b) return;
+      measured.current = { w, h, radius: r, bezel: b };
+      // Keep the canvas work outside React's state updater, which StrictMode may call twice.
+      setMaps(buildGlassMaps(w, h, r, b));
     };
     update();
-    const observer = new ResizeObserver(update);
+    const observer = new ResizeObserver(() => {
+      if (!frame) frame = requestAnimationFrame(update);
+    });
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, [radius, bezel]);
 
   const vars = {

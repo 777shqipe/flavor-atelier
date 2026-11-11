@@ -227,6 +227,7 @@
   aspect-ratio: 3 / 2;
   border-radius: 5px;
   background: var(--green-700);
+  touch-action: pan-y;
 }
 .sh-window:hover .sh-photo img.active { scale: 1.09; }
 .sh-photo img {

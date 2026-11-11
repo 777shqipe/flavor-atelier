@@ -13,10 +13,25 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; background: var(--cream); }
+html { scrollbar-gutter: stable; }
 img { max-width: 100%; }
 button, input, textarea { font: inherit; }
 button { color: inherit; }
 .app-shell { overflow-x: clip; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Preserve every loop's phase while its section is outside the viewport or the tab is hidden. */
+[data-off], [data-off] *,
+[data-off]::before, [data-off]::after,
+[data-off] *::before, [data-off] *::after { animation-play-state: paused !important; }
+
+.page-loading { display: grid; place-content: center; justify-items: center; gap: 16px; min-height: 75svh; padding: 150px var(--pad) 80px; }
+.page-loading span { font: 600 16px / 1.5 var(--font-sans); }
+html.ct-loading-lock { overflow: hidden; }
+.contact-loading { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: rgb(0 30 20 / 0.8); color: var(--cream); }
+.contact-loading > button { position: absolute; top: 22px; right: 22px; width: 48px; height: 48px; border: 1px solid currentColor; border-radius: 50%; background: var(--cream); color: var(--green); font-size: 28px; cursor: pointer; }
+.navigation-error { position: fixed; z-index: 90; bottom: 24px; left: 50%; translate: -50% 0; display: grid; gap: 12px; max-width: calc(100vw - 32px); padding: 20px; border-radius: 16px; background: var(--cream); color: var(--green); box-shadow: var(--shadow-3); }
+.navigation-error button, .page-loading button { padding: 12px 20px; border: 0; border-radius: 99px; background: var(--green); color: var(--cream); cursor: pointer; }
 
 /* ---------- type hierarchy ------------------------------------------- */
 h1, h2, h3 { margin: 0; font-family: var(--font-serif); font-weight: 400; }
@@ -283,6 +298,8 @@ p { line-height: 1.6; }
 /* ---------- footer ---------------------------------------------------- */
 footer[data-surface="deep"] { position: relative; isolation: isolate; }
 .foot-film { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.pile-placeholder { height: clamp(420px, 40vw, 600px); }
+.pile-placeholder .page-loading { min-height: 100%; padding: 40px var(--pad); }
 .foot-film video,
 .foot-film img { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: brightness(0.6); }
 /* Black grain over a darkened video: a plain alpha blend looks the same as overlay here, and costs the GPU far less

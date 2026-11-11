@@ -23,8 +23,8 @@
 }
 .ts-art,
 .ts-layer { position: absolute; display: block; overflow: visible; }
-.truck-scene[data-paused],
-.truck-scene[data-paused] * { animation-play-state: paused !important; }
+.truck-scene[data-off],
+.truck-scene[data-off] * { animation-play-state: paused !important; }
 
 /* ---------- sky ------------------------------------------------------- */
 .ts-halo { border-radius: 50%; background: radial-gradient(closest-side, rgb(246 181 49 / 0.42), rgb(246 181 49 / 0)); animation: ts-breathe 5s ease-in-out infinite alternate; }

@@ -1,4 +1,5 @@
 import {
+  memo,
   useCallback,
   useEffect,
   useRef,
@@ -135,7 +136,7 @@ const LAST = STEPS.length - 1;
  * once done it peels off from the bottom-right corner and flies away, leaving
  * its outline on the liner with a tick. The CSS drives it all from data-state.
  */
-function StepSticker({ art, id }: { art: StepStickerArt; id: string }) {
+const StepSticker = memo(function StepSticker({ art, id }: { art: StepStickerArt; id: string }) {
   const turn = art.turn ? `rotate(${art.turn} 50 50)` : undefined;
   return (
     <span className="ct-sticker" aria-hidden="true">
@@ -178,7 +179,7 @@ function StepSticker({ art, id }: { art: StepStickerArt; id: string }) {
       </span>
     </span>
   );
-}
+});
 
 type Fields = {
   name: string;
@@ -194,7 +195,7 @@ type Errors = Partial<Record<"name" | "email" | "message", boolean>>;
 
 const EMPTY: Fields = { name: "", email: "", phone: "", message: "", volume: "", store: "" };
 
-const emailOk = (value: string) => /^\S+@\S+\.\S+$/.test(value);
+const emailOk = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 /** What blocks leaving a step; only details (message) and reply-to (name, email) have rules. */
 function check(step: number, values: Fields): Errors {
@@ -208,7 +209,7 @@ function check(step: number, values: Fields): Errors {
 }
 
 /** Bulldog clip that holds the contact sheet: brushed steel plate, wire lever, two rivets. */
-function Clip({ className = "" }: { className?: string }) {
+const Clip = memo(function Clip({ className = "" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 200 84" aria-hidden="true">
       <defs>
@@ -234,7 +235,7 @@ function Clip({ className = "" }: { className?: string }) {
       </g>
     </svg>
   );
-}
+});
 
 /** Little illustrated stickers for the three desks: boxes on a pallet, a shopfront, a chat bubble. */
 function TopicIcon({ id }: { id: Topic }) {
@@ -282,17 +283,29 @@ function TopicIcon({ id }: { id: Topic }) {
 const STICKERS = [{ look: "sun" }, { look: "lilac" }, { look: "star" }, { look: "tomato" }] as const;
 
 /** One supplier perk as a foil sticker: the shine follows the pointer, a click peels it back to show a note. */
-function Sticker({ item, index }: { item: (typeof STICKERS)[number]; index: number }) {
+const Sticker = memo(function Sticker({ item, index }: { item: (typeof STICKERS)[number]; index: number }) {
   const s = useT(contactPanelStrings);
   const text = s.stickers[item.look];
   const [peeled, setPeeled] = useState(false);
+  const shineFrame = useRef(0);
+  const point = useRef({ x: 0, y: 0 });
+  useEffect(() => () => cancelAnimationFrame(shineFrame.current), []);
 
   const shine = (event: ReactPointerEvent<HTMLLIElement>) => {
-    const box = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty("--mx", ((event.clientX - box.left) / box.width).toFixed(3));
-    event.currentTarget.style.setProperty("--my", ((event.clientY - box.top) / box.height).toFixed(3));
+    const el = event.currentTarget;
+    point.current = { x: event.clientX, y: event.clientY };
+    if (shineFrame.current) return;
+    shineFrame.current = requestAnimationFrame(() => {
+      shineFrame.current = 0;
+      const box = el.getBoundingClientRect();
+      if (!box.width || !box.height) return;
+      el.style.setProperty("--mx", ((point.current.x - box.left) / box.width).toFixed(3));
+      el.style.setProperty("--my", ((point.current.y - box.top) / box.height).toFixed(3));
+    });
   };
   const rest = (event: ReactPointerEvent<HTMLLIElement>) => {
+    cancelAnimationFrame(shineFrame.current);
+    shineFrame.current = 0;
     event.currentTarget.style.removeProperty("--mx");
     event.currentTarget.style.removeProperty("--my");
   };
@@ -346,7 +359,7 @@ function Sticker({ item, index }: { item: (typeof STICKERS)[number]; index: numb
       </button>
     </li>
   );
-}
+});
 
 export function ContactPanel({
   open,
@@ -367,6 +380,8 @@ export function ContactPanel({
   const thanks = useRef<HTMLHeadingElement>(null);
   const sentRef = useRef(false);
   const advance = useRef(0);
+  const focusStep = useRef(0);
+  const againFrame = useRef(0);
   const [values, setValues] = useState<Fields>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
   const [sent, setSent] = useState(false);
@@ -375,7 +390,7 @@ export function ContactPanel({
   const [dir, setDir] = useState(1);
   const [seenTopic, setSeenTopic] = useState(topic);
   const [docketNo] = useState(() => String(1995 + Math.floor(Math.random() * 7900)).padStart(4, "0"));
-  const status = useOpenStatus();
+  const status = useOpenStatus(open);
 
   const s = useT(contactPanelStrings);
   const { lang } = useLang();
@@ -387,13 +402,21 @@ export function ContactPanel({
   if (topic !== seenTopic) {
     setSeenTopic(topic);
     setStep(0);
+    setReached(0);
+    setErrors({});
+    setSent(false);
+    setValues((v) => ({ ...v, volume: "", store: "" }));
   }
 
   useEffect(() => {
     sentRef.current = sent;
   }, [sent]);
 
-  useEffect(() => () => window.clearTimeout(advance.current), []);
+  useEffect(() => () => {
+    window.clearTimeout(advance.current);
+    window.clearTimeout(focusStep.current);
+    cancelAnimationFrame(againFrame.current);
+  }, []);
 
   const resetSheet = useCallback(() => {
     setValues((v) => ({ ...EMPTY, name: v.name, email: v.email }));
@@ -412,20 +435,22 @@ export function ContactPanel({
     }, 80);
     const onKey = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
         onClose();
         return;
       }
       if (event.key !== "Tab" || !panel.current) return;
       const nodes = [...panel.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), textarea, input, select")].filter(
-        (el) => !el.hasAttribute("disabled") && el.offsetParent !== null,
+        (el) => !el.hasAttribute("disabled") && el.tabIndex >= 0 && el.offsetParent !== null,
       );
       const first = nodes[0];
       const last = nodes[nodes.length - 1];
       if (!first || !last) return;
-      if (event.shiftKey && (document.activeElement === first || document.activeElement === panel.current)) {
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === panel.current || !panel.current.contains(document.activeElement))) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && (document.activeElement === last || !panel.current.contains(document.activeElement))) {
         event.preventDefault();
         first.focus();
       }
@@ -433,6 +458,9 @@ export function ContactPanel({
     window.addEventListener("keydown", onKey);
     return () => {
       window.clearTimeout(focus);
+      window.clearTimeout(advance.current);
+      window.clearTimeout(focusStep.current);
+      cancelAnimationFrame(againFrame.current);
       document.documentElement.classList.remove("ct-lock");
       window.removeEventListener("keydown", onKey);
       back?.focus?.({ preventScroll: true });
@@ -454,11 +482,12 @@ export function ContactPanel({
   /** Show a step, with any problems found, and focus the first one (or the step's heading). */
   const land = (to: number, found: Errors = {}) => {
     window.clearTimeout(advance.current);
+    window.clearTimeout(focusStep.current);
     setErrors(found);
     setDir(to >= step ? 1 : -1);
     setStep(to);
     setReached((r) => Math.max(r, to));
-    window.setTimeout(() => {
+    focusStep.current = window.setTimeout(() => {
       const invalid = found.message ? messageInput : found.name ? nameInput : found.email ? emailInput : stepHead;
       invalid.current?.focus({ preventScroll: true });
     }, 60);
@@ -474,9 +503,10 @@ export function ContactPanel({
   };
 
   const pickTopic = (next: Topic) => {
+    window.clearTimeout(advance.current);
     if (sent) resetSheet();
     // Clear only the topic-specific extras, keep name/email/message.
-    setValues((v) => ({ ...v, volume: "", store: "" }));
+    if (next !== topic) setValues((v) => ({ ...v, volume: "", store: "" }));
     setSeenTopic(next);
     onTopic(next);
   };
@@ -484,7 +514,7 @@ export function ContactPanel({
   const addSuggestion = (text: string) => {
     setValues((v) => {
       if (!v.message.trim()) return { ...v, message: `${text} — ` };
-      if (v.message.includes(text)) return v;
+      if (v.message.toLocaleLowerCase().includes(text.toLocaleLowerCase())) return v;
       return { ...v, message: `${v.message.trim()} ${text.toLowerCase()} ` };
     });
     if (errors.message) setErrors((e) => ({ ...e, message: undefined }));
@@ -526,12 +556,13 @@ export function ContactPanel({
       if (Object.keys(found).length) return land(i, found);
     }
     setSent(true);
-    window.setTimeout(() => thanks.current?.focus({ preventScroll: true }), 40);
+    window.clearTimeout(focusStep.current);
+    focusStep.current = window.setTimeout(() => thanks.current?.focus({ preventScroll: true }), 40);
   };
 
   const again = () => {
     resetSheet();
-    window.requestAnimationFrame(() => panel.current?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]')?.focus({ preventScroll: true }));
+    againFrame.current = window.requestAnimationFrame(() => panel.current?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]')?.focus({ preventScroll: true }));
   };
 
   const first = values.name.trim().split(/\s+/)[0];
@@ -540,7 +571,7 @@ export function ContactPanel({
   const nextLabel = step < LAST ? s.nextStep(s.steps[STEPS[step + 1]]) : s.send;
 
   return (
-    <div className="ct" data-open={open || undefined}>
+    <div className="ct" data-open={open || undefined} inert={!open} aria-hidden={!open}>
       <div className="ct-scrim" onClick={onClose} />
       <div
         className="ct-dialog"

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useLang, useT } from "./i18n";
 import { instaShelfStrings } from "./i18n/strings/InstaShelf";
-import { CutLine } from "./Flyer";
+import { CutLine } from "./CutLine";
 import { LogoMark } from "./Logo";
 import { Peel } from "./Peel";
-import { useInstagramFeed, type InstagramFeedData, type QaItemData } from "./useInstagramFeed";
+import { useInstagramFeed, type InstagramFeedData } from "./useInstagramFeed";
+import { pauseWhenOffscreen } from "./offscreen";
 import "./insta.css";
 
 const PROFILE = "https://www.instagram.com/cheaperbuymiles/";
@@ -313,18 +314,29 @@ export function InstaShelf() {
   const postDay = (iso: string) => shortDay(new Date(`${iso}T12:00`));
 
   const { feed } = useInstagramFeed(FALLBACK_FEED);
-  const [activeQaIndex, setActiveQaIndex] = useState(0);
+  const [activeQaId, setActiveQaId] = useState("");
+  const head = useRef<HTMLElement>(null);
+  useEffect(() => head.current ? pauseWhenOffscreen(head.current) : undefined, []);
 
   // Issue number is the week of the year, dated from this week's Monday. Same count the flyer uses.
   const [today] = useState(() => new Date());
   const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
   const issue = Math.ceil(((+monday - +new Date(monday.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
 
-  const activeQa: QaItemData = feed.qa[activeQaIndex] || feed.qa[0];
+  const activeQaIndex = Math.max(0, feed.qa.findIndex((item) => item.id === activeQaId));
+  const activeQa = feed.qa[activeQaIndex];
+  const onQaKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    const delta = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+    if (!delta && event.key !== "Home" && event.key !== "End") return;
+    event.preventDefault();
+    const next = event.key === "Home" ? 0 : event.key === "End" ? feed.qa.length - 1 : (activeQaIndex + delta + feed.qa.length) % feed.qa.length;
+    setActiveQaId(feed.qa[next].id);
+    event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
+  };
 
   return (
     <section className="ig-shelf" id="instagram" data-surface="cream" aria-labelledby="ig-title">
-      <header className="ig-head rv">
+      <header className="ig-head rv" ref={head}>
         <div className="ig-mast" aria-hidden="true">
           <CutLine className="ig-cut" />
           <span>{s.issue(issue)}</span>
@@ -369,7 +381,7 @@ export function InstaShelf() {
               <li key={post.id}>
                 <a className="ig-card ig-food" href={post.href} target="_blank" rel="noopener noreferrer">
                   <figure>
-                    <img src={post.img} alt="" width={800} height={800} decoding="async" />
+                    <img src={post.img} alt="" width={800} height={800} loading="lazy" decoding="async" />
                     <span className="ig-price">{post.price}</span>
                   </figure>
                   <div className="ig-copy">
@@ -392,7 +404,7 @@ export function InstaShelf() {
             {feed.peoplePosts.map((post) => (
               <a key={post.id} className="ig-card ig-reel" href={post.href} target="_blank" rel="noopener noreferrer">
                 <figure>
-                  <img src={post.img} alt="" width={800} height={640} decoding="async" />
+                  <img src={post.img} alt="" width={800} height={640} loading="lazy" decoding="async" />
                   <span className="ig-play" aria-hidden="true">
                     <svg viewBox="0 0 12 12"><path d="M3.2 1.8v8.4L10.2 6z" /></svg>
                     {post.duration}
@@ -409,7 +421,7 @@ export function InstaShelf() {
         </section>
       </div>
 
-      <section className="ig-qa-shelf" aria-labelledby="ig-qa-title">
+      {activeQa && <section className="ig-qa-shelf" aria-labelledby="ig-qa-title">
         <div className="ig-qa-card">
           <div className="ig-qa-header">
             <div className="ig-qa-brand">
@@ -429,15 +441,18 @@ export function InstaShelf() {
             <p className="ig-qa-dek">{s.qaDek}</p>
           </div>
 
-          <div className="ig-qa-tabs" role="tablist">
+          <div className="ig-qa-tabs" role="tablist" aria-labelledby="ig-qa-title" onKeyDown={onQaKey}>
             {feed.qa.map((qaItem, idx) => (
               <button
                 key={qaItem.id}
                 type="button"
                 role="tab"
+                id={`ig-qa-tab-${qaItem.id}`}
                 aria-selected={idx === activeQaIndex}
+                aria-controls="ig-qa-panel"
+                tabIndex={idx === activeQaIndex ? 0 : -1}
                 className={idx === activeQaIndex ? "active" : undefined}
-                onClick={() => setActiveQaIndex(idx)}
+                onClick={() => setActiveQaId(qaItem.id)}
               >
                 <span className="ig-qa-tab-tag">{qaItem.tag[lang]}</span>
                 <span className="ig-qa-tab-label">{qaItem.question[lang]}</span>
@@ -445,7 +460,7 @@ export function InstaShelf() {
             ))}
           </div>
 
-          <div className="ig-qa-stage">
+          <div className="ig-qa-stage" id="ig-qa-panel" role="tabpanel" aria-labelledby={`ig-qa-tab-${activeQa.id}`} tabIndex={0}>
             <div className="ig-qa-bubble-box">
               <div className="ig-qa-question-bubble">
                 <span className="ig-qa-asker-badge">
@@ -472,7 +487,7 @@ export function InstaShelf() {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
     </section>
   );
 }

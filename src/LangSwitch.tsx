@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { LANGS, LANG_NAMES, HTML_LANG, useLang, type Lang } from "./i18n";
 import "./langswitch.css";
 
@@ -13,6 +13,11 @@ export function LangSwitch({ variant, className = "", tabIndex }: { variant: "me
   const { lang, setLang } = useLang();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const frame = useRef(0);
+  const id = useId();
+
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   useEffect(() => {
     if (!open) return;
@@ -20,7 +25,10 @@ export function LangSwitch({ variant, className = "", tabIndex }: { variant: "me
       if (!root.current?.contains(event.target as Node)) setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        if (root.current?.contains(document.activeElement)) trigger.current?.focus({ preventScroll: true });
+      }
     };
     window.addEventListener("pointerdown", onPointer);
     window.addEventListener("keydown", onKey);
@@ -40,6 +48,7 @@ export function LangSwitch({ variant, className = "", tabIndex }: { variant: "me
       onClick={() => {
         setLang(code);
         setOpen(false);
+        if (variant === "menu") trigger.current?.focus({ preventScroll: true });
       }}
     >
       {LANG_NAMES[code]}
@@ -55,13 +64,30 @@ export function LangSwitch({ variant, className = "", tabIndex }: { variant: "me
   }
 
   return (
-    <div className={`lang lang-menu ${className}`} ref={root}>
+    <div className={`lang lang-menu ${className}`} ref={root}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false);
+      }}
+      onKeyDown={(event) => {
+        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        const buttons = [...(root.current?.querySelectorAll<HTMLButtonElement>(".lang-pop button") ?? [])];
+        const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+        const next = event.key === "Home" ? 0 : event.key === "End" ? LANGS.length - 1
+          : index < 0 ? (event.key === "ArrowUp" ? LANGS.length - 1 : 0)
+          : (index + (event.key === "ArrowUp" ? -1 : 1) + LANGS.length) % LANGS.length;
+        setOpen(true);
+        cancelAnimationFrame(frame.current);
+        frame.current = requestAnimationFrame(() => root.current?.querySelectorAll<HTMLButtonElement>(".lang-pop button")[next]?.focus());
+      }}>
       <button
+        ref={trigger}
         className="lang-btn"
         type="button"
         lang={HTML_LANG[lang]}
         aria-haspopup="true"
         aria-expanded={open}
+        aria-controls={open ? id : undefined}
         aria-label={`Language: ${LANG_NAMES[lang]}`}
         onClick={() => setOpen((value) => !value)}
       >
@@ -71,7 +97,7 @@ export function LangSwitch({ variant, className = "", tabIndex }: { variant: "me
         </svg>
       </button>
       {open && (
-        <div className="lang-pop" role="group" aria-label="Language · Ngôn ngữ · 语言 · Lingua · 言語">
+        <div className="lang-pop" id={id} role="group" aria-label="Language · Ngôn ngữ · 语言 · Lingua · 言語">
           {options}
         </div>
       )}

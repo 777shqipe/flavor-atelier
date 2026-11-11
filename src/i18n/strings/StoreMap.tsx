@@ -21,6 +21,8 @@ export const storeMapStrings = defineStrings({
     north: "N",
     findNearest: "Find my nearest",
     locating: "Locating…",
+    mapUnavailable: "The map couldn’t load. Store details are still available below.",
+    retry: "Try again",
     nearest: (name: string, km: string) => (
       <>
         Nearest: <b>{name}</b> · {km} away
@@ -52,6 +54,8 @@ export const storeMapStrings = defineStrings({
     north: "B",
     findNearest: "Tìm cửa hàng gần nhất",
     locating: "Đang định vị…",
+    mapUnavailable: "Không tải được bản đồ. Thông tin cửa hàng vẫn có ở bên dưới.",
+    retry: "Thử lại",
     nearest: (name, km) => (
       <>
         Gần nhất: <b>{name}</b> · cách {km}
@@ -83,6 +87,8 @@ export const storeMapStrings = defineStrings({
     north: "北",
     findNearest: "找最近的门店",
     locating: "定位中……",
+    mapUnavailable: "地图暂时无法加载，下方仍可查看门店信息。",
+    retry: "重试",
     nearest: (name, km) => (
       <>
         最近的门店：<b>{name}</b> · 距你 {km}
@@ -114,6 +120,8 @@ export const storeMapStrings = defineStrings({
     north: "N",
     findNearest: "Trova il più vicino",
     locating: "Ti sto localizzando…",
+    mapUnavailable: "La mappa non si è caricata. I dettagli dei negozi restano disponibili qui sotto.",
+    retry: "Riprova",
     nearest: (name, km) => (
       <>
         Il più vicino: <b>{name}</b> · a {km}
@@ -145,6 +153,8 @@ export const storeMapStrings = defineStrings({
     north: "北",
     findNearest: "最寄りの店舗を探す",
     locating: "現在地を確認中…",
+    mapUnavailable: "地図を読み込めませんでした。下の店舗情報は引き続きご覧いただけます。",
+    retry: "再試行",
     nearest: (name, km) => (
       <>
         最寄り：<b>{name}</b> · {km}先

@@ -1,6 +1,6 @@
 import { defineStrings } from "..";
 
-/** The weekly flyer page, and the cut line above it (the home page shows that line too). */
+/** The optional weekly flyer page. */
 export const flyerStrings = defineStrings({
   en: {
     issue: (n: number) => `No. ${n}`,
@@ -31,7 +31,6 @@ export const flyerStrings = defineStrings({
     emptyTitle: "Nothing on this shelf.",
     emptyBody: "Stock moves fast. Try another aisle or clear the filters.",
     showAll: "Show everything",
-    cut: "Cut along the line. Keep the savings.",
   },
   vi: {
     issue: (n) => `Số ${n}`,
@@ -59,7 +58,6 @@ export const flyerStrings = defineStrings({
     emptyTitle: "Kệ này hết sạch rồi.",
     emptyBody: "Hàng bán nhanh lắm. Thử quầy khác hoặc xóa bộ lọc nhé.",
     showAll: "Xem tất cả",
-    cut: "Cắt theo đường kẻ. Bỏ túi tiền tiết kiệm.",
   },
   zh: {
     issue: (n) => `第 ${n} 期`,
@@ -87,7 +85,6 @@ export const flyerStrings = defineStrings({
     emptyTitle: "这个货架空了。",
     emptyBody: "货卖得很快。换个货架看看，或者清除筛选。",
     showAll: "查看全部",
-    cut: "沿虚线剪开，留住省下的钱。",
   },
   it: {
     issue: (n) => `N° ${n}`,
@@ -115,7 +112,6 @@ export const flyerStrings = defineStrings({
     emptyTitle: "Niente su questo scaffale.",
     emptyBody: "La merce va via in fretta. Prova un’altra corsia o azzera i filtri.",
     showAll: "Mostra tutto",
-    cut: "Taglia lungo la linea. Tieni il risparmio.",
   },
   ja: {
     issue: (n) => `第${n}号`,
@@ -143,6 +139,5 @@ export const flyerStrings = defineStrings({
     emptyTitle: "この棚は空っぽです。",
     emptyBody: "入れ替わりが早いんです。ほかの売り場を見るか、絞り込みを外してみてください。",
     showAll: "すべて表示",
-    cut: "点線で切り取って、お得はしっかりキープ。",
   },
 });

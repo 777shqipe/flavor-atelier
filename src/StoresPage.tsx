@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { RingBadge } from "./RingBadge";
 import { StoreMap } from "./StoreMap";
-import { STORES, directionsLink, distanceKm, formatKm } from "./stores";
+import { STORES, currentStoreNotice, directionsLink, distanceKm, formatKm } from "./stores";
 import { useOpenStatus } from "./useOpenStatus";
 import { useLang, useT } from "./i18n";
 import { storeStrings } from "./i18n/strings/Stores";
@@ -29,7 +29,8 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
   // Remember the previous photo so the new one can wipe in over it.
   const [pair, setPair] = useState({ cur: active, before: -1 });
   const [peek, setPeek] = useState(false);
-  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const swipeStart = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const page = useRef<HTMLElement>(null);
   if (pair.cur !== active) setPair({ cur: active, before: pair.cur });
 
   const go = (direction: number) => onSelect((active + direction + STORES.length) % STORES.length);
@@ -37,11 +38,15 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
-      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-      if (target?.closest(".leaflet-container")) return;
+      if (event.defaultPrevented || page.current?.closest("[inert]")) return;
+      if (target?.closest("input, textarea, select, [role='dialog'], .leaflet-container") || target?.isContentEditable) return;
+      const picks = target?.closest(".sh-picks");
+      if (!picks && target?.closest("a, button, [role='menu']")) return;
+      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft" && !(picks && (event.key === "Home" || event.key === "End"))) return;
       event.preventDefault();
-      onSelect((active + (event.key === "ArrowRight" ? 1 : -1) + STORES.length) % STORES.length);
+      const next = event.key === "Home" ? 0 : event.key === "End" ? STORES.length - 1 : (active + (event.key === "ArrowRight" ? 1 : -1) + STORES.length) % STORES.length;
+      onSelect(next);
+      picks?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -49,12 +54,14 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
 
 
   const onPhotoDown = (event: PointerEvent<HTMLDivElement>) => {
-    swipeStart.current = { x: event.clientX, y: event.clientY };
+    if (!event.isPrimary || event.button !== 0) return;
+    swipeStart.current = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    event.currentTarget.setPointerCapture(event.pointerId);
   };
   const onPhotoUp = (event: PointerEvent<HTMLDivElement>) => {
     const start = swipeStart.current;
+    if (!start || start.pointerId !== event.pointerId) return;
     swipeStart.current = null;
-    if (!start) return;
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
     if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.25) {
@@ -63,8 +70,12 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
       setPeek((p) => !p);
     }
   };
+  const cancelSwipe = (event: PointerEvent<HTMLDivElement>) => {
+    if (swipeStart.current?.pointerId === event.pointerId) swipeStart.current = null;
+  };
 
   const store = STORES[active];
+  const notice = currentStoreNotice(store);
   const nearest = STORES.map((other) => ({ other, km: distanceKm(store.lat, store.lon, other.lat, other.lon) }))
     .filter(({ other }) => other !== store)
     .sort((a, b) => a.km - b.km)[0];
@@ -74,7 +85,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
   // four picks underneath.
   return (
     <main>
-      <section className="stores-hero" data-surface="paper" aria-labelledby="stores-title">
+      <section className="stores-hero" ref={page} data-surface="paper" aria-labelledby="stores-title">
         <div className="parchment" aria-hidden="true" />
         <div className="sh">
           <header className="sh-head">
@@ -84,7 +95,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
             </div>
           </header>
 
-          <article className="sh-facts" style={{ "--c": store.color } as CSSProperties}>
+          <article className="sh-facts" id="store-details" role="tabpanel" aria-labelledby={`store-tab-${store.id}`} tabIndex={0} style={{ "--c": store.color } as CSSProperties}>
             <h2 className="sh-name" key={store.id} aria-label={store.name} aria-live="polite">
               {[...store.name].map((letter, index) => (
                 <span key={index} aria-hidden="true" style={{ "--i": index } as CSSProperties}>
@@ -95,21 +106,21 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
             <p className="sh-line" key={`line-${store.id}`}>
               {shared.lines[store.id]}
             </p>
-            {store.notice && (
+            {notice && (
               <div className="sh-notice" role="alert" key={`notice-${store.id}`}>
                 <div className="sh-notice-head">
                   <span className="sh-notice-badge">
                     <i aria-hidden="true" />
-                    {store.notice.badge[lang]}
+                    {notice.badge[lang]}
                   </span>
-                  <span className="sh-notice-dates">{store.notice.dates[lang]}</span>
+                  <span className="sh-notice-dates">{notice.dates[lang]}</span>
                 </div>
-                <strong className="sh-notice-title">{store.notice.title[lang]}</strong>
-                <p className="sh-notice-body">{store.notice.desc[lang]}</p>
+                <strong className="sh-notice-title">{notice.title[lang]}</strong>
+                <p className="sh-notice-body">{notice.desc[lang]}</p>
                 <div className="sh-notice-foot">
-                  <span className="sh-notice-reopen">{store.notice.reopen[lang]}</span>
-                  {store.notice.postUrl && (
-                    <a href={store.notice.postUrl} target="_blank" rel="noopener noreferrer" className="sh-notice-link">
+                  <span className="sh-notice-reopen">{notice.reopen[lang]}</span>
+                  {notice.postUrl && (
+                    <a href={notice.postUrl} target="_blank" rel="noopener noreferrer" className="sh-notice-link">
                       {lang === "it" ? "Post Instagram ↗" : "Instagram post ↗"}
                     </a>
                   )}
@@ -155,7 +166,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                 data-peek={peek || undefined}
                 style={{ "--c": store.color } as CSSProperties}
               >
-                <div className="sh-photo" onPointerDown={onPhotoDown} onPointerUp={onPhotoUp}>
+                <div className="sh-photo" onPointerDown={onPhotoDown} onPointerUp={onPhotoUp} onPointerCancel={cancelSwipe} onLostPointerCapture={cancelSwipe}>
                   {STORES.map((item, index) => (
                     <img
                       key={item.id}
@@ -164,6 +175,7 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                       alt={index === active ? s.storefront(item.name) : ""}
                       style={{ objectPosition: item.pos }}
                       draggable={false}
+                      decoding="async"
                     />
                   ))}
                   <span className="sh-blind" aria-hidden="true">
@@ -208,16 +220,18 @@ export function StoresPage({ active, onSelect }: { active: number; onSelect: (in
                 key={item.id}
                 type="button"
                 role="tab"
+                id={`store-tab-${item.id}`}
+                aria-controls="store-details"
                 aria-selected={index === active}
                 tabIndex={index === active ? 0 : -1}
                 style={{ "--c": item.color, "--i": index } as CSSProperties}
                 onClick={() => onSelect(index)}
               >
-                <img src={item.src} alt="" style={{ objectPosition: item.pos }} />
+                <img src={item.src} alt="" loading="lazy" decoding="async" width={84} height={62} style={{ objectPosition: item.pos }} />
                 <span className="pick-text">
                   <small>0{index + 1}</small>
                   <b>{item.name}</b>
-                  {item.notice && <span className="pick-notice-dot" title={item.notice.badge[lang]} aria-hidden="true" />}
+                  {currentStoreNotice(item) && <span className="pick-notice-dot" title={currentStoreNotice(item)?.badge[lang]} aria-hidden="true" />}
                 </span>
               </button>
             ))}

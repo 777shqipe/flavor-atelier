@@ -2,9 +2,9 @@
 /**
  * scripts/sync-instagram.mjs
  *
- * Automated Instagram Feed Listener / Sync Service for @cheaperbuymiles.
- * Checks Instagram for latest posts, store updates, and video reels,
- * updating public/data/instagram-feed.json.
+ * Checks metadata for the curated Instagram links already in the feed.
+ * This does not discover new posts or update their content. lastChecked is
+ * advanced only when every reference check succeeds.
  *
  * Can be run locally via `npm run sync:instagram` or automatically
  * on a schedule via GitHub Actions cron.
@@ -20,6 +20,7 @@ const FEED_PATH = path.resolve(__dirname, "../public/data/instagram-feed.json");
 async function fetchPostOgMetadata(url) {
   try {
     const res = await fetch(url, {
+      signal: AbortSignal.timeout(10_000),
       headers: {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
@@ -30,8 +31,11 @@ async function fetchPostOgMetadata(url) {
     const descMatch = html.match(/property="og:description"\s+content="([^"]+)"/) || html.match(/content="([^"]+)"\s+property="og:description"/);
     const imageMatch = html.match(/property="og:image"\s+content="([^"]+)"/) || html.match(/content="([^"]+)"\s+property="og:image"/);
 
+    const title = titleMatch?.[1].replace(/&amp;/g, "&").trim();
+    // Instagram can return a generic login/landing page with HTTP 200.
+    if (!title || /^(instagram|login|log in|sign up)(?:\s*[·•|–-]\s*instagram)?$/i.test(title)) return null;
     return {
-      title: titleMatch ? titleMatch[1].replace(/&amp;/g, "&") : null,
+      title,
       description: descMatch ? descMatch[1].replace(/&amp;/g, "&") : null,
       image: imageMatch ? imageMatch[1].replace(/&amp;/g, "&") : null,
     };
@@ -48,29 +52,32 @@ async function sync() {
     process.exit(1);
   }
 
-  const feed = JSON.parse(fs.readFileSync(FEED_PATH, "utf-8"));
+  const original = fs.readFileSync(FEED_PATH, "utf-8");
+  const feed = JSON.parse(original);
+  const urls = [...new Set([feed.storeNotice?.href, ...(feed.peoplePosts ?? []).map((post) => post.href)].filter(Boolean))];
+  if (!urls.length) {
+    console.error("[sync-instagram] No references to verify; feed and timestamp left unchanged.");
+    process.exitCode = 1;
+    return;
+  }
+  const checks = await Promise.all(urls.map(async (url) => ({ url, metadata: await fetchPostOgMetadata(url) })));
+  const failed = checks.filter(({ metadata }) => !metadata);
+  if (failed.length) {
+    console.error(`[sync-instagram] ${failed.length}/${checks.length} reference checks failed; feed and timestamp left unchanged.`);
+    process.exitCode = 1;
+    return;
+  }
+  // Avoid overwriting an editor's changes made while the network checks were running.
+  if (fs.readFileSync(FEED_PATH, "utf-8") !== original) throw new Error("Feed changed during verification; no data was written.");
   feed.lastChecked = new Date().toISOString();
-
-  console.log(`[sync-instagram] Checking active store notice (${feed.storeNotice?.href})...`);
-  if (feed.storeNotice?.href) {
-    const meta = await fetchPostOgMetadata(feed.storeNotice.href);
-    if (meta?.title) {
-      console.log("[sync-instagram] Verified store notice post online:", meta.title.slice(0, 50));
-    }
+  const temporary = `${FEED_PATH}.${process.pid}.tmp`;
+  try {
+    fs.writeFileSync(temporary, JSON.stringify(feed, null, 2) + "\n", "utf-8");
+    fs.renameSync(temporary, FEED_PATH);
+  } finally {
+    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
   }
-
-  console.log(`[sync-instagram] Checking ${feed.peoplePosts?.length ?? 0} team video reels...`);
-  for (const post of feed.peoplePosts ?? []) {
-    if (post.href) {
-      const meta = await fetchPostOgMetadata(post.href);
-      if (meta?.title) {
-        console.log(`[sync-instagram] Verified reel [${post.id}]:`, meta.title.slice(0, 50));
-      }
-    }
-  }
-
-  fs.writeFileSync(FEED_PATH, JSON.stringify(feed, null, 2) + "\n", "utf-8");
-  console.log("[sync-instagram] Successfully synced feed! Updated timestamp:", feed.lastChecked);
+  console.log(`[sync-instagram] Verified ${checks.length} existing references. No post content was changed. Checked at:`, feed.lastChecked);
 }
 
 sync().catch((err) => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { memo, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { gap, useLang, useT } from "./i18n";
 import { palletDockStrings } from "./i18n/strings/PalletDock";
 import { Odometer } from "./Odometer";
@@ -36,7 +36,7 @@ function hintFor(value: DockValue, count: number) {
 /* ---------- the drawings ------------------------------------------------- */
 
 /** The prime mover, nose to the left: sleeper cab, stack, mirror. The wheels are HTML, so the cab can sit on its springs. */
-function Cab() {
+const Cab = memo(function Cab() {
   return (
     <svg className="pd-cab-art" viewBox="0 0 64 78" aria-hidden="true">
       <rect x="52" y="4" width="5" height="34" rx="2" fill="#5b6a63" />
@@ -50,10 +50,10 @@ function Cab() {
       <rect x="2" y="30" width="4" height="9" rx="1" fill="#17140c" />
     </svg>
   );
-}
+});
 
 /** A forklift, forks to the left, with its driver. Wheels are HTML so they can spin on the compositor. */
-function Forklift() {
+const Forklift = memo(function Forklift() {
   return (
     <svg className="pd-fl-art" viewBox="0 0 80 64" aria-hidden="true">
       <path d="M2 50h20" stroke="#17140c" strokeWidth="3.2" strokeLinecap="round" />
@@ -67,7 +67,7 @@ function Forklift() {
       <rect x="33" y="26" width="18" height="5" rx="2" fill="#17140c" />
     </svg>
   );
-}
+});
 
 /* ---------- the dock ----------------------------------------------------- */
 
@@ -109,11 +109,26 @@ export function PalletDock({ value, onChange }: { value: DockValue; onChange: (v
 
   // Hover shows what a click would load: ghost pallets up to the pointer and the number on a little tag.
   const [preview, setPreview] = useState<{ n: number; x: number } | null>(null);
+  const hoverFrame = useRef(0);
+  const hoverX = useRef(0);
+  const clearPreview = () => {
+    cancelAnimationFrame(hoverFrame.current);
+    hoverFrame.current = 0;
+    setPreview(null);
+  };
+  useEffect(() => () => cancelAnimationFrame(hoverFrame.current), []);
   const onHover = (event: PointerEvent<HTMLInputElement>) => {
     if (event.pointerType !== "mouse" || unsure) return;
-    const box = event.currentTarget.getBoundingClientRect();
-    const x = Math.min(Math.max(event.clientX - box.left, 0), box.width);
-    setPreview({ n: Math.round((x / box.width) * OVER), x });
+    const input = event.currentTarget;
+    hoverX.current = event.clientX;
+    if (hoverFrame.current) return;
+    hoverFrame.current = requestAnimationFrame(() => {
+      hoverFrame.current = 0;
+      const box = input.getBoundingClientRect();
+      if (!box.width) return;
+      const x = Math.min(Math.max(hoverX.current - box.left, 0), box.width);
+      setPreview({ n: Math.round((x / box.width) * OVER), x });
+    });
   };
 
   const hint = hintFor(value, count);
@@ -146,15 +161,15 @@ export function PalletDock({ value, onChange }: { value: DockValue; onChange: (v
         </p>
       </div>
 
-      <div className="pd-scene" aria-hidden="true" style={{ "--load": Math.min(count, FULL) / FULL } as CSSProperties}>
-        <div className="pd-wall">
+      <div className="pd-scene" style={{ "--load": Math.min(count, FULL) / FULL } as CSSProperties}>
+        <div className="pd-wall" aria-hidden="true">
           <span className="pd-door" />
           <span className="pd-sign">CBM · {s.dock} 02</span>
         </div>
         <span className="pd-platform" />
         <span className="pd-bumper" />
 
-        <div className="pd-dip" data-thud={parity}>
+        <div className="pd-dip" data-thud={parity} aria-hidden="true">
           <div className="pd-rig">
             <div className="pd-cab">
               <Cab />
@@ -183,7 +198,7 @@ export function PalletDock({ value, onChange }: { value: DockValue; onChange: (v
         </div>
 
         {/* Parked where the next pallet goes: deep inside for an empty trailer, out on the dock once it is full. */}
-        <div className="pd-track" style={{ "--p": Math.min(count, FULL) / FULL } as CSSProperties} data-out={count > FULL || undefined}>
+        <div className="pd-track" style={{ "--p": Math.min(count, FULL) / FULL } as CSSProperties} data-out={count > FULL || undefined} aria-hidden="true">
           <span className="pd-fl" data-moving={drive ?? undefined}>
             <Forklift />
             <span className="pd-fl-wheel pd-fl-wheel-a" />
@@ -196,14 +211,14 @@ export function PalletDock({ value, onChange }: { value: DockValue; onChange: (v
         <span className="pd-wheel pd-wheel-cab2" />
         <span className="pd-wheel pd-wheel-a" />
         <span className="pd-wheel pd-wheel-b" />
-        <div className="pd-ground">
+        <div className="pd-ground" aria-hidden="true">
           <span>0</span>
           <span>{SLOTS}</span>
           <span>{FULL}</span>
         </div>
 
         {ghost !== null && preview && (
-          <span className="pd-cursor" style={{ translate: `${preview.x}px 0` }}>
+          <span className="pd-cursor" style={{ translate: `${preview.x}px 0` }} aria-hidden="true">
             {ghost > FULL ? `${FULL}+` : ghost}
           </span>
         )}
@@ -218,7 +233,8 @@ export function PalletDock({ value, onChange }: { value: DockValue; onChange: (v
           aria-valuetext={s.valueText(count)}
           onChange={(event) => onChange(event.target.value)}
           onPointerMove={onHover}
-          onPointerLeave={() => setPreview(null)}
+          onPointerLeave={clearPreview}
+          onPointerCancel={clearPreview}
         />
       </div>
 

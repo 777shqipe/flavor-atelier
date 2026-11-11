@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { LogoMark } from "./Logo";
 import { Odometer } from "./Odometer";
 import { CerealBox, MilkCarton } from "./FilmPacks";
 import { ITEMS } from "./products";
 import { Stamp } from "./Stamp";
+import { pauseWhenOffscreen } from "./offscreen";
 import { useLang, useT, type Lang } from "./i18n";
 import { whyFilmStrings } from "./i18n/strings/WhyFilm";
 import "./receipt.css";
@@ -190,7 +191,7 @@ function Bags() {
   );
 }
 
-function World({ on, step }: { on: boolean; step: number }) {
+const World = memo(function World({ on, step }: { on: boolean; step: number }) {
   const flag = (id: string) => (step >= IDX[id] ? true : undefined);
   return (
     <svg
@@ -248,7 +249,7 @@ function World({ on, step }: { on: boolean; step: number }) {
       </text>
     </svg>
   );
-}
+});
 
 /* ---------- the film ------------------------------------------------------- */
 
@@ -261,7 +262,8 @@ export function WhyFilm() {
   const [playing, setPlaying] = useState(!reduce);
   const [inView, setInView] = useState(false);
   const [hidden, setHidden] = useState(document.hidden);
-  const [hold, setHold] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const [feed, setFeed] = useState<number[]>([]);
 
   const root = useRef<HTMLElement>(null);
@@ -272,7 +274,7 @@ export function WhyFilm() {
   const clock = useRef(reduce ? START[LAST[0]] : 0);
   const shown = useRef(beat);
 
-  const running = playing && inView && !hidden && !hold;
+  const running = playing && inView && !hidden && !focused && !hovered;
 
   /** The three progress lines fill straight from the clock, no re-render; the rewind drains them all. */
   const paint = useCallback(() => {
@@ -310,10 +312,12 @@ export function WhyFilm() {
     if (!el) return;
     const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.35 });
     io.observe(el);
+    const stopLoops = pauseWhenOffscreen(el);
     const onVisibility = () => setHidden(document.hidden);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       io.disconnect();
+      stopLoops();
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [paint]);
@@ -327,6 +331,9 @@ export function WhyFilm() {
     if (!el || !scr) return;
     const doc = document.documentElement;
     let raf = 0;
+    let nearby = true;
+    let progress = "";
+    let haloValue = "";
     const smooth = (x: number) => {
       const c = Math.max(0, Math.min(1, x));
       return c * c * (3 - 2 * c);
@@ -341,18 +348,41 @@ export function WhyFilm() {
       const haloEnter = smooth((vh * 0.96 - top) / (vh * 0.56));
       const haloLeave = smooth((bottom - vh * 0.08) / (vh * 0.56));
       const halo = Math.min(haloEnter, haloLeave);
-      el.style.setProperty("--p", p.toFixed(4));
-      el.style.setProperty("--halo", halo.toFixed(4));
+      const nextProgress = p.toFixed(4);
+      const nextHalo = halo.toFixed(4);
+      if (nextProgress !== progress) {
+        progress = nextProgress;
+        el.style.setProperty("--p", progress);
+      }
+      if (nextHalo !== haloValue) {
+        haloValue = nextHalo;
+        el.style.setProperty("--halo", haloValue);
+      }
       doc.toggleAttribute("data-immersive", p > 0.88);
     };
     const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
+      if (nearby && !raf) raf = requestAnimationFrame(update);
     };
     update();
+    // The cinematic scroll effect needs no layout reads while the film is far away.
+    const io = new IntersectionObserver(([entry]) => {
+      nearby = entry.isIntersecting;
+      if (nearby) onScroll();
+      else {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        progress = haloValue = "0.0000";
+        el.style.setProperty("--p", progress);
+        el.style.setProperty("--halo", haloValue);
+        doc.removeAttribute("data-immersive");
+      }
+    }, { rootMargin: "100px 0px" });
+    io.observe(el);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       doc.removeAttribute("data-immersive");
@@ -365,10 +395,12 @@ export function WhyFilm() {
     if (!el) return;
     // On a phone the canvas trims its empty side margins, so the packs, Eureka Tower and till come out ~26% bigger.
     const fit = () => {
-      const narrow = el.clientWidth < 600;
+      const width = el.clientWidth;
+      const height = el.clientHeight;
+      const narrow = width < 600;
       const w = narrow ? 540 : 760;
       const h = narrow ? 470 : 520;
-      el.style.setProperty("--k", Math.min(el.clientWidth / w, el.clientHeight / h).toFixed(4));
+      el.style.setProperty("--k", Math.min(width / w, height / h).toFixed(4));
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -383,13 +415,14 @@ export function WhyFilm() {
     const measure = () => {
       const rows = Array.from(el.querySelectorAll<HTMLElement>(".r-item"));
       if (!rows.length) return;
-      setFeed([rows[0].offsetTop - 4, ...rows.map((row) => row.offsetTop + row.offsetHeight), el.offsetHeight]);
+      const next = [rows[0].offsetTop - 4, ...rows.map((row) => row.offsetTop + row.offsetHeight), el.offsetHeight];
+      setFeed((previous) => previous.length === next.length && previous.every((value, i) => value === next[i]) ? previous : next);
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [s]);
 
   const seek = (ch: number) => {
     const b = reduce ? LAST[ch] : FIRST[ch];
@@ -437,7 +470,7 @@ export function WhyFilm() {
           ? s.lcd.scanning
           : s.lcd.ready;
 
-  const state = rewind ? "rewind" : running ? "rec" : "paused";
+  const state = running ? rewind ? "rewind" : "rec" : "paused";
   const words = riseParts(head.lead, lang, locale);
   const spaced = !UNSPACED.includes(lang);
 
@@ -457,9 +490,9 @@ export function WhyFilm() {
 
         <div
           className="film-copy"
-          onFocus={() => setHold(true)}
+          onFocus={() => setFocused(true)}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHold(false);
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false);
           }}
         >
           <h3 className="fc-head" key={`h${ch}`}>
@@ -501,8 +534,8 @@ export function WhyFilm() {
               href={copy.fine.href}
               target="_blank"
               rel="noreferrer"
-              onPointerEnter={() => setHold(true)}
-              onPointerLeave={() => setHold(false)}
+              onPointerEnter={() => setHovered(true)}
+              onPointerLeave={() => setHovered(false)}
             >
               {copy.fine.text}
             </a>
@@ -513,7 +546,7 @@ export function WhyFilm() {
 
         <div className="film-stage" ref={stage} aria-hidden="true">
           <div className="fs-canvas">
-            <World on={ch === 0 && !rewind} step={standby ? -1 : step} />
+            <World on={ch === 0 && !rewind} step={standby ? -1 : Math.min(step, IDX.good)} />
 
             {/* the label: a shelf, the milk at the back of it, the box in front */}
             <span className="fsh" data-on={ch === 1 || undefined} />

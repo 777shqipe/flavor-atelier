@@ -1,5 +1,5 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
-import { peelFrame, type Corner } from "./peelGeometry";
+import { createPeelGeometry, type Corner } from "./peelGeometry";
 import "./peel.css";
 
 /**
@@ -47,6 +47,8 @@ export function Peel({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let w = el.offsetWidth;
     let h = el.offsetHeight;
+    let geometry = createPeelGeometry(w, h, from, bleed * w);
+    bk.style.inset = `${-bleed * w}px`;
     let p = 0;
     let v = 0;
     let target = 0;
@@ -60,13 +62,11 @@ export function Peel({
         el.style.removeProperty("--lift");
         return;
       }
-      const b = bleed * w;
-      const f = peelFrame(w, h, from, p, b);
+      const f = geometry(p);
       fr.style.clipPath = f.front;
       fl.style.visibility = "visible";
       fl.style.clipPath = f.flap;
       fl.style.transform = f.mirror;
-      bk.style.inset = `${-b}px`;
       bk.style.backgroundImage = f.shade;
       el.style.setProperty("--lift", Math.min(1, p * 3).toFixed(3));
     };
@@ -108,6 +108,8 @@ export function Peel({
     const ro = new ResizeObserver(() => {
       w = el.offsetWidth;
       h = el.offsetHeight;
+      geometry = createPeelGeometry(w, h, from, bleed * w);
+      bk.style.inset = `${-bleed * w}px`;
       paint();
     });
     ro.observe(el);

@@ -4,6 +4,7 @@ import { useT } from "./i18n";
 import { showcaseStrings } from "./i18n/strings/Showcase";
 import { Pack as PackArt } from "./Pack";
 import type { Shape } from "./products";
+import { pauseWhenOffscreen } from "./offscreen";
 import "./showcase.css";
 
 type Scene = "crav" | "bucks" | "cookie";
@@ -491,6 +492,7 @@ function useStack(root: RefObject<HTMLDivElement | null>) {
     const items = Array.from(node.querySelectorAll<HTMLElement>(".stack-item"));
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const cleanups: Array<() => void> = [];
+    items.forEach((item) => cleanups.push(pauseWhenOffscreen(item)));
 
     // Entrance: each poster plays once, the first time it is mostly on screen.
     if (reduced) {
@@ -513,29 +515,39 @@ function useStack(root: RefObject<HTMLDivElement | null>) {
 
     // Earlier posters sink back as the next one slides over them.
     let frame = 0;
+    let sticky = items.map((item) => getComputedStyle(item).position === "sticky");
+    const covers: string[] = [];
     const update = () => {
       frame = 0;
+      // Read the stack together before changing any scale, so a write cannot force the next read to lay out.
+      const boxes = items.map((item) => item.getBoundingClientRect());
       items.forEach((item, i) => {
-        const next = items[i + 1];
+        const next = boxes[i + 1];
         let cover = 0;
-        if (next && getComputedStyle(item).position === "sticky") {
-          const a = item.getBoundingClientRect();
-          const b = next.getBoundingClientRect();
-          cover = Math.min(1, Math.max(0, 1 - (b.top - a.top - 14) / a.height));
+        if (next && sticky[i] && boxes[i].height > 0) {
+          cover = Math.min(1, Math.max(0, 1 - (next.top - boxes[i].top - 14) / boxes[i].height));
         }
-        item.style.setProperty("--cover", cover.toFixed(3));
+        const value = cover.toFixed(3);
+        if (covers[i] !== value) {
+          covers[i] = value;
+          item.style.setProperty("--cover", value);
+        }
       });
     };
     const request = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
+    const resize = () => {
+      sticky = items.map((item) => getComputedStyle(item).position === "sticky");
+      request();
+    };
     update();
     window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request);
+    window.addEventListener("resize", resize);
     cleanups.push(() => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", request);
-      window.removeEventListener("resize", request);
+      window.removeEventListener("resize", resize);
     });
 
 

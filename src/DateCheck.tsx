@@ -1,9 +1,10 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { gap, useLang, useT } from "./i18n";
 import { dateCheckStrings } from "./i18n/strings/DateCheck";
 import { Odometer } from "./Odometer";
 import { Pack } from "./Pack";
 import { Stamp } from "./Stamp";
+import { pauseWhenOffscreen } from "./offscreen";
 import "./datecheck.css";
 
 /**
@@ -12,7 +13,6 @@ import "./datecheck.css";
  * use-by one comes off the shelf the day after its date.
  */
 
-const DAY = 86_400_000;
 const fmt = (date: Date, locale: string) => date.toLocaleDateString(locale, { day: "2-digit", month: "short" }).toUpperCase();
 
 /** Placeholder markdown steps for the demo pack. */
@@ -42,11 +42,16 @@ export function DateCheck() {
   // The packs are printed when the page loads.
   const [printed] = useState(() => new Date());
   const [days, setDays] = useState(0);
+  const root = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (root.current) return pauseWhenOffscreen(root.current);
+  }, []);
   const price = MARKDOWNS.reduce((current, step) => (days >= step.at ? step.price : current), RRP);
-  const today = new Date(printed.getTime() + days * DAY);
+  const today = new Date(printed);
+  today.setDate(today.getDate() + days);
 
   return (
-    <section className="dates" data-surface="cream" aria-labelledby="dates-title">
+    <section className="dates" ref={root} data-surface="cream" aria-labelledby="dates-title">
       <header className="section-head split rv">
         <div>
           <p className="eyebrow">{s.eyebrow}</p>

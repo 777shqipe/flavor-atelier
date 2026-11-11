@@ -100,8 +100,9 @@
 /* ---------- rail ------------------------------------------------------------------ */
 .tm-rail { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding-top: 46px; }
 .tm-track { position: absolute; top: 59px; left: 12.5%; right: 12.5%; height: 3px; border-radius: 3px; background: rgb(246 240 219 / 0.16); }
-.tm-track i { display: block; width: calc(var(--p) * 100%); height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgb(246 240 219 / 0.4), var(--a)); box-shadow: 0 0 12px var(--a); transition: width 1.1s var(--ease-out); }
-.tm-cart { position: absolute; top: 0; left: calc(12.5% + var(--p) * 75%); width: 48px; height: 48px; translate: -50% 0; transition: left 1.1s var(--ease-out); pointer-events: none; }
+.tm-track i { display: block; width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgb(246 240 219 / 0.4), var(--a)); box-shadow: 0 0 12px var(--a); transform-origin: left; scale: var(--p) 1; transition: scale 1.1s var(--ease-out); }
+.tm-cart { position: absolute; top: 0; left: 0; width: 100%; height: 48px; translate: calc(12.5% + var(--p) * 75%) 0; transition: translate 1.1s var(--ease-out); pointer-events: none; }
+.tm-cart-art { display: block; width: 48px; height: 48px; translate: -50% 0; }
 .tm-cart svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 5px 5px rgb(0 0 0 / 0.5)); }
 .tm-cart[data-dir="l"] svg { scale: -1 1; }
 /* the load: items grow out of the basket as the trolley reaches later years */
@@ -195,7 +196,8 @@
   .tm-rail button { gap: 5px; padding: 28px 2px 6px; }
   .tm-rail b { font-size: 18px; }
   .tm-rail small { font-size: 9.5px; line-height: 1.15; }
-  .tm-cart { width: 42px; height: 42px; top: 6px; }
+  .tm-cart { height: 42px; top: 6px; }
+  .tm-cart-art { width: 42px; height: 42px; }
   .tm-photo { aspect-ratio: 4 / 4.65; border-radius: 22px; }
   .tm-year { top: 16px; left: 16px; padding: 8px 14px 6px; font-size: 28px; }
   .tm-stickers { top: 14px; right: 14px; }

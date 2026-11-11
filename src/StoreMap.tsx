@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type * as L from "leaflet";
 import { loadLeaflet, type Lib } from "./leaflet";
 import { LANDMARKS, landmarkHtml, shopPinSvg } from "./mapArt";
-import { STORES, distanceKm, formatKm, type Store } from "./stores";
+import { STORES, currentStoreNotice, distanceKm, formatKm, type Store } from "./stores";
 import { useLang, useT, type Lang } from "./i18n";
 import { storeMapStrings } from "./i18n/strings/StoreMap";
+import "leaflet/dist/leaflet.css";
 import "./storemap.css";
 
 /**
@@ -17,13 +18,16 @@ import "./storemap.css";
 /** Name tags hang to the right of the shop, except where a landmark already sits there. */
 const TAG_LEFT = new Set(["flemington"]);
 
-const pinHtml = (store: Store, lang: Lang = "en") => `
+const pinHtml = (store: Store, lang: Lang = "en") => {
+  const notice = currentStoreNotice(store);
+  return `
   <div class="pin" style="--c:${store.color}">
     <span class="pin-shadow"></span>
     <span class="pin-art">${shopPinSvg(store)}</span>
     <span class="pin-tag${TAG_LEFT.has(store.id) ? " left" : ""}"><i></i>${store.name}</span>
-    ${store.notice ? `<span class="pin-notice-pill${TAG_LEFT.has(store.id) ? " left" : ""}"><i></i>${store.notice.badge[lang]}</span>` : ""}
+    ${notice ? `<span class="pin-notice-pill${TAG_LEFT.has(store.id) ? " left" : ""}"><i></i>${notice.badge[lang]}</span>` : ""}
   </div>`;
+};
 
 /**
  * Gradient map for Esri's light grey tiles, as [luminance, colour] stops: water
@@ -86,15 +90,21 @@ export function StoreMap({
   const meLine = useRef<L.Polyline | null>(null);
   const fromMe = useRef<L.LatLng | null>(null);
   const previous = useRef<number | null>(null);
+  const initialActive = useRef(active);
+  const geoRequest = useRef(0);
   const onSelectRef = useRef(onSelect);
   const lib = useRef<Lib | null>(null);
   // Leaflet arrives after the page does; the effects that need it run again once it has.
   const [ready, setReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [locationRevision, setLocationRevision] = useState(0);
   const [near, setNear] = useState<Near>({ status: "idle" });
   const s = useT(storeMapStrings);
   const { lang, locale } = useLang();
   // The map build and the geolocation callback run outside render, so they read the language from here.
   const text = useRef(s);
+  const language = useRef(lang);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -103,10 +113,20 @@ export function StoreMap({
   // Leaflet writes its own markup, so the labels in it are updated in place when the language changes.
   useEffect(() => {
     text.current = s;
-    markers.current.forEach((marker, index) => marker.getElement()?.setAttribute("title", s.pinTitle(STORES[index].name)));
+    language.current = lang;
+    markers.current.forEach((marker, index) => {
+      const el = marker.getElement();
+      if (!el) return;
+      el.setAttribute("title", s.pinTitle(STORES[index].name));
+      el.setAttribute("aria-label", s.pinTitle(STORES[index].name));
+      const pill = el.querySelector(".pin-notice-pill");
+      const notice = currentStoreNotice(STORES[index]);
+      if (pill && notice) pill.replaceChildren(document.createElement("i"), notice.badge[lang]);
+      else pill?.remove();
+    });
     LANDMARKS.forEach((lm) => node.current?.querySelector(`.lm-${lm.id} .lm-cap`)?.replaceChildren(caption(s, lm.id)));
     node.current?.querySelector(".me-pin span")?.replaceChildren(s.you);
-  }, [s]);
+  }, [s, lang]);
 
   // Build the map (once Leaflet is here). Returns what takes it down again.
   const build = (L: Lib, el: HTMLDivElement, box: HTMLDivElement) => {
@@ -152,7 +172,7 @@ export function StoreMap({
 
     markers.current = STORES.map((store, index) => {
       const marker = L.marker(points[index], {
-        icon: L.divIcon({ className: "sm-marker", html: pinHtml(store, lang), iconSize: [0, 0] }),
+        icon: L.divIcon({ className: "sm-marker", html: pinHtml(store, language.current), iconSize: [0, 0] }),
         title: text.current.pinTitle(store.name),
         alt: text.current.pinTitle(store.name),
         riseOnHover: true,
@@ -167,22 +187,23 @@ export function StoreMap({
 
     // Leaflet only measures its box once, so tell it when the box changes size.
     let refit = 0;
-    let lastWidth = box.clientWidth;
+    let lastWidth = el.clientWidth;
+    let lastHeight = el.clientHeight;
     const ro = new ResizeObserver(() => {
-      if (box.clientWidth === lastWidth) return;
-      lastWidth = box.clientWidth;
+      if (el.clientWidth === lastWidth && el.clientHeight === lastHeight) return;
+      lastWidth = el.clientWidth;
+      lastHeight = el.clientHeight;
       window.clearTimeout(refit);
       refit = window.setTimeout(() => {
-        map.invalidateSize();
+        map.invalidateSize({ pan: false });
       }, 120);
     });
-    ro.observe(box);
+    ro.observe(el);
 
-    overviewRef.current = () => overview(true);
+    overviewRef.current = () => overview(!reduced());
     mapRef.current = map;
     const settle = window.setTimeout(() => {
-      map.invalidateSize();
-      overview();
+      map.invalidateSize({ pan: false });
       crowd();
     }, 80);
     return () => {
@@ -193,6 +214,10 @@ export function StoreMap({
       mapRef.current = null;
       markers.current = [];
       overviewRef.current = null;
+      me.current = null;
+      meLine.current = null;
+      fromMe.current = null;
+      previous.current = null;
     };
   };
 
@@ -202,18 +227,21 @@ export function StoreMap({
     if (!el || !box || mapRef.current) return;
     let disposed = false;
     let teardown = () => {};
+    setReady(false);
+    setLoadFailed(false);
     loadLeaflet().then((leaflet) => {
       if (disposed) return;
       lib.current = leaflet;
       teardown = build(leaflet, el, box);
       setReady(true);
-    });
+    }).catch(() => { if (!disposed) setLoadFailed(true); });
     return () => {
       disposed = true;
+      geoRequest.current += 1;
       teardown();
     };
     // build only uses refs, so it never needs to run again.
-  }, []);
+  }, [loadAttempt]);
 
   // Follow the selection: light the pin and glide over to it (to it and you, after "Find my nearest").
   useEffect(() => {
@@ -226,7 +254,7 @@ export function StoreMap({
     });
     const first = previous.current === null;
     previous.current = active;
-    if (first) return; // the overview already shows every store
+    if (first && active === initialActive.current && !fromMe.current) return; // the overview already shows every store
 
     const target = L.latLng(STORES[active].lat, STORES[active].lon);
     const wideMap = map.getSize().x > 760;
@@ -249,16 +277,18 @@ export function StoreMap({
     const shift = L.point((wideMap ? -150 : 0) + (right - left) / 2, Math.max(0, room / 2 - 45));
     const centre = map.unproject(map.project(target, 14.75).add(shift), 14.75);
     map.flyTo(centre, 14.75, { animate: !reduced(), duration: 1 });
-  }, [active, ready]);
+  }, [active, ready, locationRevision]);
 
   const locate = () => {
     if (!navigator.geolocation) {
       setNear({ status: "error", reason: "unsupported" });
       return;
     }
+    const request = ++geoRequest.current;
     setNear({ status: "loading" });
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
+        if (request !== geoRequest.current) return;
         let best = 0;
         let bestKm = Infinity;
         STORES.forEach((store, index) => {
@@ -272,6 +302,7 @@ export function StoreMap({
         const L = lib.current;
         me.current?.remove();
         meLine.current?.remove();
+        fromMe.current = null;
         if (map && L && bestKm < 40) {
           const here = L.latLng(coords.latitude, coords.longitude);
           me.current = L.marker(here, {
@@ -291,13 +322,17 @@ export function StoreMap({
           fromMe.current = here;
         }
         setNear({ status: "ok", index: best, km: bestKm });
-        onSelect(best);
+        onSelectRef.current(best);
+        // A new location also needs a fit when the nearest store was already selected.
+        setLocationRevision((revision) => revision + 1);
       },
-      (error) =>
+      (error) => {
+        if (request !== geoRequest.current) return;
         setNear({
           status: "error",
           reason: error.code === 1 ? "denied" : "failed",
-        }),
+        });
+      },
       { timeout: 8000 },
     );
   };
@@ -329,25 +364,26 @@ export function StoreMap({
         </svg>
 
         <div className="finder-top left">
-          <button className="locate" type="button" onClick={locate} disabled={near.status === "loading"}>
+          <button className="locate" type="button" onClick={locate} data-loading={near.status === "loading" || (!ready && !loadFailed) || undefined} disabled={!ready || near.status === "loading"}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="12" r="3.5" />
               <path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" />
             </svg>
             {near.status === "loading" ? s.locating : s.findNearest}
           </button>
-          {near.status === "error" && <p className="finder-note">{s.locateError[near.reason]}</p>}
-          {near.status === "ok" && <p className="finder-note ok">{s.nearest(STORES[near.index].name, formatKm(near.km, locale))}</p>}
+          {loadFailed && <p className="finder-note" role="status">{s.mapUnavailable} <button type="button" onClick={() => setLoadAttempt((attempt) => attempt + 1)}>{s.retry}</button></p>}
+          {near.status === "error" && <p className="finder-note" role="status">{s.locateError[near.reason]}</p>}
+          {near.status === "ok" && <p className="finder-note ok" role="status">{s.nearest(STORES[near.index].name, formatKm(near.km, locale))}</p>}
         </div>
         <div className="finder-top right">
           <div className="zoom">
-            <button type="button" aria-label={s.zoomIn} onClick={() => mapRef.current?.zoomIn()}>
+            <button type="button" aria-label={s.zoomIn} disabled={!ready} onClick={() => mapRef.current?.zoomIn()}>
               +
             </button>
-            <button type="button" aria-label={s.zoomOut} onClick={() => mapRef.current?.zoomOut()}>
+            <button type="button" aria-label={s.zoomOut} disabled={!ready} onClick={() => mapRef.current?.zoomOut()}>
               −
             </button>
-            <button type="button" className="all" aria-label={s.showAll} onClick={() => overviewRef.current?.()}>
+            <button type="button" className="all" aria-label={s.showAll} disabled={!ready} onClick={() => overviewRef.current?.()}>
               {s.all}
             </button>
           </div>

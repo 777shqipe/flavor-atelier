@@ -430,7 +430,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
         ? Bodies.circle(0, 0, w / 2, { restitution: 0.35, friction: 0.4, frictionAir: 0.012, density: 0.0016 })
         : Bodies.rectangle(0, 0, w, h, opts);
     // touched: only something a person has handled gets rung up, not whatever happens to fall on the counter.
-    return { def, node, body, w, h, added: false, touched: false, binnedAt: 0, tillAt: 0 };
+    return { def, node, body, w, h, added: false, touched: false, binnedAt: 0, tillAt: 0, transform: "" };
   });
   type It = (typeof items)[number];
 
@@ -438,12 +438,23 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
     for (const it of items) {
       if (!it.added) continue;
       const { x, y } = it.body.position;
-      it.node.style.transform = `translate3d(${(x - it.w / 2).toFixed(1)}px, ${(y - it.h / 2).toFixed(1)}px, 0) rotate(${it.body.angle.toFixed(3)}rad)`;
+      const transform = `translate3d(${(x - it.w / 2).toFixed(1)}px, ${(y - it.h / 2).toFixed(1)}px, 0) rotate(${it.body.angle.toFixed(3)}rad)`;
+      // Sleeping groceries retain their painted layer without rewriting its style every frame.
+      if (transform !== it.transform) {
+        it.node.style.transform = transform;
+        it.transform = transform;
+      }
     }
   };
 
-  const timers: number[] = [];
-  const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
+  const timers = new Set<number>();
+  const later = (fn: () => void, ms: number) => {
+    const timer = window.setTimeout(() => {
+      timers.delete(timer);
+      fn();
+    }, ms);
+    timers.add(timer);
+  };
   const replay = (node: HTMLElement, attr: string) => {
     node.removeAttribute(attr);
     void node.offsetWidth;
@@ -507,11 +518,13 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
   // ---- loop ---------------------------------------------------------------------
   let raf = 0;
   let visible = false;
-  let dragging: { body: MatterNS.Body; c: MatterNS.Constraint } | null = null;
+  let dragging: { body: MatterNS.Body; c: MatterNS.Constraint; node: HTMLElement; pointerId: number } | null = null;
   const letGo = () => {
     if (!dragging) return;
-    Composite.remove(world, dragging.c);
+    const held = dragging;
     dragging = null;
+    Composite.remove(world, held.c);
+    if (held.node.hasPointerCapture(held.pointerId)) held.node.releasePointerCapture(held.pointerId);
     delete el.dataset.dragging;
   };
   let pending = 0;
@@ -524,6 +537,11 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
 
   const frame = (now: number) => {
     raf = 0;
+    if (!visible || document.hidden) {
+      last = 0;
+      acc = 0;
+      return;
+    }
     acc += last ? Math.min(50, now - last) : STEP;
     last = now;
     let steps = 0;
@@ -595,7 +613,18 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
     else last = 0;
   };
   const kick = () => {
-    if (!raf && visible) raf = requestAnimationFrame(frame);
+    if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame);
+  };
+  const suspend = () => {
+    cancelAnimationFrame(raf);
+    raf = 0;
+    last = 0;
+    acc = 0;
+    letGo();
+    for (const it of items) {
+      it.binnedAt = 0;
+      it.tillAt = 0;
+    }
   };
 
   const drop = (it: It, x: number, y: number) => {
@@ -603,6 +632,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
     Body.setVelocity(it.body, { x: 0, y: 0 });
     Body.setAngle(it.body, (Math.random() - 0.5) * 1.6);
     Body.setAngularVelocity(it.body, (Math.random() - 0.5) * 0.18);
+    Sleeping.set(it.body, false);
     Composite.add(world, it.body);
     it.added = true;
     it.node.style.visibility = "visible";
@@ -641,6 +671,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
   const io = new IntersectionObserver(
     ([entry]) => {
       visible = entry.isIntersecting;
+      if (!visible) suspend();
       if (!spawned && entry.intersectionRatio >= 0.45) spawn();
       kick();
     },
@@ -648,7 +679,21 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
   );
   io.observe(el);
 
+  let stageBox: DOMRect | null = null;
+  const invalidateBox = () => { stageBox = null; };
+  window.addEventListener("scroll", invalidateBox, { passive: true, capture: true });
+  const onVisibility = () => {
+    if (document.hidden) {
+      suspend();
+    } else {
+      invalidateBox();
+      kick();
+    }
+  };
+  document.addEventListener("visibilitychange", onVisibility);
+
   const ro = new ResizeObserver(() => {
+    invalidateBox();
     layout();
     for (const it of items) {
       if (!it.added) continue;
@@ -663,7 +708,8 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
 
   // ---- pointer: drag and throw with mouse or finger, or quick-tap to toss toward till/bin ----
   const toWorld = (event: PointerEvent) => {
-    const box = el.getBoundingClientRect();
+    // Pointermove may arrive several times per frame. The stage only needs measuring after scrolling/resizing.
+    const box = stageBox ?? (stageBox = el.getBoundingClientRect());
     return { x: event.clientX - box.left, y: event.clientY - box.top };
   };
   const listeners: Array<[HTMLElement, string, EventListener]> = [];
@@ -677,10 +723,12 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
     let downAt = 0;
     let downPos = { x: 0, y: 0 };
     on(it.node, "pointerdown", (event) => {
+      if (!it.added || dragging || !event.isPrimary || event.button !== 0) return;
       // First touch ends the idle sway for the whole pile.
       el.dataset.touched = "";
       it.touched = true;
       downAt = performance.now();
+      invalidateBox();
       const p = toWorld(event);
       downPos = p;
       event.preventDefault();
@@ -699,12 +747,12 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
       });
       Composite.add(world, c);
       Sleeping.set(it.body, false);
-      dragging = { body: it.body, c };
+      dragging = { body: it.body, c, node: it.node, pointerId: event.pointerId };
       el.dataset.dragging = "";
       kick();
     });
     on(it.node, "pointermove", (event) => {
-      if (!dragging || dragging.body !== it.body) return;
+      if (!dragging || dragging.body !== it.body || dragging.pointerId !== event.pointerId) return;
       // Kept inside the stage, so nothing gets hauled into the floor or the walls.
       const p = toWorld(event);
       dragging.c.pointA = { x: Math.min(W - 4, Math.max(4, p.x)), y: Math.min(H - 4, Math.max(4, p.y)) };
@@ -712,7 +760,7 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
       kick();
     });
     const release = (event: PointerEvent) => {
-      if (!dragging || dragging.body !== it.body) return;
+      if (!dragging || dragging.body !== it.body || dragging.pointerId !== event.pointerId) return;
       const p = toWorld(event);
       const dt = performance.now() - downAt;
       const dist = Math.hypot(p.x - downPos.x, p.y - downPos.y);
@@ -734,13 +782,23 @@ function start(Matter: typeof MatterNS, el: HTMLElement, binEl: HTMLElement, til
       kick();
     };
     on(it.node, "pointerup", release);
-    on(it.node, "pointercancel", release);
+    const cancel = (event: PointerEvent) => {
+      if (!dragging || dragging.body !== it.body || dragging.pointerId !== event.pointerId) return;
+      // Browser gestures and lost capture end a drag; they are never quick-tap throws.
+      letGo();
+      kick();
+    };
+    on(it.node, "pointercancel", cancel);
+    on(it.node, "lostpointercapture", cancel);
   });
 
   return () => {
     cancelAnimationFrame(raf);
     timers.forEach((t) => window.clearTimeout(t));
     window.clearTimeout(moodTimer);
+    letGo();
+    window.removeEventListener("scroll", invalidateBox, true);
+    document.removeEventListener("visibilitychange", onVisibility);
     io.disconnect();
     ro.disconnect();
     listeners.forEach(([node, type, fn]) => node.removeEventListener(type, fn));

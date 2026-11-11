@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import { gap, useLang, useT } from "./i18n";
 import { timeMachineStrings } from "./i18n/strings/TimeMachine";
 import { CART_SVG } from "./mapArt";
@@ -86,6 +86,43 @@ function Led({ value }: { value: string }) {
   );
 }
 
+/** Keep the fast LED clock local: the photos, stars and copy only render when the era changes. */
+function YearDisplay({ year, active }: { year: number; active: boolean }) {
+  const [shown, setShown] = useState(year);
+  const current = useRef(year);
+
+  useEffect(() => {
+    if (reduced()) {
+      current.current = year;
+      const frame = requestAnimationFrame(() => setShown(year));
+      return () => cancelAnimationFrame(frame);
+    }
+    if (!active || current.current === year) return;
+    const from = current.current;
+    let frame = 0;
+    let start: number | null = null;
+    const tick = (now: number) => {
+      start ??= now;
+      const t = Math.min(1, (now - start) / 1100);
+      const k = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const next = Math.round(from + (year - from) * k);
+      if (next !== current.current) {
+        current.current = next;
+        setShown(next);
+      }
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [year, active]);
+
+  return (
+    <div className="tm-display" data-go={shown !== year || undefined}>
+      <Led value={String(shown)} />
+    </div>
+  );
+}
+
 const AUTO_MS = 7000;
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -93,48 +130,27 @@ export function TimeMachine() {
   const s = useT(timeMachineStrings);
   const { lang } = useLang();
   const [index, setIndex] = useState(0);
-  const [shown, setShown] = useState(ERAS[0].year);
   const [warp, setWarp] = useState(0);
   const [heading, setHeading] = useState<"l" | "r">("r");
   const [auto, setAuto] = useState(true);
   const [seen, setSeen] = useState(false);
+  const [hidden, setHidden] = useState(document.hidden);
   const root = useRef<HTMLElement>(null);
   const rail = useRef<HTMLDivElement>(null);
-  const spin = useRef(0);
   const era = ERAS[index];
   const copy = s.eras[era.id];
   const last = ERAS.length - 1;
 
-  const travel = (next: number) => {
+  const travel = useCallback((next: number) => {
     if (next === index) return;
-    const from = shown;
-    const to = ERAS[next].year;
     setHeading(next > index ? "r" : "l");
     setIndex(next);
-    cancelAnimationFrame(spin.current);
-    if (reduced()) {
-      setShown(to);
-      return;
-    }
-    setWarp((n) => n + 1);
-    // Spin the display through every year on the way, fast in the middle, easing into the arrival.
-    const ms = 1100;
-    let start = 0;
-    const tick = (now: number) => {
-      if (!start) start = now;
-      const t = Math.min(1, (now - start) / ms);
-      const k = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-      setShown(Math.round(from + (to - from) * k));
-      if (t < 1) spin.current = requestAnimationFrame(tick);
-    };
-    spin.current = requestAnimationFrame(tick);
-  };
+    if (!reduced()) setWarp((n) => n + 1);
+  }, [index]);
   const pick = (next: number) => {
     setAuto(false);
     travel(next);
   };
-
-  useEffect(() => () => cancelAnimationFrame(spin.current), []);
 
   // Only travel on its own while the section is on screen.
   useEffect(() => {
@@ -144,17 +160,20 @@ export function TimeMachine() {
     io.observe(el);
     // The twinkling stars and the blinking LED only run while the section is near the screen.
     const stopLoops = pauseWhenOffscreen(el);
+    const onVisibility = () => setHidden(document.hidden);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       io.disconnect();
       stopLoops();
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
   useEffect(() => {
-    if (!auto || !seen || reduced()) return;
+    if (!auto || !seen || hidden || reduced()) return;
     const timer = window.setTimeout(() => travel(index === last ? 0 : index + 1), AUTO_MS);
     return () => window.clearTimeout(timer);
-  });
+  }, [auto, seen, hidden, index, last, travel]);
 
   const onKey = (event: KeyboardEvent) => {
     const keys: Record<string, number> = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: last };
@@ -165,19 +184,24 @@ export function TimeMachine() {
     rail.current?.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus();
   };
 
-  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const swipeStart = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const onWindowDown = (event: PointerEvent<HTMLElement>) => {
-    swipeStart.current = { x: event.clientX, y: event.clientY };
+    if (!event.isPrimary || event.button !== 0) return;
+    swipeStart.current = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    event.currentTarget.setPointerCapture(event.pointerId);
   };
   const onWindowUp = (event: PointerEvent<HTMLElement>) => {
     const start = swipeStart.current;
+    if (!start || start.pointerId !== event.pointerId) return;
     swipeStart.current = null;
-    if (!start) return;
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
     if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.25) {
       pick((index + (dx < 0 ? 1 : -1) + ERAS.length) % ERAS.length);
     }
+  };
+  const cancelSwipe = (event: PointerEvent<HTMLElement>) => {
+    if (swipeStart.current?.pointerId === event.pointerId) swipeStart.current = null;
   };
 
   return (
@@ -185,7 +209,7 @@ export function TimeMachine() {
       className="tm"
       ref={root}
       data-surface="deep"
-      data-auto={(auto && seen) || undefined}
+      data-auto={(auto && seen && !hidden) || undefined}
       aria-labelledby="tm-title"
       style={{ "--a": era.accent, "--p": index / last } as CSSProperties}
     >
@@ -207,9 +231,7 @@ export function TimeMachine() {
 
           <div className="tm-screen">
             <p className="tm-plate">{s.plate}</p>
-            <div className="tm-display" data-go={shown !== era.year || undefined}>
-              <Led value={String(shown)} />
-            </div>
+            <YearDisplay year={era.year} active={seen && !hidden} />
             <p className="tm-row">
               <span>
                 {s.present}
@@ -224,7 +246,9 @@ export function TimeMachine() {
             <span className="tm-track" aria-hidden="true">
               <i />
             </span>
-            <span className="tm-cart" data-dir={heading} data-load={index} aria-hidden="true" dangerouslySetInnerHTML={{ __html: CART_SVG }} />
+            <span className="tm-cart" data-dir={heading} data-load={index} aria-hidden="true">
+              <span className="tm-cart-art" dangerouslySetInnerHTML={{ __html: CART_SVG }} />
+            </span>
             {ERAS.map((item, i) => (
               <button
                 key={item.year}
@@ -263,6 +287,8 @@ export function TimeMachine() {
           aria-labelledby={`tm-tab-${index}`}
           onPointerDown={onWindowDown}
           onPointerUp={onWindowUp}
+          onPointerCancel={cancelSwipe}
+          onLostPointerCapture={cancelSwipe}
         >
           <figure className="tm-photo">
             {ERAS.map((item, i) => (
@@ -272,6 +298,8 @@ export function TimeMachine() {
                 alt={i === index ? s.photoAlt(s.eras[item.id].title, i === last ? s.todayLower : String(item.year)) : ""}
                 aria-hidden={i !== index || undefined}
                 data-on={i === index || undefined}
+                loading="lazy"
+                decoding="async"
                 draggable={false}
               />
             ))}

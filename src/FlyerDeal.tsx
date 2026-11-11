@@ -1,10 +1,11 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { useT } from "./i18n";
 import { flyerDealStrings } from "./i18n/strings/FlyerDeal";
 import { productStrings } from "./i18n/strings/Products";
 import { Pack } from "./Pack";
 import { pickLook, type Look } from "./flyerLooks";
 import type { Item } from "./products";
+import { pauseWhenOffscreen } from "./offscreen";
 
 /**
  * One flyer card, in one of eight looks borrowed from real packaging and shop
@@ -79,8 +80,12 @@ function Card({
 }) {
   const s = useT(flyerDealStrings);
   const p = useT(productStrings);
+  const root = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (root.current) return pauseWhenOffscreen(root.current);
+  }, []);
   return (
-    <article className="deal" data-look={look} data-tone={tone} style={style}>
+    <article className="deal" ref={root} data-look={look} data-tone={tone} style={style}>
       {/* hover runs a till scanner down the card, then the price beeps */}
       <span className="deal-scan" aria-hidden="true" />
       {children}

@@ -107,7 +107,7 @@
 .wn-big .wn-cite { opacity: 0.7; }
 .wn-edible { background: rgb(246 240 219 / 0.06); }
 .wn-meter { height: 12px; overflow: hidden; border-radius: 99px; background: rgb(246 240 219 / 0.16); }
-.wn-meter i { display: block; height: 100%; border-radius: inherit; background: var(--sun); transition: width 1.8s var(--ease-out) 0.4s; }
+.wn-meter i { display: block; width: 70%; height: 100%; border-radius: inherit; background: var(--sun); transform-origin: left; transition: scale 1.8s var(--ease-out) 0.4s; }
 
 /* ---------- narrow ------------------------------------------------------------- */
 @media (max-width: 980px) {

@@ -9,6 +9,11 @@ let loading: Promise<Lib> | undefined;
  * so it is fetched the first time a map is built, not with the home page.
  */
 export function loadLeaflet(): Promise<Lib> {
-  loading ??= import("leaflet").then((mod) => ((mod as unknown as { default?: Lib }).default ?? mod) as Lib);
+  loading ??= import("leaflet")
+    .then((mod) => ((mod as unknown as { default?: Lib }).default ?? mod) as Lib)
+    .catch((error: unknown) => {
+      loading = undefined;
+      throw error;
+    });
   return loading;
 }
