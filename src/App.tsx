@@ -10,7 +10,6 @@ import { appStrings } from "./i18n/strings/App";
 import { Mix } from "./Mix";
 import { PageSwap, type Swap } from "./PageSwap";
 import { Peel } from "./Peel";
-import { pauseWhenOffscreen } from "./offscreen";
 import { pageUrl, routeFromLocation } from "./navigation";
 import { revealIn } from "./reveal";
 import { WhyFilm } from "./WhyFilm";
@@ -213,51 +212,6 @@ function Home({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onC
   );
 }
 
-function FootFilm() {
-  const spot = useRef<HTMLDivElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
-  const active = useRef(false);
-  const [reduce, setReduce] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  const [seen, setSeen] = useState(false);
-
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const change = () => setReduce(query.matches);
-    query.addEventListener("change", change);
-    return () => query.removeEventListener("change", change);
-  }, []);
-
-  useEffect(() => {
-    const node = spot.current?.closest("footer");
-    if (!node || reduce) return;
-    return pauseWhenOffscreen(node, "280px", (visible) => {
-      active.current = visible;
-      if (visible) {
-        setSeen(true);
-        void video.current?.play().catch(() => {});
-      } else video.current?.pause();
-    });
-  }, [reduce]);
-
-  useEffect(() => {
-    if (seen && !reduce && active.current) void video.current?.play().catch(() => {});
-  }, [seen, reduce]);
-
-  return (
-    <div className="foot-film" ref={spot} aria-hidden="true">
-      {seen && !reduce ? (
-        // WebM first (a quarter of the size); the MP4 is there for older iPhones.
-        <video ref={video} poster="/media/footer-dance.jpg" muted playsInline loop preload="none">
-          <source src="/media/footer-dance.webm" type="video/webm" />
-          <source src="/media/footer-dance.mp4" type="video/mp4" />
-        </video>
-      ) : (
-        <img src="/media/footer-dance.jpg" alt="" loading="lazy" decoding="async" />
-      )}
-    </div>
-  );
-}
-
 /** Reserve the toy's exact height, and fetch its physics and artwork before the footer arrives. */
 function FooterPile() {
   const spot = useRef<HTMLDivElement>(null);
@@ -284,7 +238,6 @@ function Footer({ onNavigate, onContact }: { onNavigate: (page: Page, anchor?: s
   const s = useT(appStrings);
   return (
     <footer data-surface="deep">
-      <FootFilm />
       <FooterPile />
       <div className="footer-main">
         <div className="footer-brand">

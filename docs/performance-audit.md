@@ -61,3 +61,5 @@ Il modulo contatti continua a simulare il successo con `setSent(true)`: il proge
 Il controllo Instagram verifica i link già presenti nel JSON; non scopre automaticamente nuovi post e non costituisce un'integrazione con l'API Instagram.
 
 L'audit riguarda il codice e le verifiche locali; non include una verifica del deploy in produzione.
+
+Aggiornamento successivo: su richiesta, il video e il poster del footer sono stati sostituiti da un fondo verde scuro uniforme con testi chiari. I pulsanti social vanno a capo sui telefoni stretti. Il controllo a 1440, 390 e 320 px verifica l'assenza di download dei media del footer e un contrasto minimo di 7,14:1 nei testi campionati. Le misure e il controllo del video riportati sopra si riferiscono all'audit precedente a questa modifica.
