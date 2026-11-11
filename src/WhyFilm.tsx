@@ -12,7 +12,7 @@ import "./whyfilm.css";
 
 /**
  * "Why it costs less" as one self-playing film, looping on its own: the
- * numbers (bags, Eureka Tower, a skyline of thirty towers, 70% still good),
+ * numbers (one bag in five goes in the bin, the groceries fill Eureka Tower, a skyline of thirty towers, 70% still good),
  * then the label (corn flakes and milk share a date; the milk past its use-by
  * comes off the shelf, the flakes past best-before just get cheaper), then the receipt (that same box is scanned and prints as the
  * first line of a rescued basket). The tape rewinds and it starts again.
@@ -136,7 +136,7 @@ function riseParts(text: string, lang: Lang, locale: string): string[] {
 
 /* ---------- the numbers: one SVG world ----------------------------------- */
 
-const TOWER = "M38 396V74l8-26h28l8 26v322Z";
+const TOWER = "M32 396V78l10-30h36l10 30v318Z";
 const GOOD_TOP = 396 - 0.7 * 348;
 /** A skyline of thirty Eureka Towers: fifteen in front, fifteen further back. The big one lands in front, slot 7. */
 const SKYLINE = [
@@ -146,12 +146,31 @@ const SKYLINE = [
 const BIG_SLOT = 7;
 const at = (cx: number, base: number, s: number) => `translate(${cx - 60 * s}px, ${base - 396 * s}px) scale(${s})`;
 
+const INK = "#141414";
+
+/** One tile of mixed food (a lemon, an apple, a banana, a crust, a pea) on the colour of its pile. */
+function FoodTile({ id, base, apple }: { id: string; base: string; apple: string }) {
+  return (
+    <pattern id={id} width="28" height="28" patternUnits="userSpaceOnUse">
+      <rect width="28" height="28" fill={base} />
+      <circle cx="7" cy="8" r="4.5" fill="#f6b531" />
+      <circle cx="21" cy="7" r="4" fill={apple} />
+      <path d="M21 3q2-3 4-2" fill="none" stroke="#fffaf0" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M15 21q5 5 10-1" fill="none" stroke="#ffe08a" strokeWidth="3" strokeLinecap="round" />
+      <rect x="3" y="18" width="8" height="6" rx="2" fill="#f0d9a8" />
+      <circle cx="14" cy="13" r="2.3" fill="#fffaf0" opacity="0.7" />
+    </pattern>
+  );
+}
+
+/** A glass tower: lit windows, a gold crown, and whatever fills it showing through the floor lines. */
 function TowerBody({ fill }: { fill?: boolean }) {
   return (
     <>
-      <path d={TOWER} fill="#0d2a21" stroke="rgb(246 240 219 / 0.5)" strokeWidth="1.6" />
+      <path d={TOWER} fill="#0b241c" />
       <g clipPath="url(#fw-clip)">
-        <rect x="38" y="44" width="44" height="58" fill="#e7b04a" opacity="0.9" />
+        <rect x="30" y="40" width="60" height="360" fill="url(#fw-win)" />
+        <rect x="30" y="44" width="60" height="50" fill="#e7b04a" opacity="0.9" />
         {fill ? (
           <g className="fw-fill">
             <path
@@ -165,30 +184,59 @@ function TowerBody({ fill }: { fill?: boolean }) {
           <rect x="30" y="40" width="60" height="360" fill="url(#fw-food)" />
         )}
         <rect className="fw-good" x="30" y={GOOD_TOP} width="60" height={396 - GOOD_TOP + 4} fill="url(#fw-fresh)" />
+        <rect x="30" y="40" width="60" height="360" fill="url(#fw-floor)" />
       </g>
-      <path d="M60 48V20" stroke="rgb(246 240 219 / 0.5)" strokeWidth="1.5" />
+      <path d={TOWER} fill="none" stroke="rgb(246 240 219 / 0.6)" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M60 48V20" stroke="rgb(246 240 219 / 0.6)" strokeWidth="1.6" />
     </>
   );
 }
 
+/** Five bags of groceries and a wheelie bin: the fifth bag hops straight into it. */
 function Bags() {
   return (
-    <g className="fw-bags" transform="translate(131 338) scale(1.35)">
+    <g className="fw-bags" transform="translate(106 365) scale(1.1)">
+      {/* the bin's lid, flipped open behind everything */}
+      <rect x="470" y="-106" width="11" height="88" rx="4" fill="#d9442b" stroke={INK} strokeWidth="2.2" transform="rotate(10 475 -20)" />
       {[0, 76, 152, 228, 304].map((x, i) => (
-        <g key={i} className={`fw-bag${i === 4 ? " tips" : ""}`} style={{ "--i": i } as CSSProperties}>
+        <g key={i} className={`fw-bag${i === 4 ? " tips" : ""}`}>
           <g transform={`translate(${x} 0)`}>
-            <rect x="16" y="6" width="9" height="34" rx="4.5" fill="#e0a458" stroke="#141414" strokeWidth="2" transform="rotate(-14 20 20)" />
-            <path d="M30 26C26 12 36 6 38 16C42 6 50 12 44 26Z" fill="#5fae5a" stroke="#141414" strokeWidth="2" strokeLinejoin="round" />
-            <circle cx="46" cy="24" r="7" fill="#e3261b" stroke="#141414" strokeWidth="2" />
-            <path d="M8 30H56L52 104H12Z" fill="#d8b37a" stroke="#141414" strokeWidth="2.2" strokeLinejoin="round" />
-            <path d="M8 30L12 38H52L56 30" fill="#c79c5f" stroke="#141414" strokeWidth="2" strokeLinejoin="round" />
-            <rect x="20" y="56" width="24" height="16" rx="3" fill="#fffaf0" stroke="#141414" strokeWidth="1.6" />
+            <rect x="16" y="6" width="9" height="34" rx="4.5" fill="#e0a458" stroke={INK} strokeWidth="2" transform="rotate(-14 20 20)" />
+            <path d="M30 26C26 12 36 6 38 16C42 6 50 12 44 26Z" fill="#5fae5a" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+            <circle cx="46" cy="24" r="7" fill="#e3261b" stroke={INK} strokeWidth="2" />
+            <path d="M8 30H56L52 104H12Z" fill="#d8b37a" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" />
+            <path d="M8 30L12 38H52L56 30" fill="#c79c5f" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+            <rect x="20" y="56" width="24" height="16" rx="3" fill="#fffaf0" stroke={INK} strokeWidth="1.6" />
             <path d="M24 64h16" stroke="#005842" strokeWidth="2.4" strokeLinecap="round" />
           </g>
         </g>
       ))}
+      {/* the bin's body, drawn last, so the bag drops inside it */}
+      <g className="fw-bin">
+        <path d="M394 -18H474L467 104H401Z" fill="#2f7d62" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" />
+        <path d="M416 10V80M434 10V80M452 10V80" stroke="rgb(0 0 0 / 0.25)" strokeWidth="3" strokeLinecap="round" />
+        <rect x="388" y="-25" width="92" height="12" rx="4" fill="#3a9474" stroke={INK} strokeWidth="2.2" />
+        <circle cx="464" cy="93" r="11" fill="#2b2b2b" stroke={INK} strokeWidth="2.2" />
+        <circle cx="464" cy="93" r="3.5" fill="#8b8b8b" />
+      </g>
     </g>
   );
+}
+
+/** What rains into the tower while it fills: the same groceries the bags carried. */
+const DROPS = [-10, 9, -3, 12, -13, 5, 0, 10];
+function Drop({ kind }: { kind: number }) {
+  if (kind === 0)
+    return (
+      <>
+        <circle r="10" fill="#e3261b" stroke={INK} strokeWidth="2" />
+        <path d="M0-10q4-8 10-5q-3 6-10 5z" fill="#5fae5a" stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
+      </>
+    );
+  if (kind === 1) return <rect x="-5" y="-17" width="10" height="34" rx="5" fill="#e0a458" stroke={INK} strokeWidth="2" />;
+  if (kind === 2)
+    return <path d="M-11-8C-9 7 2 13 12 8C4 9-4 3-6-9Z" fill="#f6b531" stroke={INK} strokeWidth="2" strokeLinejoin="round" />;
+  return <path d="M-8 10C-13-6-2-13 0-2C4-13 13-6 7 10Z" fill="#5fae5a" stroke={INK} strokeWidth="2" strokeLinejoin="round" />;
 }
 
 const World = memo(function World({ on, step }: { on: boolean; step: number }) {
@@ -207,22 +255,28 @@ const World = memo(function World({ on, step }: { on: boolean; step: number }) {
         <clipPath id="fw-clip">
           <path d={TOWER} />
         </clipPath>
-        <pattern id="fw-food" width="22" height="22" patternUnits="userSpaceOnUse">
-          <rect width="22" height="22" fill="#d9442b" />
-          <circle cx="5" cy="6" r="3.2" fill="#f6b531" />
-          <circle cx="16" cy="14" r="3.6" fill="#9f2416" />
-          <circle cx="8" cy="18" r="2.2" fill="#5fae5a" />
+        <FoodTile id="fw-food" base="#d9442b" apple="#9f2416" />
+        <FoodTile id="fw-fresh" base="#6fd3b0" apple="#2f9a6b" />
+        <pattern id="fw-win" width="14" height="12" patternUnits="userSpaceOnUse">
+          <rect x="2" y="3" width="4" height="6" fill="#f6dc8a" opacity="0.5" />
+          <rect x="9" y="3" width="4" height="6" fill="#f6f0db" opacity="0.14" />
         </pattern>
-        <pattern id="fw-fresh" width="22" height="22" patternUnits="userSpaceOnUse">
-          <rect width="22" height="22" fill="#6fd3b0" />
-          <circle cx="5" cy="6" r="3.2" fill="#f6b531" />
-          <circle cx="16" cy="14" r="3.6" fill="#2f9a6b" />
-          <circle cx="8" cy="18" r="2.2" fill="#fffaf0" />
+        <pattern id="fw-floor" width="14" height="12" patternUnits="userSpaceOnUse">
+          <path d="M0 0.5H14M0.5 0V12" stroke="rgb(8 30 23 / 0.5)" strokeWidth="1" />
         </pattern>
       </defs>
 
       <path className="fw-ground" d="M0 480.5H760" />
       <Bags />
+
+      {/* for scale: the low-rise city around the tower, and how tall it stands */}
+      <g className="fw-scale">
+        <path
+          className="fw-city"
+          d="M132 480v-20l13-11 13 11v20zM164 480v-40h24v40zM194 480v-28h16v-12h18v40zM236 480v-56h22v56zM264 480v-18l12-10 12 10v18zM294 480v-34h28v34zM440 480v-30h24v30zM470 480v-50h20v50zM496 480v-22l13-11 13 11v22zM528 480v-42h26v42zM560 480v-26h18v-10h16v36zM600 480v-18l12-10 12 10v18z"
+        />
+        <path className="fw-rule" d="M428 80V480M422 80h12M422 480h12" />
+      </g>
 
       {/* the skyline: everyone but the big tower, rising out from the middle */}
       {SKYLINE.filter((slot) => slot.back || slot.i !== BIG_SLOT).map((slot) => (
@@ -243,6 +297,15 @@ const World = memo(function World({ on, step }: { on: boolean; step: number }) {
           <TowerBody fill />
         </g>
       </g>
+
+      {/* the groceries pouring in through the top while it fills */}
+      {DROPS.map((dx, i) => (
+        <g key={i} transform={`translate(${380 + dx} 66)`}>
+          <g className="fw-drop" style={{ "--i": i } as CSSProperties}>
+            <Drop kind={i % 4} />
+          </g>
+        </g>
+      ))}
 
       <text className="fw-x" x="380" y="214" textAnchor="middle">
         ×30
@@ -547,6 +610,23 @@ export function WhyFilm() {
         <div className="film-stage" ref={stage} aria-hidden="true">
           <div className="fs-canvas">
             <World on={ch === 0 && !rewind} step={standby ? -1 : Math.min(step, IDX.good)} />
+            {/* what the pictures are: the tower's name and height, then what the two colours mean */}
+            <p className="fw-tag" data-on={beat === IDX.tower || undefined}>
+              {s.towerName}
+              <b>297 m</b>
+            </p>
+            <div className="fw-key" data-on={beat === IDX.good || undefined}>
+              <p>
+                <i data-kind="good" />
+                <b>70%</b>
+                {s.keyGood}
+              </p>
+              <p>
+                <i data-kind="scrap" />
+                <b>30%</b>
+                {s.keyScrap}
+              </p>
+            </div>
 
             {/* the label: a shelf, the milk at the back of it, the box in front */}
             <span className="fsh" data-on={ch === 1 || undefined} />

@@ -201,24 +201,50 @@ a.fc-fine:focus-visible { opacity: 0.9; }
 
 .fw-bags { transition: opacity 0.5s, translate 0.8s var(--ease-out); }
 .fw[data-tower] .fw-bags { opacity: 0; translate: 0 80px; }
-.fw-bag { transform-box: fill-box; transform-origin: 88% 100%; transition: opacity 0.6s 1.9s; }
+/* one bag in five hops into the bin; the other four dim so the count reads */
+.fw-bag { transform-box: fill-box; transform-origin: 50% 50%; transition: opacity 0.6s 2.1s; }
 .fw[data-tip] .fw-bag:not(.tips) { opacity: 0.4; }
-.fw[data-tip] .fw-bag.tips { animation: fw-tip 1.2s var(--bounce) 0.9s both; }
-@keyframes fw-tip { 0% { rotate: 0deg; } 25% { rotate: -7deg; } 100% { rotate: 82deg; } }
+.fw[data-tip] .fw-bag.tips { animation: fw-tip 1.15s 0.9s both; }
+@keyframes fw-tip {
+  0% { translate: 0 0; rotate: 0deg; animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+  30% { translate: 14px -120px; rotate: -6deg; animation-timing-function: linear; }
+  55% { translate: 56px -178px; rotate: 12deg; animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  100% { translate: 98px -62px; rotate: 8deg; }
+}
+.fw[data-tip] .fw-bin { animation: fw-thud 0.4s var(--ease-out) 2s both; }
+@keyframes fw-thud { 0% { translate: 0 0; } 35% { translate: 0 4px; } 100% { translate: 0 0; } }
 
-/* the big tower: rises, fills, shrinks into slot 7 of the skyline */
-.fw-tower { transform: translate(311px, 24.6px) scale(1.15); transition: transform 1.2s var(--ease-out) 0.15s; }
+/* the big tower: rises among the low-rise city, fills with groceries, shrinks into slot 7 of the skyline */
+.fw-tower { transform: translate(311px, 24.6px) scale(1.15); opacity: 0; transition: transform 1.2s var(--ease-out) 0.15s, opacity 0.2s 0.2s; }
+.fw[data-tower] .fw-tower { opacity: 1; }
 .fw[data-sky] .fw-tower { transform: var(--to); }
 .fw-rise { transform-box: fill-box; transform-origin: 50% 100%; scale: 1 0; transition: scale 0.9s var(--spring); }
 .fw[data-tower] .fw-tower .fw-rise { scale: 1 1; transition-delay: 0.25s; }
 .fw-fill { translate: 0 0; transition: translate 2.4s cubic-bezier(0.45, 0, 0.3, 1) 0.9s; }
 .fw[data-tower] .fw-fill { translate: 0 -362px; }
-.fw-wave { animation: fw-wave 1.8s linear infinite; }
+/* an SVG path, so it runs on the main thread: only while the tower is filling */
+.fw[data-tower]:not([data-sky]) .fw-wave { animation: fw-wave 1.8s linear infinite; }
 @keyframes fw-wave { to { translate: 18px 0; } }
 
-/* the rest of the skyline */
+.fw-scale { opacity: 0; transition: opacity 0.4s; }
+.fw[data-tower]:not([data-sky]) .fw-scale { opacity: 1; transition-delay: 0.5s; }
+.fw-city { fill: rgb(246 240 219 / 0.07); stroke: rgb(246 240 219 / 0.24); stroke-width: 1.2; stroke-linejoin: round; }
+.fw-rule { fill: none; stroke: rgb(246 240 219 / 0.4); stroke-width: 1.2; }
+
+.fw-drop { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; }
+.fw[data-tower]:not([data-sky]) .fw-drop { animation: fw-drop 0.8s cubic-bezier(0.5, 0, 0.9, 0.6) calc(0.6s + var(--i) * 0.3s) both; }
+@keyframes fw-drop {
+  0% { opacity: 0; translate: 0 -150px; rotate: -40deg; }
+  15% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; translate: 0 34px; rotate: 30deg; }
+}
+
+/* the rest of the skyline (collapsed towers still paint a hairline, so they stay hidden until they rise) */
+.fw-mini { opacity: 0; transition: opacity 0.25s calc(0.5s + var(--d) * 55ms); }
+.fw[data-sky] .fw-mini { opacity: 1; }
+.fw[data-sky] .fw-mini.back { opacity: 0.55; }
 .fw-mini .fw-rise { transition-delay: calc(0.55s + var(--d) * 55ms); }
-.fw-mini.back { opacity: 0.55; }
 .fw[data-sky] .fw-mini .fw-rise { scale: 1 1; }
 .fw-good { transform-box: fill-box; transform-origin: 50% 100%; scale: 1 0; transition: scale 1s var(--ease-out); }
 .fw-mini .fw-good { transition-delay: calc(0.4s + var(--d) * 60ms); }
@@ -228,6 +254,40 @@ a.fc-fine:focus-visible { opacity: 0.9; }
 .fw-x { fill: var(--sun); font: 400 130px var(--font-display); letter-spacing: 0.02em; opacity: 0; translate: 0 14px; transition: opacity 0.5s, translate 0.7s var(--ease-out); }
 .fw[data-sky] .fw-x { opacity: 1; translate: 0 0; transition-delay: 1.4s; }
 .fw[data-good] .fw-x { opacity: 0; translate: 0 -14px; transition-delay: 0s; }
+
+/* what the pictures are: the tower's name and height, then a key for the two colours */
+.fw-tag,
+.fw-key { position: absolute; z-index: 1; margin: 0; opacity: 0; translate: 0 10px; pointer-events: none; transition: opacity 0.3s, translate 0.6s var(--ease-out); }
+.fw-tag[data-on],
+.fw-key[data-on] { opacity: 1; translate: 0 0; transition-delay: 0.7s; }
+.fw-tag {
+  left: 444px;
+  top: 88px;
+  display: grid;
+  gap: 6px;
+  color: rgb(246 240 219 / 0.8);
+  font: 600 17px / 1 var(--font-cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fw-tag b { color: var(--sun); font: 400 46px / 0.95 var(--font-display); letter-spacing: 0.02em; text-transform: none; }
+.fw-key { left: 0; right: 0; top: 150px; display: grid; justify-content: center; gap: 12px; }
+.fw-key p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--cream);
+  font: 600 21px / 1 var(--font-cond);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fw-key i { flex: none; width: 18px; height: 18px; border: 1.5px solid rgb(246 240 219 / 0.6); border-radius: 5px; background: #d9442b; }
+.fw-key i[data-kind="good"] { background: #6fd3b0; }
+.fw-key b { min-width: 2.1em; font: 400 32px / 0.9 var(--font-display); letter-spacing: 0.02em; }
+.fw-key p:first-child b { color: #6fd3b0; }
 
 /* the label: one shelf, the milk at the back, the box in front -------------- */
 .fsh {
@@ -487,10 +547,14 @@ a.fc-fine:focus-visible { opacity: 0.9; }
   .fc-w,
   .fc-line,
   .fw-wave,
+  .fw-drop,
+  .fw-bin,
   .fbox-mark,
   .fmilk-tag,
   .film-vhs[data-on] { animation: none !important; }
   .fw *,
+  .fw-tag,
+  .fw-key,
   .fsh,
   .fbox,
   .fmilk,

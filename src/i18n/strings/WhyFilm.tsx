@@ -41,6 +41,9 @@ export const whyFilmStrings = defineStrings({
     stamp: "Rescued",
     till: "CBM · till 02",
     notForSale: "Not for sale",
+    towerName: "Eureka Tower",
+    keyGood: "still good to eat",
+    keyScrap: "peels, bones, scraps",
   },
   vi: {
     title: "Vì sao lại rẻ hơn?",
@@ -82,6 +85,9 @@ export const whyFilmStrings = defineStrings({
     stamp: "Đã cứu",
     till: "CBM · quầy 02",
     notForSale: "Không bán",
+    towerName: "Tháp Eureka",
+    keyGood: "vẫn còn ăn được",
+    keyScrap: "vỏ, xương, phần bỏ đi",
   },
   zh: {
     title: "为什么能这么便宜",
@@ -123,6 +129,9 @@ export const whyFilmStrings = defineStrings({
     stamp: "已拯救",
     till: "CBM · 收银台 02",
     notForSale: "不得销售",
+    towerName: "尤里卡大厦",
+    keyGood: "其实还能吃",
+    keyScrap: "果皮、骨头等",
   },
   it: {
     title: "Perché costa meno",
@@ -164,6 +173,9 @@ export const whyFilmStrings = defineStrings({
     stamp: "Salvato",
     till: "CBM · cassa 02",
     notForSale: "Non in vendita",
+    towerName: "Eureka Tower",
+    keyGood: "ancora buono da mangiare",
+    keyScrap: "bucce, ossa, scarti",
   },
   ja: {
     title: "なぜこんなに安いの？",
@@ -205,5 +217,8 @@ export const whyFilmStrings = defineStrings({
     stamp: "レスキュー済",
     till: "CBM・レジ02",
     notForSale: "販売不可",
+    towerName: "ユーレカ・タワー",
+    keyGood: "まだ食べられる",
+    keyScrap: "皮・骨など",
   },
 });
