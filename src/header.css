@@ -763,3 +763,87 @@
   .hn-close { margin-left: 0; }
 }
 
+
+/* Minimal white header — preserve the existing brand typography. */
+.hd { inset: 0 0 auto; padding: 0; gap: 0; }
+.bar, .hd[data-stuck] .bar, .hd[data-open] .bar {
+  --ink: #111;
+  --paper: #fff;
+  --red-ink: #111;
+  --hd-gap: clamp(12px, 2vw, 32px);
+  width: 100%;
+  max-width: none;
+  padding: 0 clamp(12px, 3vw, 40px);
+  border-radius: 0;
+  background: #fff;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.09);
+  animation: none;
+}
+.bar::after, .esl-led, .scr-fx, .bar-more-in::before { display: none; }
+.scr { border-radius: 0; background: #fff; box-shadow: none; }
+.bar-row, .hd[data-stuck] .bar-row {
+  height: 68px;
+  padding: 0;
+}
+.logo, .nav button, .lang .lang-btn, .menu-btn, .cta {
+  color: #111;
+}
+.logo-code { opacity: 0; }
+.nav button[aria-current="page"] { color: #111; }
+.nav button[aria-current="page"]::after {
+  height: 1px;
+  background: #111;
+}
+.logo::before, .nav button::before, .lang .lang-btn::before, .cta::before {
+  display: none;
+}
+@media (hover: hover) {
+  .logo:hover, .nav button:hover, .lang .lang-btn:hover {
+    color: #111;
+    translate: none;
+  }
+}
+.bar-more, .hd[data-stuck]:not([data-peek]) .bar-more,
+.hd[data-stuck] .bar:hover .bar-more,
+.hd[data-stuck] .bar:focus-within .bar-more {
+  grid-template-columns: 1fr;
+}
+.bar-more-in, .hd[data-stuck]:not([data-peek]) .bar-more-in {
+  opacity: 1;
+}
+.hd[data-stuck] .logo-rest { max-width: 5em; opacity: 1; }
+.hd[data-stuck] .logo-word { font-size: 27px; letter-spacing: -0.005em; }
+.cta, .drawer-cta {
+  background: transparent;
+  color: #111;
+  border: 1px solid #111;
+  border-radius: 4px;
+  box-shadow: none;
+}
+.cta:hover { background: #f5f5f5; translate: none; }
+@media (max-width: 920px) {
+  .hd { inset: 0 0 auto; padding: 0; }
+  .bar, .hd[data-stuck]:not([data-open]) .bar {
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+  }
+  .bar-row, .hd[data-stuck] .bar-row { height: 64px; padding: 0; }
+  .hd[data-stuck] .logo-word { font-size: 22px; }
+  .menu-btn, .hd[data-stuck] .menu-btn {
+    background: transparent;
+    color: #111;
+    box-shadow: none;
+  }
+  .burger i { background: #111; }
+  .drawer { background: #fff; }
+  .drawer nav button[aria-current="page"] .drawer-link-word,
+  .drawer nav small, .drawer nav em { color: #111; }
+  .drawer nav em { box-shadow: inset 0 0 0 1px #111; }
+}
+@media (max-width: 440px) {
+  .hd[data-stuck] .logo-word { font-size: 18.5px; }
+}
+@media (max-width: 380px) {
+  .hd[data-stuck] .logo-word { font-size: 16px; }
+}
