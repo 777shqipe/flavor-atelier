@@ -1,5 +1,5 @@
 import focacciaPhoto from "../focaccia-primo-prodotto.jpg";
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useT } from "./i18n";
 import { timeMachineStrings } from "./i18n/strings/TimeMachine";
 import "./timemachine.css";
@@ -15,6 +15,35 @@ const ERAS = [
 export function TimeMachine() {
   const s = useT(timeMachineStrings);
   const [active, setActive] = useState(0);
+  const [displayYear, setDisplayYear] = useState(ERAS[0].year);
+  const currentYear = useRef(ERAS[0].year);
+  useEffect(() => {
+    const target = ERAS[active].year;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      currentYear.current = target;
+      const frame = requestAnimationFrame(() => setDisplayYear(target));
+      return () => cancelAnimationFrame(frame);
+    }
+    const from = currentYear.current;
+    if (from === target) return;
+    let frame = 0;
+    let start: number | null = null;
+    const duration = Math.min(1600, Math.max(850, Math.abs(target - from) * 55));
+    const tick = (time: number) => {
+      start ??= time;
+      const t = Math.min(1, (time - start) / duration);
+      const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const year = Math.round(from + (target - from) * eased);
+      if (year !== currentYear.current) {
+        currentYear.current = year;
+        setDisplayYear(year);
+      }
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active]);
+
   const touch = useRef<{ x: number; y: number } | null>(null);
   const select = (i: number) => setActive(Math.max(0, Math.min(ERAS.length - 1, i)));
   const era = ERAS[active];
@@ -50,7 +79,7 @@ export function TimeMachine() {
           <img key={prev.id} src={prev.src} alt="" loading="lazy" decoding="async" />
         </figure>
         <div className="tm-center">
-          <span className="tm-year" key={era.year}>{era.year}</span>
+          <span className="tm-year" aria-label={String(era.year)}>{displayYear}</span>
           <div className="tm-story" key={era.id}>
             <h3>{copy.title}</h3>
             <p>{copy.text}</p>
