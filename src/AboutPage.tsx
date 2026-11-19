@@ -56,9 +56,9 @@ export function AboutPage({ onContact }: { onContact: () => void }) {
         </div>
       </section>
 
-      {/* The price explanation lives with our story, not on the homepage. */}
-      <WhyFilm />
       <TimeMachine />
+      {/* The price explanation follows the timeline, so visitors get the story first. */}
+      <WhyFilm />
       <Suppliers onContact={onContact} />
     </main>
   );
