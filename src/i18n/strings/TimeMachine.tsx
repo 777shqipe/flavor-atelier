@@ -16,8 +16,8 @@ export const timeMachineStrings = defineStrings({
     eras: {
       first: {
         short: "The first shop",
-        title: "The first shop",
-        text: "A small shop, a few shelves and a lot of jam. One clear idea from day one: perfectly good food should never be wasted.",
+        title: "Our first product",
+        text: "Our journey began with La Focaccia Pronto Forno by Parmalat — the very first product we bought.",
         chips: ["One small shop", "One clear idea"],
         meanwhile: "Australia’s first food bank had opened in Sydney only three years earlier. Rescuing surplus food was still a fringe idea.",
       },
@@ -59,8 +59,8 @@ export const timeMachineStrings = defineStrings({
     eras: {
       first: {
         short: "Cửa hàng đầu tiên",
-        title: "Cửa hàng đầu tiên",
-        text: "Một cửa hàng nhỏ, vài kệ hàng và thật nhiều mứt. Ngay từ ngày đầu đã có một ý tưởng rõ ràng: thực phẩm còn ngon thì không bao giờ được bỏ phí.",
+        title: "Sản phẩm đầu tiên",
+        text: "Hành trình bắt đầu với La Focaccia Pronto Forno của Parmalat — sản phẩm đầu tiên chúng tôi mua.",
         chips: ["Một cửa hàng nhỏ", "Một ý tưởng rõ ràng"],
         meanwhile: "Ngân hàng thực phẩm đầu tiên của Úc mới mở ở Sydney được ba năm. Lúc đó, giải cứu thực phẩm thừa vẫn còn là ý tưởng xa lạ.",
       },
@@ -102,8 +102,8 @@ export const timeMachineStrings = defineStrings({
     eras: {
       first: {
         short: "第一家店",
-        title: "第一家店",
-        text: "一间小店，几排货架，满满的果酱。从第一天起，想法就很明确：好好的食物，绝不该被浪费。",
+        title: "我们的第一件商品",
+        text: "我们的故事始于 Parmalat 的 La Focaccia Pronto Forno——我们购买的第一件商品。",
         chips: ["一间小店", "一个明确的想法"],
         meanwhile: "澳洲第一家食物银行三年前才在悉尼成立。那时，拯救过剩食物还是个小众想法。",
       },
@@ -145,8 +145,8 @@ export const timeMachineStrings = defineStrings({
     eras: {
       first: {
         short: "Il primo negozio",
-        title: "Il primo negozio",
-        text: "Un piccolo negozio, qualche scaffale e un sacco di marmellata. Fin dal primo giorno c’era un’idea chiara: il cibo perfettamente buono non dovrebbe mai andare sprecato.",
+        title: "Il nostro primo prodotto",
+        text: "Tutto è iniziato con La Focaccia Pronto Forno di Parmalat: il primo prodotto che abbiamo acquistato.",
         chips: ["Un piccolo negozio", "Un’idea chiara"],
         meanwhile: "Il primo banco alimentare dell’Australia aveva aperto a Sydney appena tre anni prima. Recuperare il cibo in eccedenza era ancora un’idea di nicchia.",
       },
