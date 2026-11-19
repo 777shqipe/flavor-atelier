@@ -12,7 +12,6 @@ import { PageSwap, type Swap } from "./PageSwap";
 import { Peel } from "./Peel";
 import { pageUrl, routeFromLocation } from "./navigation";
 import { revealIn } from "./reveal";
-import { WhyFilm } from "./WhyFilm";
 
 const loadAbout = () => import("./AboutPage");
 const loadStores = () => import("./StoresPage");
@@ -206,8 +205,6 @@ function Home({ onNavigate, onContact }: { onNavigate: (page: Page) => void; onC
         </div>
       </section>
 
-      {/* Why it costs less: the numbers, the label and the receipt, told as one film that plays on its own. */}
-      <WhyFilm />
     </main>
   );
 }
