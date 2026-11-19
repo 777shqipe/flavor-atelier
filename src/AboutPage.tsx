@@ -6,6 +6,7 @@ import { aboutPageStrings } from "./i18n/strings/AboutPage";
 import { Peel } from "./Peel";
 import { Suppliers } from "./Suppliers";
 import { TimeMachine } from "./TimeMachine";
+import { WhyFilm } from "./WhyFilm";
 import "./about.css";
 
 /** Our story up top, the time-machine history, then the supplier side of the business. */
@@ -55,6 +56,8 @@ export function AboutPage({ onContact }: { onContact: () => void }) {
         </div>
       </section>
 
+      {/* The price explanation lives with our story, not on the homepage. */}
+      <WhyFilm />
       <TimeMachine />
       <Suppliers onContact={onContact} />
     </main>
