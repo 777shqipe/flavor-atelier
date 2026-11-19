@@ -3,7 +3,6 @@ import { useLang, useT } from "./i18n";
 import { instaShelfStrings } from "./i18n/strings/InstaShelf";
 import { CutLine } from "./CutLine";
 import { LogoMark } from "./Logo";
-import { Peel } from "./Peel";
 import { useInstagramFeed, type InstagramFeedData } from "./useInstagramFeed";
 import { pauseWhenOffscreen } from "./offscreen";
 import "./insta.css";
@@ -347,18 +346,6 @@ export function InstaShelf() {
           <h2 id="ig-title" className="ig-title">
             {s.title}
           </h2>
-          <Peel
-            className="ig-foil"
-            from="tr"
-            hover={0.42}
-            deep={0.86}
-            back={{ borderRadius: "18px" }}
-            under={<span className="ig-foil-under">Follow Us {"<3"}</span>}
-          >
-            <span className="ig-foil-face">
-              <b>@{HANDLE}</b>
-            </span>
-          </Peel>
         </div>
         <div className="ig-dek-row">
           <p className="ig-dek">
