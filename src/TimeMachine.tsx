@@ -1,10 +1,11 @@
+import focacciaPhoto from "../focaccia-primo-prodotto.jpg";
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useT } from "./i18n";
 import { timeMachineStrings } from "./i18n/strings/TimeMachine";
 import "./timemachine.css";
 
 const ERAS = [
-  { id: "first", year: 1995, src: "/media/about-1995.jpg" },
+  { id: "first", year: 1995, src: focacciaPhoto },
   { id: "growing", year: 2005, src: "/media/about-basket.jpg" },
   { id: "more", year: 2015, src: "/media/about-aisle.jpg" },
   { id: "today", year: new Date().getFullYear(), src: "/media/about-shelf.jpg" },
