@@ -47,3 +47,13 @@
   .tm-point { min-width: 37px; }
 }
 @media (prefers-reduced-motion: reduce) { .tm-side img, .tm-year, .tm-story { animation: none; } }
+
+/* Each numeral rolls individually instead of sliding the whole year as a card. */
+.tm-year { display: flex; align-items: center; justify-content: center; gap: 0; animation: none; }
+.tm-digit { display: inline-block; width: 0.64em; height: 1.05em; overflow: hidden; text-align: center; font-variant-numeric: tabular-nums; }
+.tm-digit-value { display: block; animation: tm-digit-roll 0.24s cubic-bezier(.2,.75,.25,1) both; }
+@keyframes tm-digit-roll {
+  from { transform: translateY(60%); opacity: 0.35; filter: blur(2px); }
+  to { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) { .tm-digit-value { animation: none; } }
