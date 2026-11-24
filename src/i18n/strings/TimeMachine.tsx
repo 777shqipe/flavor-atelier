@@ -188,8 +188,8 @@ export const timeMachineStrings = defineStrings({
     eras: {
       first: {
         short: "1号店",
-        title: "1号店",
-        text: "小さなお店に、数段の棚と、たくさんのジャム。初日から、想いはひとつでした。まだおいしく食べられるものを、ムダにしてはいけない。",
+        title: "最初の商品",
+        text: "私たちの歩みは、最初に仕入れた商品である Parmalat の La Focaccia Pronto Forno から始まりました。",
         chips: ["小さなお店", "ひとつの想い"],
         meanwhile: "オーストラリア初のフードバンクがシドニーに開設されたのは、わずか3年前でした。余った食品を救うという発想は、まだ珍しいものでした。",
       },

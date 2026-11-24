@@ -15,8 +15,8 @@ const ERAS = [
 export function TimeMachine() {
   const s = useT(timeMachineStrings);
   const [active, setActive] = useState(0);
-  const [displayYear, setDisplayYear] = useState(ERAS[0].year);
-  const currentYear = useRef(ERAS[0].year);
+  const [displayYear, setDisplayYear] = useState<number>(ERAS[0].year);
+  const currentYear = useRef<number>(ERAS[0].year);
   useEffect(() => {
     const target = ERAS[active].year;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -79,7 +79,14 @@ export function TimeMachine() {
           <img key={prev.id} src={prev.src} alt="" loading="lazy" decoding="async" />
         </figure>
         <div className="tm-center">
-          <span className="tm-year" aria-label={String(displayYear)}>{String(displayYear).split("").map((digit, i) => <span className="tm-digit" key={i}><span className="tm-digit-value" key={`${i}-${digit}`}>{digit}</span></span>)}</span>
+          <span className="tm-year">
+            <span className="sr-only">{era.year}</span>
+            {String(displayYear).split("").map((digit, i) => (
+              <span className="tm-digit" key={i} aria-hidden="true">
+                <span className="tm-digit-value" key={`${i}-${digit}`}>{digit}</span>
+              </span>
+            ))}
+          </span>
           <div className="tm-story" key={era.id}>
             <h3>{copy.title}</h3>
             <p>{copy.text}</p>
